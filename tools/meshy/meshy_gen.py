@@ -169,9 +169,17 @@ def optimize(src, dst, tex, max_tris=30000):
         if max_tris and n > max_tris:
             tmp = tempfile.mkdtemp()
             subprocess.run(GT + ['weld', src, os.path.join(tmp, 'w.glb')], check=True, capture_output=True, timeout=600)
-            subprocess.run(GT + ['simplify', os.path.join(tmp, 'w.glb'), os.path.join(tmp, 's.glb'),
-                                 '--ratio', '%.4f' % (max_tris / n), '--error', '0.005'], check=True, capture_output=True, timeout=900)
-            work = os.path.join(tmp, 's.glb')
+            for err in ('0.005', '0.02', '0.05'):  # loosen the error bound until the budget is met
+                subprocess.run(GT + ['simplify', os.path.join(tmp, 'w.glb'), os.path.join(tmp, 's.glb'),
+                                     '--ratio', '%.4f' % (max_tris / n), '--error', err], check=True, capture_output=True, timeout=900)
+                work = os.path.join(tmp, 's.glb')
+                if triangles(work) <= max_tris * 1.3:
+                    break
+            cur = triangles(work)
+            if cur > max_tris * 1.3:  # many UV seams block gltf-transform; gltfpack handles them better
+                subprocess.run(['npx', '-y', 'gltfpack', '-i', work, '-o', os.path.join(tmp, 'p.glb'), '-noq',
+                                '-si', '%.3f' % max(max_tris / cur, 0.3)], check=True, capture_output=True, timeout=900)
+                work = os.path.join(tmp, 'p.glb')
             print('  폴리곤 축소: %d → %d 삼각형' % (n, triangles(work)))
     except Exception as e:
         print('  (폴리곤 축소 건너뜀: %s)' % str(e)[:120])

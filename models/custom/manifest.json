@@ -6,6 +6,90 @@
       "height": 6.0,
       "mob": "ignis",
       "imported": true
+    },
+    "mob_beastBoar": {
+      "file": "mob_beastBoar.glb.txt",
+      "kind": "monster",
+      "height": 1.7,
+      "mob": "beastBoar",
+      "imported": true
+    },
+    "mob_beastWolf": {
+      "file": "mob_beastWolf.glb.txt",
+      "kind": "monster",
+      "height": 2.5,
+      "mob": "beastWolf",
+      "imported": true
+    },
+    "mob_graveSkel": {
+      "file": "mob_graveSkel.glb.txt",
+      "kind": "monster",
+      "height": 2.4,
+      "mob": "graveSkel",
+      "imported": true
+    },
+    "mob_graveGhost": {
+      "file": "mob_graveGhost.glb.txt",
+      "kind": "monster",
+      "height": 2.2,
+      "mob": "graveGhost",
+      "imported": true
+    },
+    "mob_clockDoll": {
+      "file": "mob_clockDoll.glb.txt",
+      "kind": "monster",
+      "height": 2.6,
+      "mob": "clockDoll",
+      "imported": true
+    },
+    "mob_clockGolem": {
+      "file": "mob_clockGolem.glb.txt",
+      "kind": "monster",
+      "height": 3.6,
+      "mob": "clockGolem",
+      "imported": true
+    },
+    "mob_asuraGoblin": {
+      "file": "mob_asuraGoblin.glb.txt",
+      "kind": "monster",
+      "height": 2.1,
+      "mob": "asuraGoblin",
+      "imported": true
+    },
+    "mob_asuraWarrior": {
+      "file": "mob_asuraWarrior.glb.txt",
+      "kind": "monster",
+      "height": 2.8,
+      "mob": "asuraWarrior",
+      "imported": true
+    },
+    "mob_turka": {
+      "file": "mob_turka.glb.txt",
+      "kind": "monster",
+      "height": 3.2,
+      "mob": "turka",
+      "imported": true
+    },
+    "mob_wolfBoss": {
+      "file": "mob_wolfBoss.glb.txt",
+      "kind": "monster",
+      "height": 2.5,
+      "mob": "wolfBoss",
+      "imported": true
+    },
+    "mob_raider": {
+      "file": "mob_raider.glb.txt",
+      "kind": "monster",
+      "height": 1.8,
+      "mob": "raider",
+      "imported": true
+    },
+    "mob_ox": {
+      "file": "mob_ox.glb.txt",
+      "kind": "monster",
+      "height": 2.4,
+      "mob": "ox",
+      "imported": true
     }
   }
 }
