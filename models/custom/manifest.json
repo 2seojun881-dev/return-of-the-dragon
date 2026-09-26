@@ -90,6 +90,27 @@
       "height": 2.4,
       "mob": "ox",
       "imported": true
+    },
+    "mob_ashGoblin": {
+      "file": "mob_ashGoblin.glb.txt",
+      "kind": "monster",
+      "height": 1.9,
+      "mob": "ashGoblin",
+      "imported": true
+    },
+    "mob_boar": {
+      "file": "mob_boar.glb.txt",
+      "kind": "monster",
+      "height": 2.6,
+      "mob": "boar",
+      "imported": true
+    },
+    "mob_slinger": {
+      "file": "mob_slinger.glb.txt",
+      "kind": "monster",
+      "height": 2.3,
+      "mob": "slinger",
+      "imported": true
     }
   }
 }
