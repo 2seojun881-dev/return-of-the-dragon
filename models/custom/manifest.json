@@ -12,21 +12,48 @@
       "kind": "monster",
       "height": 1.7,
       "mob": "beastBoar",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_AnxiousPanda.walk.glb.txt",
+        "run": "m_AnxiousPanda.run.glb.txt",
+        "idle": "m_AnxiousPanda.idle.glb.txt",
+        "attack": "m_AnxiousPanda.attack.glb.txt",
+        "hit": "m_AnxiousPanda.hit.glb.txt",
+        "death": "m_AnxiousPanda.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_beastWolf": {
       "file": "m_AzurefangWarden.glb.txt",
       "kind": "monster",
       "height": 2.5,
       "mob": "beastWolf",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_AzurefangWarden.walk.glb.txt",
+        "run": "m_AzurefangWarden.run.glb.txt",
+        "idle": "m_AzurefangWarden.idle.glb.txt",
+        "attack": "m_AzurefangWarden.attack.glb.txt",
+        "hit": "m_AzurefangWarden.hit.glb.txt",
+        "death": "m_AzurefangWarden.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_graveSkel": {
       "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
       "height": 2.1,
       "mob": "graveSkel",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_SkullboundRaider.walk.glb.txt",
+        "run": "m_SkullboundRaider.run.glb.txt",
+        "idle": "m_SkullboundRaider.idle.glb.txt",
+        "attack": "m_SkullboundRaider.attack.glb.txt",
+        "hit": "m_SkullboundRaider.hit.glb.txt",
+        "death": "m_SkullboundRaider.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_graveGhost": {
       "file": "m_LanternKeeper.glb.txt",
@@ -47,35 +74,80 @@
       "kind": "monster",
       "height": 3.6,
       "mob": "clockGolem",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_CrystalGolem.walk.glb.txt",
+        "run": "m_CrystalGolem.run.glb.txt",
+        "idle": "m_CrystalGolem.idle.glb.txt",
+        "attack": "m_CrystalGolem.attack.glb.txt",
+        "hit": "m_CrystalGolem.hit.glb.txt",
+        "death": "m_CrystalGolem.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_asuraGoblin": {
       "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
       "height": 2.2,
       "mob": "asuraGoblin",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_SkullboundRaider.walk.glb.txt",
+        "run": "m_SkullboundRaider.run.glb.txt",
+        "idle": "m_SkullboundRaider.idle.glb.txt",
+        "attack": "m_SkullboundRaider.attack.glb.txt",
+        "hit": "m_SkullboundRaider.hit.glb.txt",
+        "death": "m_SkullboundRaider.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_asuraWarrior": {
       "file": "m_IvorywyrmLancer.glb.txt",
       "kind": "monster",
       "height": 2.8,
       "mob": "asuraWarrior",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_IvorywyrmLancer.walk.glb.txt",
+        "run": "m_IvorywyrmLancer.run.glb.txt",
+        "idle": "m_IvorywyrmLancer.idle.glb.txt",
+        "attack": "m_IvorywyrmLancer.attack.glb.txt",
+        "hit": "m_IvorywyrmLancer.hit.glb.txt",
+        "death": "m_IvorywyrmLancer.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_turka": {
       "file": "m_MireclawBehemoth.glb.txt",
       "kind": "monster",
       "height": 3.2,
       "mob": "turka",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_MireclawBehemoth.walk.glb.txt",
+        "run": "m_MireclawBehemoth.run.glb.txt",
+        "idle": "m_MireclawBehemoth.idle.glb.txt",
+        "attack": "m_MireclawBehemoth.attack.glb.txt",
+        "hit": "m_MireclawBehemoth.hit.glb.txt",
+        "death": "m_MireclawBehemoth.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_wolfBoss": {
       "file": "m_CarrotstaffConjurer.glb.txt",
       "kind": "monster",
       "height": 2.5,
       "mob": "wolfBoss",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_CarrotstaffConjurer.walk.glb.txt",
+        "run": "m_CarrotstaffConjurer.run.glb.txt",
+        "idle": "m_CarrotstaffConjurer.idle.glb.txt",
+        "attack": "m_CarrotstaffConjurer.attack.glb.txt",
+        "hit": "m_CarrotstaffConjurer.hit.glb.txt",
+        "death": "m_CarrotstaffConjurer.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_raider": {
       "file": "m_MischiefMouse.glb.txt",
@@ -89,56 +161,136 @@
       "kind": "monster",
       "height": 2.4,
       "mob": "ox",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_Nerdzilla.walk.glb.txt",
+        "run": "m_Nerdzilla.run.glb.txt",
+        "idle": "m_Nerdzilla.idle.glb.txt",
+        "attack": "m_Nerdzilla.attack.glb.txt",
+        "hit": "m_Nerdzilla.hit.glb.txt",
+        "death": "m_Nerdzilla.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_ashGoblin": {
       "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
       "height": 1.9,
       "mob": "ashGoblin",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_SkullboundRaider.walk.glb.txt",
+        "run": "m_SkullboundRaider.run.glb.txt",
+        "idle": "m_SkullboundRaider.idle.glb.txt",
+        "attack": "m_SkullboundRaider.attack.glb.txt",
+        "hit": "m_SkullboundRaider.hit.glb.txt",
+        "death": "m_SkullboundRaider.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_boar": {
       "file": "m_AnxiousPanda.glb.txt",
       "kind": "monster",
       "height": 1.7,
       "mob": "boar",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_AnxiousPanda.walk.glb.txt",
+        "run": "m_AnxiousPanda.run.glb.txt",
+        "idle": "m_AnxiousPanda.idle.glb.txt",
+        "attack": "m_AnxiousPanda.attack.glb.txt",
+        "hit": "m_AnxiousPanda.hit.glb.txt",
+        "death": "m_AnxiousPanda.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_slinger": {
       "file": "m_ShellboundShaman.glb.txt",
       "kind": "monster",
       "height": 2.3,
       "mob": "slinger",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_ShellboundShaman.walk.glb.txt",
+        "run": "m_ShellboundShaman.run.glb.txt",
+        "idle": "m_ShellboundShaman.idle.glb.txt",
+        "attack": "m_ShellboundShaman.attack.glb.txt",
+        "hit": "m_ShellboundShaman.hit.glb.txt",
+        "death": "m_ShellboundShaman.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_beastsBoss": {
       "file": "m_VerdantSentinel.glb.txt",
       "kind": "boss",
       "height": 4.4,
       "mob": "beastsBoss",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_VerdantSentinel.walk.glb.txt",
+        "run": "m_VerdantSentinel.run.glb.txt",
+        "idle": "m_VerdantSentinel.idle.glb.txt",
+        "attack": "m_VerdantSentinel.attack.glb.txt",
+        "hit": "m_VerdantSentinel.hit.glb.txt",
+        "death": "m_VerdantSentinel.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_graveBoss": {
       "file": "m_CrimsonRevenantKnight.glb.txt",
       "kind": "boss",
       "height": 3.6,
       "mob": "graveBoss",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_CrimsonRevenantKnight.walk.glb.txt",
+        "run": "m_CrimsonRevenantKnight.run.glb.txt",
+        "idle": "m_CrimsonRevenantKnight.idle.glb.txt",
+        "attack": "m_CrimsonRevenantKnight.attack.glb.txt",
+        "hit": "m_CrimsonRevenantKnight.hit.glb.txt",
+        "death": "m_CrimsonRevenantKnight.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_clockBoss": {
       "file": "m_GildedSeraph.glb.txt",
       "kind": "boss",
       "height": 3.8,
       "mob": "clockBoss",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_GildedSeraph.walk.glb.txt",
+        "run": "m_GildedSeraph.run.glb.txt",
+        "idle": "m_GildedSeraph.idle.glb.txt",
+        "attack": "m_GildedSeraph.attack.glb.txt",
+        "hit": "m_GildedSeraph.hit.glb.txt",
+        "death": "m_GildedSeraph.death.glb.txt"
+      },
+      "rigged": true
     },
     "mob_asuraBoss": {
       "file": "m_IronjawGoblinWarlord.glb.txt",
       "kind": "boss",
       "height": 3.6,
       "mob": "asuraBoss",
-      "imported": true
+      "imported": true,
+      "anims": {
+        "walk": "m_IronjawGoblinWarlord.walk.glb.txt",
+        "run": "m_IronjawGoblinWarlord.run.glb.txt",
+        "idle": "m_IronjawGoblinWarlord.idle.glb.txt",
+        "attack": "m_IronjawGoblinWarlord.attack.glb.txt",
+        "hit": "m_IronjawGoblinWarlord.hit.glb.txt",
+        "death": "m_IronjawGoblinWarlord.death.glb.txt"
+      },
+      "rigged": true
+    },
+    "ignisFly": {
+      "file": "ignisFly.glb.txt",
+      "kind": "boss",
+      "height": 6.0,
+      "mob": "ignisFly",
+      "prompt": "A massive ancient boss dragon hovering mid-air with huge wings fully spread, neck arched back with glowing mouth preparing to breathe fire, obsidian red and black scales, glowing magma veins across the chest, dark fantasy game asset, clean mesh topology, high detail, flying pose",
+      "meshy_task": "01a0de5e-9de7-779b-8007-c29adb2e0354"
     }
   }
 }

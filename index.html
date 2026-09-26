@@ -1153,14 +1153,21 @@ function loadHeroes(onProgress){
 }
 /* ---------- Meshy AI custom models (tools/meshy/meshy_gen.py -> models/custom/manifest.json) ---------- */
 const CUSTOM={mobs:{},npcs:{},props:{},n:0};
+/* the game moves entities itself: pin the root bone's horizontal drift (root motion) to its first key */
+function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.userData={inPlace:1};
+  clip.tracks.forEach(t=>{if(!/Hips\.position$/.test(t.name))return;const v=t.values,x=v[0],z=v[2];for(let i=0;i<v.length;i+=3){v[i]=x;v[i+2]=z;}});return clip;}
 function loadCustom(){const once={},parse=f=>once[f]||(once[f]=parseB64('models/custom/'+f));
   return fetch('models/custom/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{models:{}}).catch(()=>({models:{}})).then(m=>Promise.all(Object.entries(m.models||{}).map(([k,e])=>
     parse(e.file).then(async g=>{
       e.key=k;e.gltf=g;e.clips={};(g.animations||[]).forEach((c,i)=>{e.clips[i?c.name:'_base']=c;});
-      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parseB64('models/custom/'+f);if(ag.animations&&ag.animations[0])e.clips[an]=ag.animations[0];}catch(err){console.warn('custom anim failed',k,an);}}
+      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parse(f);if(ag.animations&&ag.animations[0])e.clips[an]=inPlace(ag.animations[0]);}catch(err){console.warn('custom anim failed',k,an);}}
       g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material&&o.material.map)o.material.map.encoding=THREE.sRGBEncoding;}});
-      g.scene.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(g.scene),hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;e.sc=(e.height||2.2)/hh;
+      g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
+      if(e.skinned){/* rigged exports keep bones in cm under a 0.01 armature: measure the posed, skinned vertices instead */
+        bb=new THREE.Box3();const v=new THREE.Vector3();g.scene.traverse(o=>{if(!o.isSkinnedMesh)return;const pa=o.geometry.attributes.position,st=Math.max(1,Math.floor(pa.count/4000));
+          for(let i=0;i<pa.count;i+=st){v.fromBufferAttribute(pa,i);o.boneTransform(i,v);bb.expandByPoint(v.applyMatrix4(o.matrixWorld));}});}
+      const hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;e.sc=(e.height||2.2)/hh;
       if(e.kind==='prop'&&e.replace){PROPS[e.replace]=g.scene;PBOX[e.replace]=bb;CUSTOM.props[e.replace]=e;}
       else if(e.mob)CUSTOM.mobs[e.mob]=e;else if(e.npc)CUSTOM.npcs[e.npc]=e;
       CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err))))).then(()=>{if(CUSTOM.n)console.log('Meshy custom models loaded:',CUSTOM.n);});}
@@ -1172,19 +1179,28 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
   model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
   const mixer=new THREE.AnimationMixer(model),acts={};for(const n in e.clips)acts[n]=mixer.clipAction(e.clips[n]);
   const runN=acts.run?'run':acts.walk?'walk':acts._base?'_base':null,idleN=acts.idle?'idle':null;
-  let cur=null;const play=(n,ts)=>{const a=acts[n];if(!a)return;a.timeScale=ts;if(cur===a)return;a.reset();a.fadeIn(.2);a.play();if(cur)cur.fadeOut(.2);cur=a;};
-  const st={mv:false,one:null,t:0,dur:.5,hold:false,last:null,T:0};
+  let cur=null,base=null;const play=(n,ts)=>{const a=acts[n];if(!a)return;a.timeScale=ts;base=a;if(cur===a||st.clip)return;a.reset();a.setLoop(THREE.LoopRepeat);a.fadeIn(.2);a.play();if(cur)cur.fadeOut(.2);cur=a;};
+  // one-shot clips from Meshy's animation library (attack/hit/death); roar reuses attack
+  const shot=(n,dur,hold)=>{const a=acts[n];if(!a)return false;const L=a.getClip().duration||1;
+    a.reset();a.setLoop(THREE.LoopOnce);a.clampWhenFinished=true;a.timeScale=n==='death'?1.2:clamp(L/Math.max(.35,dur*1.6),1,2.6);
+    a.fadeIn(.08);a.play();if(cur&&cur!==a)cur.fadeOut(.08);cur=a;st.clipLeft=hold?1e9:L/a.timeScale;return true;};
+  const st={mv:false,one:null,t:0,dur:.5,hold:false,last:null,T:0,clip:false,clipLeft:0};
   const h={g,b,model,mixer,acts,skinned:true,custom:true,sc,cfg:{idle:'Idle',run:'Running_A',atk:'Attack',map:{}},oneShot:null,hold:false,
     legL:new THREE.Group(),legR:new THREE.Group(),armL:new THREE.Group(),armR:new THREE.Group(),head:new THREE.Group()};
   h.armL.userData.hand=new THREE.Group();h.armR.userData.hand=new THREE.Group();
   h.setBase=n=>{st.mv=/Run|Walk/.test(n||'');if(st.mv&&runN)play(runN,1);else if(idleN)play(idleN,1);else if(runN)play(runN,.0001);};
-  h.playOnce=(n,dur,hold)=>{n=n||'';st.one=/Death/.test(n)?'death':/Hit/.test(n)?'hit':/Summon|Cheer|Taunt|Long|Raise|Spellcasting/.test(n)?'roar':'attack';st.t=0;st.dur=dur||(st.one==='death'?.6:.5);st.hold=!!hold;h.oneShot={custom:st.one};h.hold=!!hold;};
-  h.release=()=>{st.one=null;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);};
+  h.playOnce=(n,dur,hold)=>{n=n||'';st.one=/Death/.test(n)?'death':/Hit/.test(n)?'hit':/Summon|Cheer|Taunt|Long|Raise|Spellcasting/.test(n)?'roar':'attack';st.t=0;st.dur=dur||(st.one==='death'?.6:.5);st.hold=!!hold;h.oneShot={custom:st.one};h.hold=!!hold;
+    st.clip=shot(st.one==='roar'?'attack':st.one,st.dur,st.hold||st.one==='death');};
+  h.release=()=>{const was=st.clip;st.one=null;st.clip=false;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);
+    if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
     if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;
+      if(idleN&&!st.mv){pose.position.y=0;return;}
       if(!runN||!st.mv){pose.position.y=Math.abs(Math.sin(T*(st.mv?9:2)))*(st.mv?.08:.02)*Math.min(3,H);pose.rotation.z=st.mv&&!runN?Math.sin(T*9)*.06:0;}else pose.position.y=0;return;}
-    st.t+=dt;const k=Math.min(1,st.t/st.dur),s=Math.sin(k*Math.PI);
+    st.t+=dt;
+    if(st.clip){st.clipLeft-=dt;if(st.clipLeft<=0&&!st.hold&&st.one!=='death')h.release();return;}
+    const k=Math.min(1,st.t/st.dur),s=Math.sin(k*Math.PI);
     if(st.one==='attack'){pose.position.z=s*.18*Math.min(3,H);pose.rotation.x=s*.22;}
     else if(st.one==='hit'){pose.rotation.x=-s*.14;}
     else if(st.one==='roar'){pose.rotation.x=-s*.3;pose.scale.setScalar(1+s*.06);}
@@ -2667,7 +2683,7 @@ function moveEnt(e,tx,tz,spd,dt,stopAt){const dx=tx-e.pos.x,dz=tz-e.pos.z,d=Math
 function updEnemy(e,dt){
   if(e.flashT>0){e.flashT-=dt;setSkin(e,e.flashT>0?FLASH:(e.freeze>0?ICE:null));}
   if(e.showT>0){e.showT-=dt;if(e.showT<=0&&!e.d.boss&&!e.d.static&&!e.d.dummy&&P.target!==e)e.tag.classList.remove('show');}
-  if(e.dead){e.deadT+=dt;
+  if(e.dead){e.deadT+=dt;if(e.airborne){e.airborne=false;ignisFly(e,false);}
     if(e.d.static){e.mesh.scale.y=Math.max(.05,1-e.deadT*2);if(e.deadT>.6)removeEnemy(e);}
     else if(e.parts.skinned){e.mesh.position.y=e.deadT>1.8?-(e.deadT-1.8)*1.2:0;if(e.deadT>2.8)removeEnemy(e);}
     else{e.parts.b.rotation.z=Math.min(1.5,e.deadT*5);e.mesh.position.y=e.deadT>1?-(e.deadT-1)*1.5:0;if(e.deadT>2)removeEnemy(e);}
@@ -2721,7 +2737,8 @@ function startSpecial(e,dP){
   if(t==='slam'){if(dP>7){e.spCd=1;return false;}e.spCd=rand(6,8);const r=4.6;e.anim={t:0,dur:1.3,kind:'rear'};
     e.cast={t:0,dur:1.3,tele:teleCircle(e.pos.x,e.pos.z,r),end:()=>{shake(.6);ringFx(e.pos.x,e.pos.z,r,0xffc060,.5);burst(e.pos.x,.4,e.pos.z,0xc8a060,40,6,.8,.6);
       if(d2(e.pos,P.pos)<r+P.rad){hurtPlayer(e.atk*2.2,e);const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,L=Math.hypot(dx,dz)||1;P.kb={x:dx/L*12,z:dz/L*12,t:.3};P.lock=Math.max(P.lock,1.3);floatText(P.pos,'기절','info',2.8);}}};return true;}
-  if(t==='ignis'){e.spCd=rand(3.5,5);e.pat=(e.pat+1)%3;const sm=specMul(e);
+  if(t==='ignis'){e.spCd=rand(3.5,5);e.pat=(e.pat+1)%4;const sm=specMul(e);
+    if(e.pat===3){ignisAirBreath(e,sm);return true;}
     if(e.pat===0){const ang=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z),L=22,w=9;e.face=ang;const tele=teleRect(e.pos.x,e.pos.z,ang,L,w);e.anim={t:0,dur:1.5,kind:'rear'};
       e.cast={t:0,dur:1.5,tele,end:()=>{const f=new V(Math.sin(ang),0,Math.cos(ang));for(let i=0;i<26;i++){const k=i/26*L;burst(e.pos.x+f.x*k+rand(-2,2),1.5,e.pos.z+f.z*k+rand(-2,2),0xff6a1a,5,4,.9,.9,2);}shake(.9);
         const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,al=dx*f.x+dz*f.z,sd=Math.abs(dx*f.z-dz*f.x);if(al>-1&&al<L&&sd<w/2+P.rad)hurtPlayer(e.atk*3*sm,e);}};}
@@ -2734,6 +2751,38 @@ function startSpecial(e,dP){
     e.cast={t:0,dur:1,tele,end:()=>{e.dash={dir:new V(Math.sin(ang),0,Math.cos(ang)),left:L,hit:false};}};return true;}
   return false;
 }
+/* Ignis air breath: takeoff -> aim/charge -> fire breath sweeping onto the ground -> landing shockwave -> cooldown.
+   Mirrors unity/Scripts/Boss/BossDragonAI.cs. While airborne the Meshy "flying" model (ignisFly) is shown if present. */
+const AIRB={h:6.5,up:1.2,charge:1.5,breath:2.6,down:.9,cd:8,L:20,W:8};
+function ignisFly(e,on){const fm=CUSTOM.mobs.ignisFly;if(!fm)return;
+  if(on&&!e.flyH){e.flyH=customRig(fm);e.mesh.add(e.flyH.g);}
+  if(e.flyH){e.flyH.g.visible=on;e.parts.model.visible=!on;}}
+function mouthPos(e){const f=new V(Math.sin(e.face),0,Math.cos(e.face));return new V(e.pos.x+f.x*4.2,e.mesh.position.y+3.2,e.pos.z+f.z*4.2);}
+function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z);let d=want-e.face;d=Math.atan2(Math.sin(d),Math.cos(d));e.face+=d*Math.min(1,dt*rate);e.mesh.rotation.y=e.face;};
+  e.spCd=A.up+A.charge+A.breath+A.down+A.cd;e.airborne=true;
+  // 1) takeoff: ring dust + ground crack, rise to A.h
+  ringFx(e.pos.x,e.pos.z,7,0xc8a080,.6);burst(e.pos.x,.4,e.pos.z,0x6a5a4a,50,8,1,.9);shake(.7);ignisFly(e,true);
+  const crack=new THREE.Mesh(new THREE.CircleGeometry(5.5,24),new THREE.MeshBasicMaterial({color:0x140806,transparent:true,opacity:.75,depthWrite:false}));crack.rotation.x=-Math.PI/2;crack.position.set(e.pos.x,.05,e.pos.z);W.root.add(crack);
+  tween(6,k=>{crack.material.opacity=.75*(1-k);},()=>killObj(crack));
+  e.cast={t:0,dur:A.up,full:true,upd:(dt,c)=>{const k=c.t/A.up;e.mesh.position.y=A.h*(1-Math.pow(1-k,2));faceP(dt,3);if(e.flyH)e.flyH.tick(rt);},end:()=>{
+    // 2) aim + charge: telegraph follows the player, fire gathers at the mouth
+    const tele=teleRect(e.pos.x,e.pos.z,e.face,A.L,A.W);const glow=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),glowM(0xff5a1a,.8));W.root.add(glow);
+    e.cast={t:0,dur:A.charge,tele,upd:(dt,c)=>{faceP(dt,2.5);tele.rotation.y=e.face;const m=mouthPos(e),k=c.t/A.charge;glow.position.copy(m);glow.scale.setScalar(.3+k*1.4);
+      e.mesh.position.y=A.h+Math.sin(rt*3)*.3;if(e.flyH)e.flyH.tick(rt);if(Math.random()<.5)burst(m.x+rand(-3,3),m.y+rand(-2,2),m.z+rand(-3,3),0xff7a2a,2,-3,.4,.35,0);},end:()=>{
+      killObj(glow);
+      // 3) fire breath: cone of fire from the mouth to the ground, slowly tracking; burn marks stay behind
+      let tick=0,fx=0;const tele2=teleRect(e.pos.x,e.pos.z,e.face,A.L,A.W);tele2.userData.set(1);
+      e.cast={t:0,dur:A.breath,tele:tele2,full:true,upd:(dt,c)=>{faceP(dt,.6);tele2.rotation.y=e.face;e.mesh.position.y=A.h+Math.sin(rt*3)*.3;if(e.flyH)e.flyH.tick(rt);
+        const m=mouthPos(e),f=new V(Math.sin(e.face),0,Math.cos(e.face)),sd=new V(f.z,0,-f.x);fx-=dt;
+        if(fx<=0){fx=.035;for(let i=0;i<5;i++){const k=.25+Math.random()*.75,s=(Math.random()-.5)*A.W*k;const gx=e.pos.x+f.x*A.L*k+sd.x*s,gz=e.pos.z+f.z*A.L*k+sd.z*s;
+          const q=new V().lerpVectors(m,new V(gx,.3,gz),Math.random());burst(q.x,q.y,q.z,Math.random()<.5?0xff6a1a:0xffc040,4,3,.55,1.3,1);
+          if(Math.random()<.12){const bm=new THREE.Mesh(new THREE.CircleGeometry(1+Math.random(),12),new THREE.MeshBasicMaterial({color:0x2a0c04,transparent:true,opacity:.7,depthWrite:false}));bm.rotation.x=-Math.PI/2;bm.position.set(gx,.04+Math.random()*.01,gz);W.root.add(bm);
+            const em=new THREE.Mesh(new THREE.CircleGeometry(.6,10),glowM(0xff5010,.6));em.rotation.x=-Math.PI/2;em.position.set(gx,.06,gz);W.root.add(em);tween(4,k=>{bm.material.opacity=.7*(1-k);em.scale.setScalar(1-k);},()=>{killObj(bm);killObj(em);});}}}
+        tick-=dt;if(tick<=0){tick=.3;shake(.25);const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,al=dx*f.x+dz*f.z,sd2=Math.abs(dx*f.z-dz*f.x);if(al>-1&&al<A.L&&sd2<A.W/2+P.rad)hurtPlayer(e.atk*.7*sm,e);}},end:()=>{
+        // 4) landing shockwave
+        e.cast={t:0,dur:A.down,full:true,upd:(dt,c)=>{const k=c.t/A.down;e.mesh.position.y=A.h*(1-k*k);if(e.flyH)e.flyH.tick(rt);},end:()=>{
+          e.mesh.position.y=0;e.airborne=false;ignisFly(e,false);shake(1);ringFx(e.pos.x,e.pos.z,8,0xff8a3a,.6);burst(e.pos.x,.5,e.pos.z,0x3a2020,60,9,1,.8);
+          if(d2(e.pos,P.pos)<8+P.rad)hurtPlayer(e.atk*1.5*sm,e);e.spCd=A.cd;}};}};}};}};}
 function updDash(e,dt){const d=e.dash,s=Math.min(d.left,22*dt);const bx=e.pos.x,bz=e.pos.z;e.pos.addScaledVector(d.dir,s);resolve(e.pos,e.rad*.8);d.left-=s;e.walk+=s*3;
   if(Math.random()<.5)burst(e.pos.x,.3,e.pos.z,0x8a7a6a,3,2,.4,.5,0);
   if(!d.hit&&!P.dead&&d2(e.pos,P.pos)<e.rad+P.rad+.4){d.hit=true;hurtPlayer(e.atk*1.7,e);P.kb={x:d.dir.x*14,z:d.dir.z*14,t:.3};P.lock=Math.max(P.lock,.3);shake(.4);}
@@ -3415,7 +3464,9 @@ function loop(now){
   updFx(dt);updFloats(dt);
   W.anim.forEach(f=>f(rt));
   // camera
-  if(P&&cam.mode==='follow'){const tgt=P.pos.clone().add(CAM_OFF.clone().multiplyScalar(cam.zoom));const k=1-Math.exp(-dt*7);cam.pos.lerp(tgt,k);cam.look.lerp(new V(P.pos.x,1,P.pos.z),k);}
+  if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
+    const ab=W.enemies.find(q=>q.airborne&&!q.dead),zf=ab?1.6:1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*.6,1+ab.mesh.position.y*.9,P.pos.z+(ab.pos.z-P.pos.z)*.6):new V(P.pos.x,1,P.pos.z);
+    const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
   else if(!P||W.zone==='prologue'&&!CS){const a=rt*.05;cam.pos.set(Math.sin(a)*30,14,40+Math.cos(a)*6);cam.look.set(0,24,-100);}

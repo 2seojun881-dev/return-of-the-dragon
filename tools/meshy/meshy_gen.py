@@ -17,6 +17,7 @@ or read from the MESHY_API_KEY environment variable (never pass it on the comman
       --prompt "dark brown dire wolf, glowing red eyes"
   python3 meshy_gen.py gen hero_npc --kind npc --npc seojun --rig --height 2.3 --prompt "..."
   python3 meshy_gen.py import tavern ~/Downloads/tavern.glb --kind prop --replace building_tavern_red
+  python3 meshy_gen.py rigfile m_CrystalGolem         # auto-rig an imported model (walk/run clips)
   python3 meshy_gen.py list | remove KEY
 """
 import argparse, base64, json, os, shutil, ssl, subprocess, sys, tempfile, time, urllib.request, urllib.error
@@ -148,10 +149,12 @@ def shrink_textures(path, size):
             if max(im.size) > size:
                 im = im.resize((min(size, im.size[0]), min(size, im.size[1])), Image.LANCZOS)
             buf = io.BytesIO()
-            if img.get('mimeType') == 'image/png':
+            opaque = im.mode in ('RGB', 'L', 'P') or (im.mode in ('RGBA', 'LA') and im.getextrema()[-1][0] == 255)
+            if img.get('mimeType') == 'image/png' and not opaque:
                 im.save(buf, 'PNG', optimize=True)
-            else:
+            else:  # opaque PNGs (e.g. Meshy rigging output) are much smaller as JPEG
                 im.convert('RGB').save(buf, 'JPEG', quality=85)
+                img['mimeType'] = 'image/jpeg'
             chunk = buf.getvalue()
         out += b'\0' * (-len(out) % 4)
         remap[i] = len(out)
@@ -193,10 +196,10 @@ def optimize(src, dst, tex, max_tris=30000):
     shrink_textures(dst, tex)
     return dst
 
-def store(key, glb_path, tex):
+def store(key, glb_path, tex, max_tris=30000):
     os.makedirs(OUT, exist_ok=True)
     tmp = os.path.join(tempfile.mkdtemp(), key + '.glb')
-    optimize(glb_path, tmp, tex)
+    optimize(glb_path, tmp, tex, max_tris)
     data = open(tmp, 'rb').read()
     with open(os.path.join(OUT, key + '.glb.txt'), 'w') as f:
         f.write(base64.b64encode(data).decode())
@@ -262,6 +265,74 @@ def cmd_gen(a):
     register(a.key, a, files, {'meshy_task': tid})
     print('완료. dragon-raid/index.html 을 새로고침하면 게임에 적용됩니다.')
 
+def anim_only(src, dst):
+    """Keep only skeleton nodes + animations (drop mesh/skin/textures) so clip files stay tiny."""
+    j, b = _glb_split(open(src, 'rb').read())
+    for n in j.get('nodes', []):
+        n.pop('mesh', None); n.pop('skin', None)
+    for k in ('meshes', 'skins', 'materials', 'textures', 'images', 'samplers'):
+        j.pop(k, None)
+    tmp = dst + '.tmp.glb'
+    open(tmp, 'wb').write(_glb_join(j, b))
+    subprocess.run(GT + ['prune', tmp, dst], check=True, capture_output=True, timeout=300)
+    os.remove(tmp)
+    return dst
+
+def animate(rig_id, action_id):
+    """One clip from Meshy's animation library (3 credits). Returns the animation GLB url."""
+    aid = api('POST', '/openapi/v1/animations', {'rig_task_id': rig_id, 'action_id': action_id})['result']
+    t = wait('/openapi/v1/animations/' + aid, '애니메이션 %d' % action_id)
+    return (t.get('result') or {}).get('animation_glb_url')
+
+def _save_clip(key, name, full_glb, work):
+    slim = anim_only(full_glb, os.path.join(work, name + '_anim.glb'))
+    subprocess.run(GT + ['resample', slim, slim], capture_output=True, timeout=300)  # drop redundant keys
+    data = open(slim, 'rb').read()
+    fname = key + '.' + name + '.glb.txt'
+    with open(os.path.join(OUT, fname), 'w') as f:
+        f.write(base64.b64encode(data).decode())
+    print('  애니메이션 %s: %.0f KB' % (name, len(data) / 1024))
+    return fname
+
+def cmd_rigfile(a):
+    """Rig an already-imported model file and attach clips to every manifest entry using it."""
+    fname = a.file if a.file.endswith('.glb.txt') else a.file + '.glb.txt'
+    key = fname[:-8]
+    work = tempfile.mkdtemp()
+    src = a.glb
+    if not src:
+        src = os.path.join(work, 'src.glb')
+        open(src, 'wb').write(base64.b64decode(open(os.path.join(OUT, fname)).read()))
+    uri = 'data:application/octet-stream;base64,' + base64.b64encode(open(src, 'rb').read()).decode()
+    rig_id = api('POST', '/openapi/v1/rigging', {'model_url': uri, 'height_meters': a.rig_height})['result']
+    print('  리깅 작업', rig_id)
+    t = wait('/openapi/v1/rigging/' + rig_id, '리깅')
+    r = t.get('result') or t
+    rigged = download(r['rigged_character_glb_url'], os.path.join(work, 'rigged.glb'))
+    store(key, rigged, a.texture_size, a.max_tris)
+    anims = {}
+    ba = r.get('basic_animations') or {}
+    for name, field in (('walk', 'walking_glb_url'), ('run', 'running_glb_url')):
+        if ba.get(field):
+            anims[name] = _save_clip(key, name, download(ba[field], os.path.join(work, name + '.glb')), work)
+    for spec in (a.actions or '').split(','):
+        if '=' not in spec:
+            continue
+        name, aid = spec.split('=')
+        url = animate(rig_id, int(aid))
+        if url:
+            anims[name] = _save_clip(key, name, download(url, os.path.join(work, name + '.glb')), work)
+    import fcntl
+    with open(MANIFEST + '.lock', 'w') as lk:  # several rigfile runs may finish at once
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        m = load_manifest()
+        users = [k for k, e in m['models'].items() if e.get('file') == fname]
+        for k in users:
+            m['models'][k]['anims'] = anims
+            m['models'][k]['rigged'] = True
+        save_manifest(m)
+    print('리깅 완료:', fname, '→', ', '.join(users) or '(manifest 항목 없음)')
+
 def cmd_import(a):
     check_target(a)
     files = {'model': store(a.key, a.glb, a.texture_size), 'anims': {}}
@@ -303,6 +374,13 @@ def main():
     g.add_argument('--polycount', type=int, default=12000); g.add_argument('--rig', action='store_true', help='사람형 자동 리깅 (걷기·달리기)')
     g.add_argument('--rig-height', type=float); g.add_argument('--no-refine', action='store_true'); g.add_argument('--raw', action='store_true', help='게임 스타일 문구를 붙이지 않음')
     i = sp.add_parser('import'); common(i); i.add_argument('glb'); i.add_argument('--anim', action='append', help='name=path.glb (예: run=run.glb)')
+    rf = sp.add_parser('rigfile', help='이미 넣은 모델 파일에 뼈대(걷기·달리기) 입히기')
+    rf.add_argument('file', help='models/custom 안의 파일 이름 (예: m_CrystalGolem)')
+    rf.add_argument('--glb', help='원본 GLB (없으면 저장된 파일 사용)')
+    rf.add_argument('--rig-height', type=float, default=1.8); rf.add_argument('--texture-size', type=int, default=512)
+    rf.add_argument('--max-tris', type=int, default=12000)
+    rf.add_argument('--actions', default='idle=0,attack=4,hit=178,death=8',
+                    help='추가 동작 (Meshy 애니메이션 라이브러리 action_id, 개당 3크레딧)')
     a = ap.parse_args()
     if a.cmd == 'balance':
         print('Meshy 크레딧:', api('GET', '/openapi/v1/balance').get('balance'))
@@ -314,8 +392,11 @@ def main():
             print('%-16s %s' % (k, json.dumps(v, ensure_ascii=False)))
     elif a.cmd == 'remove':
         m = load_manifest(); e = m['models'].pop(a.key, None); save_manifest(m)
+        used = set()
+        for o in m['models'].values():
+            used.add(o.get('file')); used.update((o.get('anims') or {}).values())
         for f in [e and e.get('file')] + list(((e or {}).get('anims') or {}).values()):
-            if f and os.path.exists(os.path.join(OUT, f)):
+            if f and f not in used and os.path.exists(os.path.join(OUT, f)):
                 os.remove(os.path.join(OUT, f))
         print('삭제:', a.key if e else '(없음)')
     elif a.cmd == 'preset':
@@ -327,6 +408,8 @@ def main():
             sys.exit('--prompt 또는 --image 가 필요합니다')
         a.texture_prompt = a.texture_prompt
         cmd_gen(a)
+    elif a.cmd == 'rigfile':
+        cmd_rigfile(a)
     elif a.cmd == 'import':
         a.prompt = None
         cmd_import(a)
