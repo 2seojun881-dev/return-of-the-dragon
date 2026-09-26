@@ -283,6 +283,8 @@ body.cine #hud>*{pointer-events:none}
 #csInfo li{font-size:12px;color:#cbbfa6;display:grid;grid-template-columns:46px 1fr;gap:6px}
 #csInfo li>b{color:var(--gold);font-weight:500}
 #csInfo li span b{color:#f1e8d6;font-weight:500}
+#csName[readonly]{opacity:.85;border-color:var(--gold)}
+.cs-name.login{display:flex;flex-direction:column;gap:6px}.cs-name.login input{font-size:16px;padding:10px}
 #csGo{padding:12px;font-size:15px;position:sticky;bottom:0;flex-shrink:0;box-shadow:0 -8px 16px rgba(10,8,10,.85)}
 .cs-panel>*{flex-shrink:0}
 .cs-tabs button.nov{border-color:#e8d8a8}
@@ -1409,7 +1411,17 @@ function setEnv(o){scene.background=new THREE.Color(o.sky);scene.fog=new THREE.F
 /* =========================================================
    state
    ========================================================= */
-const SAVE_KEY='ignis.save.v1';
+const SAVE_KEY='ignis.save.v1',ACC_KEY='ignis.accounts',ADMIN_NAME='서준';
+let ACCOUNT=null;
+const saveKey=n=>SAVE_KEY+':'+n;
+function accList(){try{const l=JSON.parse(localStorage.getItem(ACC_KEY));return Array.isArray(l)?l:[];}catch(e){return [];}}
+function accSet(l){try{localStorage.setItem(ACC_KEY,JSON.stringify(l));}catch(e){}}
+function accAdd(n){const l=accList().filter(x=>x!==n);l.unshift(n);accSet(l);}
+function accDel(n){accSet(accList().filter(x=>x!==n));try{localStorage.removeItem(saveKey(n));}catch(e){}}
+// older builds kept one save slot: turn it into a named character
+(function migrateSingleSave(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const o=JSON.parse(raw);const n=String((o&&o.name)||'모험가').trim().slice(0,8)||'모험가';
+  if(!localStorage.getItem(saveKey(n)))localStorage.setItem(saveKey(n),raw);if(!accList().includes(n))accAdd(n);localStorage.removeItem(SAVE_KEY);}catch(e){}})();
+function applyAdmin(s){if(s.name!==ADMIN_NAME)return s;s.admin=true;if(s.level<99){s.level=99;s.exp=0;}return s;}
 let S=null,P=null;
 function newSave(cls){cls=cls||'novice';const c=CLASSES[cls];return {cls,level:1,exp:0,gold:0,potions:3,q:0,step:0,cnt:[],zone:'inn',pos:null,qv:2,tut:false,armor:null,
   weapon:{type:'w',name:c.weapons[0][0],base:c.weapons[0][1],lv:1,cls:'all',enh:0,destroyed:false},bag:[],stones:{low:0,mid:0,high:0,top:0},scrolls:0,shards:0,mileage:0,
@@ -1424,8 +1436,8 @@ function ensureSave(s){
   fix(s.weapon);fix(s.armor);(s.bag||[]).forEach(fix);
   const d={name:CLASSES[s.cls].name,mpots:3,junk:{},store:{},home:false,stat:{str:0,vit:0,def:0,agi:0},lb:0,buffs:{war:0,bless:0},blessDate:'',scale:0,cryst:0,dbLog:[]};
   for(const k in d)if(s[k]===undefined)s[k]=d[k];if(s.weapon&&s.weapon.dur===undefined)s.weapon.dur=100;s.bag.forEach(w=>{if(w.dur===undefined)w.dur=100;});return s;}
-function save(){if(!S||CS)return;if(P&&!P.dead&&W.zone===S.zone)S.pos=[+P.pos.x.toFixed(1),+P.pos.z.toFixed(1)];try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.cls&&(CLASSES[s.cls]||OLD_CLS[s.cls])?s:null;}catch(e){return null;}}
+function save(){if(!S||CS)return;if(P&&!P.dead&&W.zone===S.zone)S.pos=[+P.pos.x.toFixed(1),+P.pos.z.toFixed(1)];try{const n=ACCOUNT||S.name;localStorage.setItem(saveKey(n),JSON.stringify(S));}catch(e){}}
+function loadSave(n){n=n||ACCOUNT;if(!n)return null;try{const s=JSON.parse(localStorage.getItem(saveKey(n)));return s&&s.cls&&(CLASSES[s.cls]||OLD_CLS[s.cls])?s:null;}catch(e){return null;}}
 
 /* =========================================================
    player
@@ -2105,6 +2117,7 @@ function hitEnemy(e,mult,o){
   let d=o.fixed?P.atk*mult:P.atk*mult*rand(.9,1.1);const crit=o.fixed?false:o.crit||Math.random()<(P.crit||.12);if(crit)d*=o.critX||1.6;if(e.mark>0)d*=1.3;if(o.undeadX&&isUndead(e))d*=o.undeadX;if(e.seal>0&&S.cls==='shaman'&&isUndead(e))d*=1.1;d=Math.max(1,Math.round(d));
   if(P.godT>0&&!o.holy&&rt-(P.holyT||0)>.45){P.holyT=rt;holyWave(e.pos.clone());}
   let amb=false;if(P.ambush&&!o.merc&&!o.holy&&!o.fixed){d=Math.round(d*3*(crit?1:1.6));amb=true;P.ambush=false;later(0,breakStealth);floatText(e.pos,'기습!','crit',e.tagY+.5);}
+  if(S.admin&&!e.d.dummy&&d<e.hp){d=Math.ceil(e.hp);}
   if(!e.d.dummy)e.hp-=d;
   floatText(e.pos,fmt(d),crit||amb?'crit':'dmg',e.tagY*.8);
   e.flashT=.1;e.showT=6;
@@ -2940,7 +2953,8 @@ function openBless(){const done=S.blessDate===today();
   dialog([['seojun','천명의 빛이 그대를 감싸리라. 반 시진 동안 그대의 힘과 육신과 마력이 모두 차오르리니.'],['sys','[천명의 축복] 30분 동안 공격력·방어력·최대 체력·최대 마력 +10%, 체력과 마력 모두 회복']]);}
 function openMenu(){
   openPanel('메뉴','<div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
-   '<div class="row"><div class="l"><b>처음부터 다시 시작</b><small>저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">초기화</button></div></div>'+
+   '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
+   '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
@@ -2948,7 +2962,8 @@ function openMenu(){
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};
-  $('#mReset').onclick=function(){if(this.dataset.c){try{localStorage.removeItem(SAVE_KEY);}catch(e){}location.reload();}else{this.dataset.c=1;this.textContent='한 번 더 눌러 확인';}};
+  $('#mOut').onclick=()=>{save();location.reload();};
+  $('#mReset').onclick=function(){if(this.dataset.c){ACCOUNT&&accDel(ACCOUNT);S=null;location.reload();}else{this.dataset.c=1;this.textContent='한 번 더 눌러 확인';}};
 }
 
 
@@ -3184,7 +3199,7 @@ function auSetOn(on){AU.on=on;try{localStorage.setItem('ignis.snd',on?'1':'0');}
 let titleBusy=false,kitReady=false;
 function showTitle(){
   buildZone('title');titleBusy=false;cam.mode='follow';
-  $('#title').hidden=false;$('#tNew').hidden=!loadSave();$('#cv').classList.remove('zoomin');
+  $('#title').hidden=false;$('#tNew').hidden=true;$('#cv').classList.remove('zoomin');
   auSetOn(AU.on);updTitleStatus();fade(0,1.4);
   if(AU.ctx&&AU.on)auStartMusic();
 }
@@ -3214,11 +3229,26 @@ async function titleTouch(ev,fresh){
   await new Promise(r=>setTimeout(r,1100));
   $('#fade').style.opacity=1;
   const save=loadSave();
-  if(save&&!fresh){auStopMusic(2.5);startGame(save,true);}else{await showClassSelect(true);}
+  if(save){auStopMusic(2.5);startGame(save,true);}else{await showClassSelect(true);}
   $('#cv').classList.remove('zoomin');
   flame.style.transition='opacity .9s';flame.classList.remove('on');setTimeout(()=>{fx.innerHTML='';},1000);
 }
-$('#title').addEventListener('pointerdown',e=>{if(e.target.closest('.t-top,.t-link'))return;if(AU.on){auInit();if(!kitReady){auStartMusic();return;}}titleTouch(e,false);});
+$('#title').addEventListener('pointerdown',e=>{if(e.target.closest('.t-top,.t-link'))return;if(AU.on){auInit();if(!kitReady){auStartMusic();return;}}if(!titleBusy&&kitReady&&!panelOpen)openLogin(e);});
+function accSummary(n){const s=loadSave(n);if(!s)return '저장 데이터 없음';const c=CLASSES[s.cls]||CLASSES[OLD_CLS[s.cls]]||CLASSES.novice;return c.name.replace(/\(.*\)/,'')+' · Lv.'+(n===ADMIN_NAME?99:s.level)+(ZONES[s.zone]&&ZONES[s.zone].name?' · '+ZONES[s.zone].name:'');}
+function openLogin(ev){
+  const list=accList().filter(n=>loadSave(n));
+  const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  openPanel('캐릭터 접속','<div class="sec"><label class="cs-name login"><span>캐릭터 이름</span><input type="text" id="lgName" maxlength="8" placeholder="이름 (최대 8자)" autocomplete="off"></label>'+
+    '<button class="btn pri" id="lgGo" style="width:100%;margin-top:10px">접속</button><p class="note" id="lgMsg">이름으로 접속합니다. 처음 쓰는 이름이면 새 캐릭터를 만듭니다.</p></div>'+
+    (list.length?'<div class="sec"><h3>이 기기의 캐릭터</h3>'+list.map((n,i)=>'<div class="row"><div class="l"><b>'+esc(n)+(n===ADMIN_NAME?' <small style="color:#ffd070">운영자</small>':'')+'</b><small>'+esc(accSummary(n))+'</small></div><div style="display:flex;gap:4px"><button class="btn sm pri" data-lg="'+i+'">접속</button><button class="btn sm" data-ld="'+i+'">삭제</button></div></div>').join('')+'</div>':'')+
+    '<p class="note">캐릭터는 이 기기의 브라우저에 저장됩니다. 다른 기기에서는 따로 만들어야 합니다.</p>');
+  const go=n=>{n=(n||'').trim().slice(0,8);if(!n){$('#lgMsg').textContent='이름을 입력하세요.';return;}ACCOUNT=n;closePanel();titleTouch(ev,false);};
+  $('#lgGo').onclick=()=>go($('#lgName').value);
+  $('#lgName').onkeydown=k=>{if(k.key==='Enter')go($('#lgName').value);};
+  document.querySelectorAll('[data-lg]').forEach(b=>b.onclick=()=>go(list[+b.dataset.lg]));
+  document.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{if(!b.dataset.ok){b.dataset.ok=1;b.textContent='정말 삭제?';return;}accDel(list[+b.dataset.ld]);closePanel();openLogin(ev);});
+  setTimeout(()=>{const i=$('#lgName');if(i&&!list.length)i.focus();},50);
+}
 $('#tNew').onclick=e=>{e.stopPropagation();titleTouch(e,true);};
 $('#tSound').onclick=e=>{e.stopPropagation();const on=!AU.on;auSetOn(on);if(on){auInit();auStartMusic();}};
 $('#tNotice').onclick=e=>{e.stopPropagation();openPanel('공지사항','<div class="sec"><h3>업데이트</h3><div class="row"><div class="l"><b>전체 그래픽 KayKit 교체</b><small>마을·평원·성채, NPC, 해골 군단 몬스터가 새 3D 모델과 애니메이션으로 바뀌었습니다.</small></div></div><div class="row"><div class="l"><b>신규 몬스터</b><small>타락한 해골 주술사 · 잠든 해골병 · 타락한 해골 돌격병</small></div></div><div class="row"><div class="l"><b>타이틀 화면 리뉴얼</b><small>새 BGM과 터치 연출이 추가되었습니다. 우측 상단 스피커 버튼으로 소리를 켜고 끌 수 있습니다.</small></div></div></div><div class="sec"><h3>안내</h3><p class="note">제2장 검은 안개 숲은 다음 업데이트에서 열립니다.</p></div>');};
@@ -3242,10 +3272,10 @@ async function showClassSelect(fromTitle){
   if(!fromTitle)await fade(1,.4);
   buildZone('showcase');SEL=SHOW_MID;csActive=true;
   cam.pos.set(0,2.6,11);cam.look.set(0,1.3,0);
-  renderCsel();$('#csel').hidden=false;
+  renderCsel();$('#csel').hidden=false;if(ACCOUNT){$('#csName').value=ACCOUNT;$('#csName').readOnly=true;}
   fade(0,.8);
 }
-$('#csGo').onclick=async()=>{if(!csActive)return;const nm=($('#csName').value||'').trim().slice(0,8)||'모험가';csActive=false;$('#csel').hidden=true;auStopMusic(3);const ns=newSave('novice');ns.name=nm;ns.want=SHOW_CLS[SEL]!=='novice'?SHOW_CLS[SEL]:null;startGame(ns,false);};
+$('#csGo').onclick=async()=>{if(!csActive)return;const nm=ACCOUNT||($('#csName').value||'').trim().slice(0,8)||'모험가';ACCOUNT=nm;csActive=false;$('#csel').hidden=true;auStopMusic(3);const ns=newSave('novice');ns.name=nm;ns.want=SHOW_CLS[SEL]!=='novice'?SHOW_CLS[SEL]:null;startGame(ns,false);};
 $('#csBack').onclick=async()=>{csActive=false;$('#csel').hidden=true;await fade(1,.4);showTitle();};
 let _swx=null;
 canvas.addEventListener('pointerdown',e=>{if(csActive)_swx=e.clientX;});
@@ -3255,7 +3285,7 @@ canvas.addEventListener('pointerup',e=>{if(!csActive||_swx==null)return;const dx
     const hs=ray.intersectObjects(W.heroes.map(o=>o.h.g),true);if(hs.length){const i=W.heroes.findIndex(o=>{let f=false;o.h.g.traverse(q=>{if(q===hs[0].object)f=true;});return f;});if(i>=0){SEL=i;renderCsel();}}}});
 addEventListener('keydown',e=>{if(!csActive)return;if(e.key==='ArrowRight'){SEL=(SEL+1)%5;renderCsel();}if(e.key==='ArrowLeft'){SEL=(SEL+4)%5;renderCsel();}if(e.key==='Enter')$('#csGo').click();});
 async function startGame(s,resume){
-  S=ensureSave(s);makePlayer();refreshSkills();
+  S=applyAdmin(ensureSave(s));ACCOUNT=S.name;accAdd(S.name);makePlayer();refreshSkills();if(S.admin)later(1.5,()=>toast('운영자 계정 · Lv.99 · 모든 몬스터 한 방','gold'));
   if(!resume){
     await runPrologue();
   }else{
