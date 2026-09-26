@@ -25,9 +25,9 @@ public static class PlayerClassInfo
         }
     }
 
-    // Game.SkillSystem.CharacterClass 와 순서가 같아서 그대로 변환됩니다.
-    public static Game.SkillSystem.CharacterClass ToSkillClass(this PlayerClass c)
+    // Game.Core.CharacterClass 와 순서가 같아서 그대로 변환됩니다.
+    public static Game.Core.CharacterClass ToSkillClass(this PlayerClass c)
     {
-        return (Game.SkillSystem.CharacterClass)(int)c;
+        return (Game.Core.CharacterClass)(int)c;
     }
 }

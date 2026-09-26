@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using Game.Core;
 using Game.SkillSystem;
 
 /// <summary>
@@ -58,7 +59,7 @@ public static class SkillAssetGenerator
             s.skillId = d.id; s.skillName = d.name; s.description = d.desc;
             s.requiredClass = d.cls; s.requiredLevel = d.lv; s.skillType = d.type;
             s.cooldown = d.cd; s.mpCost = d.mp; s.goldCost = d.gold;
-            s.baseValue = d.baseV; s.scalingFactor = d.scale; s.duration = d.dur; s.range = d.range; s.areaRadius = d.radius;
+            s.baseValue = d.baseV; s.scalingFactor = d.scale; s.duration = d.dur; s.range = d.radius > 0 && d.range <= 0 ? d.radius : d.range; // 범위 스킬은 반지름을 range에
             if (isNew) AssetDatabase.CreateAsset(s, path); else EditorUtility.SetDirty(s);
         }
         AssetDatabase.SaveAssets();
