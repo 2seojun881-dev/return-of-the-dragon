@@ -1143,9 +1143,49 @@ function loadHeroes(onProgress){
   // KayKit (CC0, Kay Lousberg): characters share one rig; animations ship once in anims.glb; props in two packs
   glbPromise=Promise.all(KFILES.map(k=>parseB64('models/'+k+'.glb.txt').then(g=>{KG[k]=g;done++;onProgress&&onProgress(done/KFILES.length);return true;})
     .catch(e=>{console.warn('kit load failed',k,e);return false;})))
-    .then(r=>{if(!r.every(Boolean))return false;try{setupKit();KIT=true;return true;}catch(e){console.warn('kit setup failed',e);return false;}});
+    .then(r=>{if(!r.every(Boolean))return false;try{setupKit();KIT=true;return true;}catch(e){console.warn('kit setup failed',e);return false;}}).then(ok=>ok?loadCustom().then(()=>ok,()=>ok):ok);
   return glbPromise;
 }
+/* ---------- Meshy AI custom models (tools/meshy/meshy_gen.py -> models/custom/manifest.json) ---------- */
+const CUSTOM={mobs:{},npcs:{},props:{},n:0};
+function loadCustom(){
+  return fetch('models/custom/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{models:{}}).catch(()=>({models:{}})).then(m=>Promise.all(Object.entries(m.models||{}).map(([k,e])=>
+    parseB64('models/custom/'+e.file).then(async g=>{
+      e.key=k;e.gltf=g;e.clips={};(g.animations||[]).forEach((c,i)=>{e.clips[i?c.name:'_base']=c;});
+      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parseB64('models/custom/'+f);if(ag.animations&&ag.animations[0])e.clips[an]=ag.animations[0];}catch(err){console.warn('custom anim failed',k,an);}}
+      g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material&&o.material.map)o.material.map.encoding=THREE.sRGBEncoding;}});
+      g.scene.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(g.scene),hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;e.sc=(e.height||2.2)/hh;
+      e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
+      if(e.kind==='prop'&&e.replace){PROPS[e.replace]=g.scene;PBOX[e.replace]=bb;CUSTOM.props[e.replace]=e;}
+      else if(e.mob)CUSTOM.mobs[e.mob]=e;else if(e.npc)CUSTOM.npcs[e.npc]=e;
+      CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err))))).then(()=>{if(CUSTOM.n)console.log('Meshy custom models loaded:',CUSTOM.n);});}
+/* a rig-like wrapper so custom models plug into the same animation code as KayKit rigs.
+   Meshy auto-rig gives walk/run clips; everything else (idle, attack, hit, roar, death) is procedural. */
+function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.clone(e.gltf.scene):e.gltf.scene.clone();
+  const g=new THREE.Group(),b=new THREE.Group(),pose=new THREE.Group();g.add(b);b.add(pose);pose.add(model);
+  const sc=e.sc*(opt.scale||1);model.scale.setScalar(sc);model.position.y=-e.minY*sc;
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;}});
+  const mixer=new THREE.AnimationMixer(model),acts={};for(const n in e.clips)acts[n]=mixer.clipAction(e.clips[n]);
+  const runN=acts.run?'run':acts.walk?'walk':acts._base?'_base':null,idleN=acts.idle?'idle':null;
+  let cur=null;const play=(n,ts)=>{const a=acts[n];if(!a)return;a.timeScale=ts;if(cur===a)return;a.reset();a.fadeIn(.2);a.play();if(cur)cur.fadeOut(.2);cur=a;};
+  const st={mv:false,one:null,t:0,dur:.5,hold:false,last:null,T:0};
+  const h={g,b,model,mixer,acts,skinned:true,custom:true,sc,cfg:{idle:'Idle',run:'Running_A',atk:'Attack',map:{}},oneShot:null,hold:false,
+    legL:new THREE.Group(),legR:new THREE.Group(),armL:new THREE.Group(),armR:new THREE.Group(),head:new THREE.Group()};
+  h.armL.userData.hand=new THREE.Group();h.armR.userData.hand=new THREE.Group();
+  h.setBase=n=>{st.mv=/Run|Walk/.test(n||'');if(st.mv&&runN)play(runN,1);else if(idleN)play(idleN,1);else if(runN)play(runN,.0001);};
+  h.playOnce=(n,dur,hold)=>{n=n||'';st.one=/Death/.test(n)?'death':/Hit/.test(n)?'hit':/Summon|Cheer|Taunt|Long|Raise|Spellcasting/.test(n)?'roar':'attack';st.t=0;st.dur=dur||(st.one==='death'?.6:.5);st.hold=!!hold;h.oneShot={custom:st.one};h.hold=!!hold;};
+  h.release=()=>{st.one=null;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);};
+  h.resetPose=h.release;h.setWeapon=()=>{};
+  h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
+    if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;
+      if(!runN||!st.mv){pose.position.y=Math.abs(Math.sin(T*(st.mv?9:2)))*(st.mv?.08:.02)*Math.min(3,H);pose.rotation.z=st.mv&&!runN?Math.sin(T*9)*.06:0;}else pose.position.y=0;return;}
+    st.t+=dt;const k=Math.min(1,st.t/st.dur),s=Math.sin(k*Math.PI);
+    if(st.one==='attack'){pose.position.z=s*.18*Math.min(3,H);pose.rotation.x=s*.22;}
+    else if(st.one==='hit'){pose.rotation.x=-s*.14;}
+    else if(st.one==='roar'){pose.rotation.x=-s*.3;pose.scale.setScalar(1+s*.06);}
+    else if(st.one==='death'){pose.rotation.z=k*1.45;pose.position.y=k*.1;}
+    if(k>=1&&!st.hold)h.release();};
+  if(opt.phase)mixer.update(opt.phase);h.setBase('Idle');return h;}
 function gradeTex(img,k,sat){
   const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d');g.drawImage(img,0,0);
   const d=g.getImageData(0,0,c.width,c.height),a=d.data;
@@ -1281,7 +1321,7 @@ const NPC_RIG={
   aril:{file:'Barbarian',keep:['Mug'],tint:0xe8c8a8},rowen:{file:'Mage',keep:['2H_Staff'],tint:0xfff0e0},burkan:{file:'Barbarian',keep:['2H_Axe'],tint:0xd8a888},
   dabin:{file:'Knight',keep:['2H_Sword'],tint:0xffd8c0},taewan:{file:'Rogue_Hooded',keep:['Knife','Knife_Offhand'],tint:0x9a9ab8},dongjun:{file:'Rogue',keep:[],tint:0xffe0a0},seojun:{file:'Mage',keep:['2H_Staff'],tint:0xfff6dc},
 };
-function npcModel(id){const c=NPC_RIG[id];if(!KIT||!c)return null;return rigChar(c.file,{keep:c.keep,tint:c.tint,cfg:{idle:c.idle||'Idle'},phase:Math.random()*2});}
+function npcModel(id){if(CUSTOM.npcs[id])return customRig(CUSTOM.npcs[id],{phase:Math.random()*2});const c=NPC_RIG[id];if(!KIT||!c)return null;return rigChar(c.file,{keep:c.keep,tint:c.tint,cfg:{idle:c.idle||'Idle'},phase:Math.random()*2});}
 /* monsters: KayKit skeletons */
 const SKEL={
   ashGoblin:{file:'Skeleton_Minion',attach:{r:'Skeleton_Blade'},atk:'1H_Melee_Attack_Chop',eyes:0xff5a2a},
@@ -1424,7 +1464,7 @@ function kitIgnis(){
   h.tick=t=>{ticks.forEach(f=>f(t));aura.rotation.z=t*.4;aura.material.opacity=.28+Math.sin(t*3)*.08;};
   return Object.assign(h,{wings,head:new THREE.Group(),ignis:true});
 }
-function enemyModel(d,type){if(d.model==='ignis')return makeIgnis();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
+function enemyModel(d,type){if(CUSTOM.mobs[type]){const h=customRig(CUSTOM.mobs[type]);return type==='ignis'?Object.assign(h,{wings:[],head:new THREE.Group(),ignis:true}):h;}if(d.model==='ignis')return makeIgnis();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
 
 /* ---------- labels ---------- */
 const tagsEl=$('#tags');
@@ -1592,7 +1632,7 @@ function spawnEnemy(type,x,z,sp){
   const e={type,d,lv,atk:atk0,exp:lr?Math.round(9*Math.pow(lv,1.5)*rl):d.exp,goldR:lr?[lv*6,lv*11]:d.gold,mesh:m.g,parts:m,pos:m.g.position,hp:hp0,maxHp:hp0,home:new V(x,0,z),face:rand(0,6.28),aggro:false,atkCd:rand(.5,1.5),spCd:d.spcd||5,
     stun:0,freeze:0,air:0,airT:1,slowT:0,slow:0,dead:false,gone:false,sp,rad:d.rad||.5,wait:rand(1,4),wdest:null,anim:null,cast:null,flashT:0,skin:null,walk:0,pat:0,dash:null};
   m.g.rotation.y=e.face;m.g.traverse(o=>o.userData.ent=e);
-  const h=d.model==='ignis'?13:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
+  const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
   e.tag=makeTag(e,'en'+(d.boss?' boss show':'')+(d.static||d.dummy?' show':''),d.name+(lv?' <small>Lv.'+lv+'</small>':''),h);
   if(d.static)e.col=addCircle(x,z,d.rad*.8);
   if(d.dummy)e.col=addCircle(x,z,.4);
@@ -3223,6 +3263,7 @@ function openMenu(){
    '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
+   (CUSTOM.n?'<div class="sec"><h3>Meshy AI 모델</h3><p class="note">커스텀 모델 '+CUSTOM.n+'개 적용 중: '+[...Object.keys(CUSTOM.props),...Object.keys(CUSTOM.mobs),...Object.keys(CUSTOM.npcs)].join(', ')+'</p></div>':'')+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
    (S.admin?'<div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 사당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+

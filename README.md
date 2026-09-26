@@ -195,6 +195,23 @@ UI 버튼 위의 터치는 이동 로직으로 전달되지 않습니다 (Unity 
 
 다크 판타지 아트 바이블을 적용했습니다: 어둡고 차가운 환경광, 따뜻한 키 라이트, ACES 톤, 블룸, 비네트, 강화 단계별 무기 광채. 자세한 팔레트·수치·AI 이미지 프롬프트는 [`ART_BIBLE.md`](ART_BIBLE.md) 를 보세요. 메뉴에서 그래픽 품질(높음/보통/낮음)을 바꿀 수 있습니다.
 
+## Meshy AI로 모델 만들기 (`tools/meshy/`)
+
+Meshy AI로 캐릭터·몬스터·집·바닥 모델을 만들어 게임에 바로 넣는 도구입니다. 게임은 시작할 때 `models/custom/manifest.json` 을 읽어서 등록된 모델로 바꿔 끼웁니다.
+
+- **준비:** 환경 변수 `MESHY_API_KEY` 에 Meshy API 키, 네트워크 허용 목록에 `api.meshy.ai` 와 `assets.meshy.ai`(모델 파일 다운로드). 텍스처 축소에 `npx @gltf-transform/cli` 를 씁니다(없으면 원본 그대로).
+- **명령:**
+  - `python3 tools/meshy/meshy_gen.py balance` — 남은 크레딧
+  - `python3 tools/meshy/meshy_gen.py presets` / `preset tavern` — 준비된 프롬프트로 생성 (드래곤 이그니스, 늑대, 멧돼지, 도깨비, 태엽 골렘, 원혼, 신 서준, 여관, 집, 대장간, 나무 바닥, 돌 바닥)
+  - `python3 tools/meshy/meshy_gen.py gen <키> --kind prop --replace building_tavern_red --prompt "..."` — 소품·건물·바닥: 같은 이름의 KayKit 소품을 쓰는 모든 곳이 바뀜
+  - `... gen <키> --kind monster --mob beastWolf --height 1.5 --prompt "..."` / `--kind boss --mob ignis` — 몬스터·보스
+  - `... gen <키> --kind npc --npc seojun --rig --height 2.4 --prompt "..."` — NPC. `--rig` 는 사람형 자동 리깅(걷기·달리기 동작)
+  - `--image <이미지 URL>` 로 이미지→3D, `--texture-prompt` 로 텍스처 지시
+  - `... import <키> 파일.glb --kind ... [--anim run=run.glb]` — Meshy 웹사이트에서 받은 GLB를 그대로 넣기 (API 없이도 가능)
+  - `list` / `remove <키>`
+- 생성 흐름: 미리보기(형태) → 텍스처 → (선택) 리깅 → GLB 다운로드 → 텍스처 512px로 축소 → base64 `.glb.txt` 로 저장 → manifest 등록. 프롬프트 끝에 게임 화풍 문구(스타일라이즈드 로우폴리 다크 판타지)가 자동으로 붙습니다(`--raw` 로 끔).
+- 게임 안: 소품은 KayKit 소품 자리에 크기를 맞춰 들어가고, 몬스터·NPC는 걷기/달리기 동작(리깅한 경우)에 대기·공격·피격·포효·사망을 절차적으로 붙입니다. 플레이어 직업 캐릭터는 공격 동작이 많아서 아직 KayKit을 씁니다.
+
 ## Unity 스크립트
 
 `unity/Scripts/` 에 웹 프로토타입과 같은 규칙의 C# 스크립트가 있습니다. 새 스크립트는 Mono C# 컴파일러로 UnityEngine 스텁에 대고 컴파일해 확인했습니다(Unity 에디터 실행 확인은 아님).
