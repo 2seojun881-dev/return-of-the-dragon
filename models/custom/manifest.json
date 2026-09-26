@@ -1,3 +1,11 @@
 {
-  "models": {}
+  "models": {
+    "ignisDragon": {
+      "file": "ignisDragon.glb.txt",
+      "kind": "boss",
+      "height": 6.0,
+      "mob": "ignis",
+      "imported": true
+    }
+  }
 }

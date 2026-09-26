@@ -7,7 +7,8 @@ optionally auto-rigs humanoids (walk/run clips), shrinks textures for mobile, an
 registers the result in dragon-raid/models/custom/manifest.json. The game loads that
 manifest at startup and swaps the model in (props, monsters, bosses, NPCs).
 
-API key: read from the MESHY_API_KEY environment variable (never pass it on the command line).
+API key: configured as an environment API credential for api.meshy.ai (injected by the proxy),
+or read from the MESHY_API_KEY environment variable (never pass it on the command line).
 
   python3 meshy_gen.py balance
   python3 meshy_gen.py presets                      # list ready-made game asset prompts
@@ -34,15 +35,17 @@ def _ctx():
             return ssl.create_default_context(cafile=ca)
     return ssl.create_default_context()
 
-def _key():
+def _headers():
+    # 키는 환경의 'API 자격 증명'(프록시가 Authorization 헤더를 대신 붙임) 또는 MESHY_API_KEY 환경 변수로 제공
+    h = {'Content-Type': 'application/json'}
     k = os.environ.get('MESHY_API_KEY', '').strip()
-    if not k:
-        sys.exit('MESHY_API_KEY 환경 변수가 없습니다. 환경 설정에 Meshy API 키를 MESHY_API_KEY 로 추가하세요.')
-    return k
+    if k:
+        h['Authorization'] = 'Bearer ' + k
+    return h
 
 def api(method, path, body=None):
     req = urllib.request.Request(API + path, method=method, data=json.dumps(body).encode() if body is not None else None,
-                                 headers={'Authorization': 'Bearer ' + _key(), 'Content-Type': 'application/json'})
+                                 headers=_headers())
     try:
         with urllib.request.urlopen(req, context=_ctx(), timeout=60) as r:
             return json.loads(r.read().decode() or '{}')
@@ -100,17 +103,87 @@ def rig(task_id, height_m):
     return t.get('result') or t
 
 # ---------------------------------------------------------------- local pipeline
-def optimize(src, dst, tex):
-    """Resize textures and clean up for mobile. Uses @gltf-transform/cli via npx when available."""
-    cmd = ['npx', '-y', '@gltf-transform/cli@4', 'optimize', src, dst, '--compress', 'false', '--texture-compress', 'false',
-           '--texture-size', str(tex), '--simplify', 'false', '--join', 'false', '--flatten', 'false', '--instance', 'false']
+GT = ['npx', '-y', '@gltf-transform/cli@4']
+
+def _glb_split(data):
+    import struct
+    jl = struct.unpack_from('<I', data, 12)[0]
+    j = json.loads(data[20:20 + jl])
+    b = data[20 + jl + 8:] if len(data) > 20 + jl else b''
+    return j, b
+
+def _glb_join(j, b):
+    import struct
+    js = json.dumps(j, separators=(',', ':')).encode()
+    js += b' ' * (-len(js) % 4)
+    b += b'\0' * (-len(b) % 4)
+    body = struct.pack('<II', len(js), 0x4E4F534A) + js + struct.pack('<II', len(b), 0x004E4942) + b
+    return struct.pack('<III', 0x46546C67, 2, 12 + len(body)) + body
+
+def triangles(path):
+    j, _ = _glb_split(open(path, 'rb').read())
+    n = 0
+    for m in j.get('meshes', []):
+        for pr in m['primitives']:
+            acc = j['accessors'][pr['indices'] if 'indices' in pr else pr['attributes']['POSITION']]
+            n += acc['count'] // 3
+    return n
+
+def shrink_textures(path, size):
+    """Resize embedded images to at most size x size (needs Pillow; gltf-transform resize needs sharp)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        print('  (Pillow 없음: 텍스처 축소 건너뜀 — pip install pillow)')
+        return
+    import io
+    j, b = _glb_split(open(path, 'rb').read())
+    views, out = j['bufferViews'], bytearray()
+    remap = {}
+    for i, v in enumerate(views):
+        chunk = b[v.get('byteOffset', 0):v.get('byteOffset', 0) + v['byteLength']]
+        img = next((im for im in j.get('images', []) if im.get('bufferView') == i), None)
+        if img is not None:
+            im = Image.open(io.BytesIO(chunk))
+            if max(im.size) > size:
+                im = im.resize((min(size, im.size[0]), min(size, im.size[1])), Image.LANCZOS)
+            buf = io.BytesIO()
+            if img.get('mimeType') == 'image/png':
+                im.save(buf, 'PNG', optimize=True)
+            else:
+                im.convert('RGB').save(buf, 'JPEG', quality=85)
+            chunk = buf.getvalue()
+        out += b'\0' * (-len(out) % 4)
+        remap[i] = len(out)
+        out += chunk
+        v['byteOffset'] = remap[i]
+        v['byteLength'] = len(chunk)
+    j['buffers'] = [{'byteLength': len(out)}]
+    open(path, 'wb').write(_glb_join(j, bytes(out)))
+
+def optimize(src, dst, tex, max_tris=30000):
+    """Mobile budget: simplify to ~max_tris triangles, clean up, shrink textures to tex px."""
+    work = src
+    try:
+        n = triangles(src)
+        if max_tris and n > max_tris:
+            tmp = tempfile.mkdtemp()
+            subprocess.run(GT + ['weld', src, os.path.join(tmp, 'w.glb')], check=True, capture_output=True, timeout=600)
+            subprocess.run(GT + ['simplify', os.path.join(tmp, 'w.glb'), os.path.join(tmp, 's.glb'),
+                                 '--ratio', '%.4f' % (max_tris / n), '--error', '0.005'], check=True, capture_output=True, timeout=900)
+            work = os.path.join(tmp, 's.glb')
+            print('  폴리곤 축소: %d → %d 삼각형' % (n, triangles(work)))
+    except Exception as e:
+        print('  (폴리곤 축소 건너뜀: %s)' % str(e)[:120])
+    cmd = GT + ['optimize', work, dst, '--compress', 'false', '--texture-compress', 'false',
+                '--texture-size', str(tex), '--simplify', 'false', '--join', 'false', '--flatten', 'false', '--instance', 'false']
     try:
         subprocess.run(cmd, check=True, capture_output=True, timeout=600)
-        return dst
     except Exception as e:
         print('  (최적화 건너뜀: %s) 원본 그대로 사용' % str(e)[:120])
-        shutil.copy(src, dst)
-        return dst
+        shutil.copy(work, dst)
+    shrink_textures(dst, tex)
+    return dst
 
 def store(key, glb_path, tex):
     os.makedirs(OUT, exist_ok=True)
