@@ -140,7 +140,7 @@ m=Merger()
 for n in TOWN: m.add(n,find(M,n))
 sizes['town']=m.save('kmodels/town.glb')
 DARK_H=['tree_dead_large','tree_dead_medium','tree_dead_small','grave_A','gravestone','gravemarker_A','lantern_standing','post_lantern','post_skull','fence','fence_broken','skull','ribcage','bone_A','shrine_candles','arch_gate']
-DARK_D=['banner_blue','banner_patternA_blue','banner_red','banner_shield_blue','barrier','barrier_column','column','pillar_decorated','table_long','table_long_decorated_A','chair','bed_decorated','chest','box_large','barrel_large','keg','torch_lit','torch_mounted','candle_triple','sword_shield','rubble_large','crates_stacked','box_stacked','shelf_large','coin','coin_stack_small','coin_stack_large','chest_gold','candle_lit']
+DARK_D=['banner_blue','banner_patternA_blue','banner_red','banner_shield_blue','barrier','barrier_column','column','pillar_decorated','table_long','table_long_decorated_A','chair','bed_decorated','chest','box_large','barrel_large','keg','torch_lit','torch_mounted','candle_triple','sword_shield','rubble_large','crates_stacked','box_stacked','shelf_large','coin','coin_stack_small','coin_stack_large','chest_gold','candle_lit','floor_wood_large','floor_wood_large_dark','wall','wall_doorway','wall_window_open','wall_corner','wall_shelves','table_medium_tablecloth_decorated_B','stool','shelf_small_candles','plate_food_A','bottle_A_brown','bed_floor','stairs_wood']
 DARK_S=['Skeleton_Blade','Skeleton_Axe','Skeleton_Crossbow','Skeleton_Staff','Skeleton_Shield_Small_A','Skeleton_Shield_Large_A','Skeleton_Shield_Large_B']
 m=Merger()
 for n in DARK_H: m.add(n,find(H,n))

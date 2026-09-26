@@ -636,7 +636,7 @@ const SPEAKER={P:'나',turka:'해골병 행동대장 투르카',sys:'시스템'}
 /* ---------- quests ---------- */
 const QUESTS=[
  {id:'v1',zone:'village',ch:'프롤로그',title:'깨어난 영웅',reward:{exp:50,potions:5},
-  steps:[{talk:'aldus',dlg:'v1',text:'촌장 알두스와 대화하기',guide:'화면이 반짝이는 곳을 터치하여 촌장 알두스에게 이동하세요.'}]},
+  steps:[{talk:'aldus',dlg:'v1',text:'촌장 알두스와 대화하기',guide:'여관 문(반짝이는 곳)을 나가 촌장 알두스에게 가세요. 좌측 퀘스트 창을 탭하면 자동으로 이동합니다.'}]},
  {id:'v2',zone:'village',ch:'프롤로그',title:'마을의 위기',reward:{exp:100,gold:100},
   steps:[{talk:'kallen',dlg:'v2a',text:'경비대장 칼렌 만나기',guide:'동쪽 방벽 근처의 경비대장 칼렌에게 가세요. 좌측 퀘스트 창을 탭하면 자동으로 이동합니다.'},
          {goals:[{k:'kill',id:'ashGoblin',n:3,t:'잿빛 해골병 처치'}],guide:'우측 하단의 [공격 버튼]을 터치하여 몬스터를 공격하세요. 몬스터를 직접 터치하면 타겟을 변경할 수 있습니다.'},
@@ -1164,6 +1164,8 @@ function rigChar(file,opt){
     a.timeScale=dur?clamp(L/dur,.6,2.6):1;h.oneShot=a;h.hold=!!hold;h.active=null;fadeTo(a,.08);};
   h.release=()=>{h.oneShot=null;h.hold=false;fadeTo(h.base,.2);};
   mixer.addEventListener('finished',e=>{if(e.action===h.oneShot&&!h.hold)h.release();});
+  const rest=[];model.traverse(o=>{if(o.isBone)rest.push([o,o.position.clone(),o.quaternion.clone(),o.scale.clone()]);});
+  h.resetPose=()=>{mixer.stopAllAction();rest.forEach(([o,p,q,s])=>{o.position.copy(p);o.quaternion.copy(q);o.scale.copy(s);});h.oneShot=null;h.hold=false;h.active=null;const b=h.base;h.base=null;h.setBase(b?b.getClip().name:cfg.idle);};
   h.setBase(cfg.idle);if(opt.phase)mixer.update(opt.phase);
   h.setWeapon=()=>{};h.tick=()=>{};
   return h;
@@ -1409,7 +1411,7 @@ function setEnv(o){scene.background=new THREE.Color(o.sky);scene.fog=new THREE.F
    ========================================================= */
 const SAVE_KEY='ignis.save.v1';
 let S=null,P=null;
-function newSave(cls){cls=cls||'novice';const c=CLASSES[cls];return {cls,level:1,exp:0,gold:0,potions:3,q:0,step:0,cnt:[],zone:'village',pos:null,qv:2,tut:false,armor:null,
+function newSave(cls){cls=cls||'novice';const c=CLASSES[cls];return {cls,level:1,exp:0,gold:0,potions:3,q:0,step:0,cnt:[],zone:'inn',pos:null,qv:2,tut:false,armor:null,
   weapon:{type:'w',name:c.weapons[0][0],base:c.weapons[0][1],lv:1,cls:'all',enh:0,destroyed:false},bag:[],stones:{low:0,mid:0,high:0,top:0},scrolls:0,shards:0,mileage:0,
   unlocked:{s1:false,s2:false,ult:false},items:{},title:'',guild:null,coin:0,att:'',rune:null,daily:{date:'',boar:0,raider:0,c1:false,c2:false},sold:[]};}
 const DB_RENAME={'용혈 섬광궁':'용혈 섬광단검','용혈 멸세봉':'용혈 멸세령'};
@@ -1508,16 +1510,16 @@ function updSpawners(dt,force){
 }
 
 /* portals */
-function portal(x,z,to,arrive,unlocked,lockMsg,label){
+function portal(x,z,to,arrive,unlocked,lockMsg,label,opt){opt=opt||{};
   const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);
   const ring=new THREE.Mesh(new THREE.TorusGeometry(1.6,.14,8,32),new THREE.MeshBasicMaterial({color:0x6ac8ff}));ring.position.y=1.8;g.add(ring);
-  if(KIT&&PROPS.arch_gate){ring.visible=false;const ar=prop('arch_gate',0,0,{w:4.4,par:g});if(ar)ar.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;}
+  if(opt.door){ring.visible=false;}else if(KIT&&PROPS.arch_gate){ring.visible=false;const ar=prop('arch_gate',0,0,{w:4.4,par:g});if(ar)ar.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;}
   const disc=new THREE.Mesh(new THREE.CircleGeometry(1.5,32),new THREE.MeshBasicMaterial({color:0x3a8ad8,transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));disc.position.y=1.8;g.add(disc);
   const base=new THREE.Mesh(new THREE.RingGeometry(1.2,1.8,32),new THREE.MeshBasicMaterial({color:0x6ac8ff,transparent:true,opacity:.5,depthWrite:false,side:THREE.DoubleSide}));base.rotation.x=-Math.PI/2;base.position.y=.06;g.add(base);
   const p={x,z,to,arrive,unlocked,lockMsg,g,ring,disc,lastMsg:0,label};
   p.tagEl=makeTag(p,'npc','<span style="color:#9fdcff">'+label+'</span>',3.8);p.pos=g.position;
   W.anim.push(t=>{const u=unlocked();ring.material.color.set(u?0x6ac8ff:0x6a5a5a);disc.material.opacity=u?.35+Math.sin(t*3)*.1:.08;disc.rotation.z=t;base.material.opacity=u?.5:.15;});
-  if(KIT&&PROPS.arch_gate)disc.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;
+  if(opt.door){disc.rotation.y=opt.rot||0;disc.scale.set(.8,1.1,1);disc.position.y=1.5;}else if(KIT&&PROPS.arch_gate)disc.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;
   W.portals.push(p);return p;
 }
 
@@ -1528,6 +1530,7 @@ const ZONES={
  prologue:{name:'',build:buildPrologue},
  title:{name:'',build:buildTitle},
  showcase:{name:'',build:buildShowcase},
+ inn:{name:'잿빛 잎새 마을 · 여관',build:buildInn,spawn:[4,1]},
  village:{name:'잿빛 잎새 마을',build:buildVillage,spawn:[-8,12]},
  plains:{name:'바람노래 평원',build:buildPlains,spawn:[0,22]},
  citadel:{name:'천명 성채',build:buildCitadel,spawn:[0,12]},
@@ -1537,7 +1540,7 @@ const ZONES={
  asura:{name:'북문 · 아수라 흑야 협곡',build:buildAsura,spawn:[0,32]},
  altar:{name:'용혈의 제단',build:buildAltar,spawn:[0,24]},
 };
-const ZONE_ORDER=['village','plains','citadel'];
+const ZONE_ORDER=['inn','village','plains','citadel'];
 const HUBZ=['beasts','grave','clock','asura','altar'];
 function nextZone(from,to){if(from===to)return null;
   if(from==='citadel'){if(HUBZ.includes(to))return to==='altar'&&!W.portals.find(p=>p.to==='altar')?'asura':to;return 'plains';}
@@ -1679,6 +1682,31 @@ function buildPrologue(){
   dragon=makeDragon();dragon.g.position.set(0,20,-110);dragon.g.scale.setScalar(1.3);W.root.add(dragon.g);dragon.g.visible=false;
   W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.6)*.25;});});
 }
+function buildInn(){
+  setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.42,sun:0xffc890,si:.55,ash:false});
+  W.bounds=[-6,6,-4.4,4.6];
+  ground(0,0,120,120,0x0c0908,.02);
+  const S2=.8,T=4*S2;
+  if(KIT&&PROPS.floor_wood_large){for(let ix=0;ix<4;ix++)for(let iz=0;iz<3;iz++)prop(iz===1&&ix===1?'floor_wood_large_dark':'floor_wood_large',-4.8+ix*T,-3.2+iz*T,{s:S2});
+    const wl=(n,x,z,r)=>{const g=prop(n,x,z,{s:S2});if(g)g.rotation.y=r;return g;};
+    // back (north) wall with a shelf wall and a window, west wall with a window, east wall with the door
+    wl('wall',-4.8,-5.2,0);wl('wall_window_open',-1.6,-5.2,0);wl('wall_shelves',1.6,-5.2,0);wl('wall',4.8,-5.2,0);
+    wl('wall',-6.8,-3.2,Math.PI/2);wl('wall_window_open',-6.8,0,Math.PI/2);wl('wall',-6.8,3.2,Math.PI/2);
+    wl('wall',6.8,-3.2,-Math.PI/2);wl('wall_doorway',6.8,0,-Math.PI/2);wl('wall',6.8,3.2,-Math.PI/2);
+    [[-6.8,-5.2],[6.8,-5.2]].forEach(([x,z])=>prop('wall_pillar'in PROPS?'wall_pillar':'column',x,z,{h:3.3}));
+    const bed=prop('bed_decorated',-5.55,-2.6,{s:1.05});
+    prop('chest',-3.4,-4.2,{s:S2});prop('shelf_small_candles',-5.9,2.3,{s:S2,rot:Math.PI/2});
+    prop('table_medium_tablecloth_decorated_B',1.6,-.4,{s:S2});[[0,-.4],[3.2,-.4],[1.6,1.1]].forEach(([x,z],i)=>prop('stool',x,z,{s:S2,rot:i}));
+    prop('keg',5.3,-4,{h:1});prop('barrel_large',4.1,-4.1,{h:1.1});prop('crates_stacked',5.2,3.6,{fit:1.6});prop('candle_triple',-3.4,-3.9,{h:.5,y:.75});
+    [[-6.2,-1.6,Math.PI/2],[6.2,-1.6,-Math.PI/2],[-3.2,-4.6,0]].forEach(([x,z,r])=>{const t=prop('torch_mounted',x,z,{h:1,y:2});if(t)t.rotation.y=r;});
+    addBox(-5.0,-2.6,1.35,1.6);addBox(1.6,-.4,.9,.9);addBox(-3.4,-4.2,.7,.5);addBox(4.7,-4,1.3,.6);addBox(5.2,3.6,.8,.8);
+  }else{ground(0,0,12.8,9.6,0x6a4a2a,.05,1);stoneWall(-6.8,-5.2,6.8,-5.2,3.2,0x7a6a58);mesh(new THREE.BoxGeometry(2.4,.5,3),M(0x7a5a3a),-5.55,.25,-2.6,W.root);addBox(-5.55,-2.6,1.2,1.5);}
+  // warm candle light, cool window light
+  [[-3.6,2.2,-3.6,0xffa050,1.3],[4.8,2.2,-1.6,0xffa050,1.1],[1.6,2.4,-.4,0xffc080,.8]].forEach(([x,y,z,c,i])=>{const l=new THREE.PointLight(c,i,9,2);l.position.set(x,y,z);W.root.add(l);W.anim.push(t=>{l.intensity=i*(.9+Math.sin(t*9+x)*.1);});});
+  const wlt=new THREE.PointLight(0x8aa8ff,.9,8,2);wlt.position.set(-5,2.4,0);W.root.add(wlt);
+  W.bedPos=new V(-5.75,.78,-2.2);
+  portal(6.1,0,'village',[-9,13.6],()=>true,'','밖으로 나가기 ›',{door:true,rot:Math.PI/2});
+}
 function buildVillage(){
   setEnv({sky:0x2e2a36,fog:[34,125],ht:0x8898b8,hb:0x2a221e,hi:.5,sun:0xffae78,si:1.05,ash:true});
   W.bounds=[-25,25,-34,26];
@@ -1697,7 +1725,7 @@ function buildVillage(){
   const gr=mesh(new THREE.BoxGeometry(2.8,2.4,.2),M(0x6a4a2a),1.5,1.4,-30.2,W.root);gr.rotation.y=.9;gr.position.x=2.6;gr.position.z=-29.3;W.gateR=gr;
   for(let i=0;i<4;i++){const s=mesh(new THREE.CylinderGeometry(.2,.24,1+srand(),5),M(0x6a4a2a),26+rand(-.3,.3),.4,-16+i*1.8,W.root);s.rotation.z=srand()*.9;}}
   house(-9,20,{w:9,d:6,h:3.6,roof:0x7a3424,chimney:true,kind:'building_tavern_red'});
-  if(KIT){prop('bed_decorated',-5.4,14.4,{fit:2.4});addBox(-5.4,14.4,1.2,.6);prop('keg',-8,14.6,{h:1});prop('table_long',-11.5,14.8,{fit:2.6});}
+  if(KIT){prop('keg',-5.6,14.9,{h:1});prop('table_long',-12.5,14.8,{fit:2.6});}
   else{mesh(new THREE.BoxGeometry(2.4,.5,1.2),M(0x7a5a3a),-5.4,.35,14.4,W.root);mesh(new THREE.BoxGeometry(2,.2,1),M(0xe8e0d0),-5.4,.65,14.4,W.root);addBox(-5.4,14.4,1.2,.6);
   mesh(new THREE.BoxGeometry(9.6,.2,2.6),M(0x6a4a2a),-9,3.6,15.6,W.root);[-13.5,-4.5].forEach(x=>{mesh(new THREE.BoxGeometry(.2,3.6,.2),M(0x5a3a22),x,1.8,14.5,W.root);addCircle(x,14.5,.2);});}
   house(8,19,{roof:0x5a4a3a});house(17,9,{w:5,d:5,roof:0x7a4a2a,rot:Math.PI/2});house(-18,9,{w:5,d:6,roof:0x6a3a2a,chimney:true});
@@ -1731,6 +1759,7 @@ function buildVillage(){
   spawner('ashGoblin',19,-14,3.5,3,6,()=>goalActive('kill','ashGoblin'));
   spawner('wolfBoss',0,-22,0,1,999,()=>goalActive('kill','wolfBoss'));
   portal(0,-33,'plains',[0,23],()=>S.q>qIdx('v4'),'아직 마을을 떠날 수 없습니다. 마을의 위기를 먼저 해결하세요.','바람노래 평원 ›');
+  portal(-9,16.4,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
 }
 function buildPlains(){
   setEnv({sky:0x3a4450,fog:[34,130],ht:0x9aaac0,hb:0x2a2e22,hi:.52,sun:0xffcf98,si:1.0,ash:true,ashCol:0x9a948c,ashSize:.12});
@@ -2153,7 +2182,7 @@ function playerDie(){
   if(P.parts.skinned)P.parts.playOnce('Death_A',0,true);else tween(.5,k=>{P.parts.b.rotation.x=-k*1.45;P.parts.b.position.y=k*.25;});
   W.enemies.forEach(e=>{if(e.aggro){e.aggro=false;e.returning=true;e.cast&&e.cast.tele&&killObj(e.cast.tele);e.cast=null;if(e.extraTele){e.extraTele.forEach(killObj);e.extraTele=null;}}});
   later(3,()=>{
-    $('#dead').hidden=true;P.dead=false;P.parts.b.rotation.x=0;P.parts.b.position.y=0;if(P.parts.skinned)P.parts.release();P.hp=P.maxHp;
+    $('#dead').hidden=true;P.dead=false;P.parts.b.rotation.x=0;P.parts.b.position.y=0;if(P.parts.skinned)P.parts.resetPose();P.hp=P.maxHp;
     if(S.home&&W.zone!=='citadel'){P.hp=P.maxHp;P.mp=P.maxMp;$('#dead').hidden=true;gotoZone('citadel',INN_POS);toast('객주소에서 깨어났습니다');return;}
     const sp=S.home&&W.zone==='citadel'?INN_POS:ZONES[W.zone].spawn;P.pos.set(sp[0],0,sp[1]);resolve(P.pos,P.rad);P.mp=P.maxMp;
     W.enemies.forEach(e=>{if(e.d.boss&&!e.dead){e.hp=e.maxHp;e.pos.copy(e.home);}});
@@ -3257,21 +3286,23 @@ async function runPrologue(){
     await wait(3);caption('');
     await fade(1,1.2);
   });
-  buildZone('village');S.zone='village';
-  P.mesh.visible=true;P.pos.set(-5.4,.55,14.4);P.mesh.rotation.y=Math.PI/2;P.face=Math.PI/2;
-  if(P.parts.skinned){P.lying=true;P.parts.playOnce('Lie_Idle',0,true);P.pos.y=.45;}else P.parts.b.rotation.x=-Math.PI/2;
-  gameOn=true;$('#zname').textContent=ZONES.village.name;
+  buildZone('inn');S.zone='inn';
+  // lie flat on the bed: feet at the bed's foot end, head on the pillow (north), face up
+  const bp=W.bedPos;P.mesh.visible=true;P.pos.set(bp.x,0,bp.z);P.face=0;P.mesh.rotation.y=0;P.y=bp.y;
+  P.lying=true;P.parts.b.rotation.x=-Math.PI/2;P.parts.b.position.y=bp.y;if(P.parts.skinned)P.parts.setBase('Idle');
+  gameOn=true;$('#zname').textContent=ZONES.inn.name;
   await cutscene(async()=>{
-    cam.pos.set(-1.5,4,19);cam.look.set(-5.4,.8,14.4);
+    cam.pos.set(bp.x+3.4,3.6,bp.z+3.2);cam.look.set(bp.x,.6,bp.z-.8);
     await fade(0,1.4);
-    caption('잿빛 잎새 마을 · 여관');
-    await wait(1.8);
-    if(P.parts.skinned){P.parts.playOnce('Lie_StandUp',1.6,true);await wait(1.2);await new Promise(r=>tween(.5,k=>{P.pos.y=.45*(1-k);P.pos.x=-5.4+k*1.6;},r));P.lying=false;P.parts.release();}
-    else{const done=new Promise(r=>tween(.9,k=>{P.parts.b.rotation.x=-Math.PI/2*(1-k);P.pos.y=.55*(1-k);P.pos.x=-5.4+k*1.6;},r));await done;}
-    P.pos.y=0;P.parts.b.rotation.x=0;caption('');
-    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(new V(0,1,0)),1.2);
+    caption('잿빛 잎새 마을 · 여관 2층');
+    await wait(2.2);
+    // sit up, swing the legs off the bed and stand
+    await new Promise(r=>tween(1.1,k=>{P.parts.b.rotation.x=-Math.PI/2*(1-k);P.y=bp.y*(1-k)+Math.sin(k*Math.PI)*.35;P.pos.z=bp.z-1*k;P.pos.x=bp.x+k*2;P.face=P.mesh.rotation.y=k*Math.PI/2;P.parts.b.position.y=P.y;},r,q=>q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2));
+    P.lying=false;P.y=0;P.parts.b.position.y=0;if(P.parts.skinned){P.parts.resetPose();P.parts.playOnce('Cheer',1.2);}
+    P.pos.y=0;P.parts.b.rotation.x=0;caption('창밖에서 종소리가 울린다...');
+    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(new V(0,1,0)),1.4);caption('');
   });
-  P.lying=false;if(P.parts.skinned&&P.parts.hold)P.parts.release();P.pos.y=0;P.parts.b.rotation.x=0;P.pos.set(-3.8,0,14.4);resolve(P.pos,P.rad);
+  P.lying=false;P.y=0;P.parts.b.position.y=0;if(P.parts.skinned&&P.parts.hold)P.parts.resetPose();P.pos.y=0;P.parts.b.rotation.x=0;P.pos.set(bp.x+2,0,bp.z-1);P.face=Math.PI/2;P.mesh.rotation.y=P.face;resolve(P.pos,P.rad);
   $('#hud').hidden=false;setAuto(AUTO.on,true);refreshHud();refreshQuest();save();
   toast('새 퀘스트 · '+curQ().title);startStep(false);
 }
