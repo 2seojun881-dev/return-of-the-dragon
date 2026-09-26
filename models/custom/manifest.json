@@ -291,6 +291,82 @@
       "mob": "ignisFly",
       "prompt": "A massive ancient boss dragon hovering mid-air with huge wings fully spread, neck arched back with glowing mouth preparing to breathe fire, obsidian red and black scales, glowing magma veins across the chest, dark fantasy game asset, clean mesh topology, high detail, flying pose",
       "meshy_task": "01a0de5e-9de7-779b-8007-c29adb2e0354"
+    },
+    "p_rogue": {
+      "file": "p_rogue.glb.txt",
+      "kind": "player",
+      "height": 2.25,
+      "player": "rogue",
+      "prompt": "agile hooded rogue assassin in dark leather armor with a mask and belts, holding a curved dagger in each hand, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de6e-fa34-7108-b87e-33c703f9ea0f",
+      "anims": {
+        "walk": "p_rogue.walk.glb.txt",
+        "run": "p_rogue.run.glb.txt",
+        "idle": "p_rogue.idle.glb.txt",
+        "attack": "p_rogue.attack.glb.txt",
+        "skill": "p_rogue.skill.glb.txt",
+        "cast": "p_rogue.cast.glb.txt",
+        "hit": "p_rogue.hit.glb.txt",
+        "death": "p_rogue.death.glb.txt"
+      },
+      "rigged": true
+    },
+    "p_novice": {
+      "file": "p_novice.glb.txt",
+      "kind": "player",
+      "height": 2.25,
+      "player": "novice",
+      "prompt": "young novice adventurer in a simple brown linen tunic, leather belt and boots, holding a short sword in the right hand, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de6e-fa1e-762d-8b47-4154c84174ac",
+      "anims": {
+        "walk": "p_novice.walk.glb.txt",
+        "run": "p_novice.run.glb.txt",
+        "idle": "p_novice.idle.glb.txt",
+        "attack": "p_novice.attack.glb.txt",
+        "skill": "p_novice.skill.glb.txt",
+        "cast": "p_novice.cast.glb.txt",
+        "hit": "p_novice.hit.glb.txt",
+        "death": "p_novice.death.glb.txt"
+      },
+      "rigged": true
+    },
+    "p_shaman": {
+      "file": "p_shaman.glb.txt",
+      "kind": "player",
+      "height": 2.25,
+      "player": "shaman",
+      "prompt": "divine holy healer priest in flowing white and gold robes with a glowing golden halo, holding a radiant holy staff topped with a sun emblem, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de6f-108e-7717-a53e-e9c7b081d245",
+      "anims": {
+        "walk": "p_shaman.walk.glb.txt",
+        "run": "p_shaman.run.glb.txt",
+        "idle": "p_shaman.idle.glb.txt",
+        "attack": "p_shaman.attack.glb.txt",
+        "skill": "p_shaman.skill.glb.txt",
+        "cast": "p_shaman.cast.glb.txt",
+        "hit": "p_shaman.hit.glb.txt",
+        "death": "p_shaman.death.glb.txt"
+      },
+      "rigged": true
+    },
+    "p_warrior": {
+      "file": "p_warrior.glb.txt",
+      "kind": "player",
+      "height": 2.25,
+      "player": "warrior",
+      "prompt": "armored warrior hero in heavy crimson and steel plate armor, broad pauldrons, large greatsword strapped across the back, empty open hands, no cape, full body character standing in T-pose, arms stretched straight out to the sides, legs apart, facing forward",
+      "meshy_task": "01a0de71-2ecb-709e-86ae-f22d4669ca1a",
+      "anims": {
+        "walk": "p_warrior.walk.glb.txt",
+        "run": "p_warrior.run.glb.txt",
+        "idle": "p_warrior.idle.glb.txt",
+        "attack": "p_warrior.attack.glb.txt",
+        "skill": "p_warrior.skill.glb.txt",
+        "cast": "p_warrior.cast.glb.txt",
+        "hit": "p_warrior.hit.glb.txt",
+        "death": "p_warrior.death.glb.txt"
+      },
+      "rigged": true
     }
   }
 }

@@ -5,8 +5,7 @@ namespace Game.Core
         Novice,     // 초보자 (Lv.1~14)
         Warrior,    // 전사
         Rogue,      // 도적
-        Merchant,   // 상인
-        Shaman      // 신 (신관/신사)
+        Shaman      // 신 (치유 신관 · 힐러)
     }
 
     public enum ItemRarity
@@ -24,6 +23,7 @@ namespace Game.Core
         AreaOfEffect,
         Buff,
         Summon,
-        Transformation
+        Transformation,
+        Heal        // 치유 (신)
     }
 }

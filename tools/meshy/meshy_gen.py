@@ -97,12 +97,6 @@ def image_to_3d(image_url, polycount, model='latest'):
     print('이미지→3D 작업', tid)
     return wait('/openapi/v1/image-to-3d/' + tid, '이미지→3D'), tid
 
-def rig(task_id, height_m):
-    rid = api('POST', '/openapi/v1/rigging', {'input_task_id': task_id, 'height_meters': height_m})['result']
-    print('리깅 작업', rid)
-    t = wait('/openapi/v1/rigging/' + rid, '리깅')
-    return t.get('result') or t
-
 # ---------------------------------------------------------------- local pipeline
 GT = ['npx', '-y', '@gltf-transform/cli@4']
 
@@ -218,7 +212,7 @@ def save_manifest(m):
 def register(key, a, files, extra=None):
     m = load_manifest()
     e = {'file': files['model'], 'kind': a.kind, 'height': a.height}
-    for k in ('replace', 'mob', 'npc'):
+    for k in ('replace', 'mob', 'npc', 'player'):
         if getattr(a, k, None):
             e[k] = getattr(a, k)
     if files.get('anims'):
@@ -231,6 +225,8 @@ def register(key, a, files, extra=None):
     print('manifest 등록:', key, json.dumps(e, ensure_ascii=False))
 
 def check_target(a):
+    if a.kind == 'player' and not getattr(a, 'player', None):
+        sys.exit('--kind player 는 --player <직업 id> 가 필요합니다 (novice, warrior, rogue, shaman).')
     if a.kind == 'prop' and not a.replace:
         sys.exit('--kind prop 은 --replace <교체할 KayKit 소품 이름> 이 필요합니다 (예: building_tavern_red).')
     if a.kind in ('monster', 'boss') and not a.mob:
@@ -245,24 +241,15 @@ def cmd_gen(a):
         t, tid = image_to_3d(a.image, a.polycount)
     else:
         t, tid = text_to_3d(a.prompt + (STYLE if not a.raw else ''), a.style, a.polycount, a.texture_prompt, refine=not a.no_refine)
-    files = {}
-    if a.rig:
-        r = rig(tid, a.rig_height or max(1.0, min(3.0, a.height * 0.75)))
-        glb = download(r['rigged_character_glb_url'], os.path.join(work, 'rigged.glb'))
-        files['model'] = store(a.key, glb, a.texture_size)
-        anims = {}
-        for name, k in (('walk', 'walking_glb_url'), ('run', 'running_glb_url')):
-            url = (r.get('basic_animations') or {}).get(k)
-            if url:
-                p = download(url, os.path.join(work, name + '.glb'))
-                anims[name] = store(a.key + '.' + name, p, 64)
-        files['anims'] = anims
-    else:
-        url = (t.get('model_urls') or {}).get('glb')
-        if not url:
-            sys.exit('GLB 다운로드 주소가 없습니다: ' + json.dumps(t)[:300])
-        files['model'] = store(a.key, download(url, os.path.join(work, 'model.glb')), a.texture_size)
+    url = (t.get('model_urls') or {}).get('glb')
+    if not url:
+        sys.exit('GLB 다운로드 주소가 없습니다: ' + json.dumps(t)[:300])
+    src = download(url, os.path.join(work, 'model.glb'))
+    files = {'model': store(a.key, src, a.texture_size)}
     register(a.key, a, files, {'meshy_task': tid})
+    if a.rig:  # humanoids: auto-rig + walk/run + library clips (same path as `rigfile`)
+        cmd_rigfile(argparse.Namespace(file=a.key, glb=src, rig_height=a.rig_height or 1.8, texture_size=a.texture_size,
+                                       max_tris=a.polycount, actions=a.actions))
     print('완료. dragon-raid/index.html 을 새로고침하면 게임에 적용됩니다.')
 
 def anim_only(src, dst):
@@ -362,7 +349,8 @@ def main():
     p = sp.add_parser('preset'); p.add_argument('name')
     def common(x):
         x.add_argument('key', help='에셋 키 (파일 이름)')
-        x.add_argument('--kind', choices=['prop', 'monster', 'boss', 'npc'], required=True)
+        x.add_argument('--kind', choices=['prop', 'monster', 'boss', 'npc', 'player'], required=True)
+        x.add_argument('--player', help='player: 직업 id (novice, warrior, rogue, shaman)')
         x.add_argument('--replace', help='prop: 교체할 KayKit 소품 이름')
         x.add_argument('--mob', help='monster/boss: 몬스터 id (MOBS 키)')
         x.add_argument('--npc', help='npc: NPC id (NPCS 키)')
@@ -372,7 +360,7 @@ def main():
     g.add_argument('--prompt'); g.add_argument('--image', help='이미지 URL로 image-to-3D')
     g.add_argument('--texture-prompt'); g.add_argument('--style', default='realistic', choices=['realistic', 'sculpture'])
     g.add_argument('--polycount', type=int, default=12000); g.add_argument('--rig', action='store_true', help='사람형 자동 리깅 (걷기·달리기)')
-    g.add_argument('--rig-height', type=float); g.add_argument('--no-refine', action='store_true'); g.add_argument('--raw', action='store_true', help='게임 스타일 문구를 붙이지 않음')
+    g.add_argument('--rig-height', type=float); g.add_argument('--actions', default='idle=0,attack=4,hit=178,death=8'); g.add_argument('--no-refine', action='store_true'); g.add_argument('--raw', action='store_true', help='게임 스타일 문구를 붙이지 않음')
     i = sp.add_parser('import'); common(i); i.add_argument('glb'); i.add_argument('--anim', action='append', help='name=path.glb (예: run=run.glb)')
     rf = sp.add_parser('rigfile', help='이미 넣은 모델 파일에 뼈대(걷기·달리기) 입히기')
     rf.add_argument('file', help='models/custom 안의 파일 이름 (예: m_CrystalGolem)')

@@ -6,7 +6,7 @@ namespace Game.SkillSystem
     public class SkillExecutor : MonoBehaviour
     {
         [Header("플레이어 현재 스탯 참조")]
-        public CharacterClass currentClass = CharacterClass.Merchant;
+        public CharacterClass currentClass = CharacterClass.Shaman;
         public int currentLevel = 35;
         public int currentMp = 200;
         public int currentGold = 5000;
@@ -60,8 +60,14 @@ namespace Game.SkillSystem
                     break;
 
                 case SkillType.Summon:
-                    // 용병/하수인 소환 로직 (예: 상인의 묵직한 방패병)
+                    // 용병/하수인 소환 로직
                     Debug.Log($"<color=yellow>{skill.skillName}</color>! 용병 소환 완료 (지속시간: {skill.duration}초)");
+                    break;
+
+                case SkillType.Heal:
+                    // 치유 (신): 즉시 회복량 = 기본값 + 지능 × 계수
+                    float heal = skill.baseValue + (intelligence * skill.scalingFactor);
+                    Debug.Log($"<color=#FFF0A0>{skill.skillName}</color> 체력 {heal} 회복");
                     break;
 
                 case SkillType.Buff:

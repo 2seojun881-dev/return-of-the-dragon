@@ -13,7 +13,7 @@ namespace Game.LootSystem
     public enum HeroicUnique { DragonSlayer, BloodDrain, DragonFury, IgnisAegis }
 
     // 영웅 방어구 세트
-    public enum DragonSet { None, DragonbloodConqueror, PhantomGhoul, GoldenEmperor, DivineDescent }
+    public enum DragonSet { None, DragonbloodConqueror, PhantomGhoul, DivineDescent }
 
     [Serializable]
     public class SubOption
@@ -144,7 +144,6 @@ namespace Game.LootSystem
             {
                 case CharacterClass.Warrior: return DragonSet.DragonbloodConqueror;
                 case CharacterClass.Rogue: return DragonSet.PhantomGhoul;
-                case CharacterClass.Merchant: return DragonSet.GoldenEmperor;
                 case CharacterClass.Shaman: return DragonSet.DivineDescent;
                 default: return DragonSet.None;
             }
@@ -161,12 +160,9 @@ namespace Game.LootSystem
                 case DragonSet.PhantomGhoul:
                     three = "[그림자 습격] 은신 첫 타격 치명타 100%, 치명타 피해 +60%, 회피 +25%";
                     five = "[환영 처형 & 연쇄 암살] 공격 시 10% 확률 그림자 분신 2명 800% 연타 / 처치 시 모든 쿨타임 초기화"; break;
-                case DragonSet.GoldenEmperor:
-                    three = "[황금의 권력] 100만 골드당 공격력·방어력 +1.5% (최대 +45%), 드롭 골드 +50%";
-                    five = "[황금 거신] 용병 고용 시 황금 거신 2명 (보스 공격 50% 반사) / 상단진 안 1초마다 600% 황금 궤짝, 주우면 MP 10%"; break;
                 case DragonSet.DivineDescent:
-                    three = "[영혼 억압] 마법 저항 35% 무시, MP 초당 4% 회복";
-                    five = "[천신 심판 & 도호귀인] 강신 60초 + 초당 350% 신성 결계 / 사망 시 즉시 100% 부활 (3회)"; break;
+                    three = "[신성 가호] 치유량 +35%, 신성 피해 +35%, MP 초당 4% 회복";
+                    five = "[천신 심판 & 부활의 기적] 신의 강림 60초 + 초당 350% 신성 결계 / 사망 시 즉시 100% 부활 (3회)"; break;
                 default: return "";
             }
             return (equippedCount >= 3 ? "<color=#FFB0A0>" : "<color=#808080>") + "3세트 " + three + "</color>\n" +

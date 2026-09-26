@@ -6,7 +6,7 @@ using Game.Core;
 using Game.SkillSystem;
 
 /// <summary>
-/// 메뉴 [Game System > Generate Skill Assets] 한 번으로 웹 프로토타입과 같은 수치의 스킬 에셋 17개(초보자 1 + 4직업 × 4)를 만듭니다.
+/// 메뉴 [Game System > Generate Skill Assets] 한 번으로 웹 프로토타입과 같은 수치의 스킬 에셋 13개(초보자 1 + 3직업 × 4)를 만듭니다.
 /// 만든 뒤에는 인스펙터에서 아이콘·VFX·SFX만 채우면 됩니다.
 /// </summary>
 public static class SkillAssetGenerator
@@ -35,15 +35,10 @@ public static class SkillAssetGenerator
         new Def("SKILL_ROGUE_03","칼날 폭풍",CharacterClass.Rogue,55,SkillType.AreaOfEffect,11,70,0,330,1f,1.1f,0,3.5f,"주변을 여섯 번 베어 총 {value}% 피해"),
         new Def("SKILL_ROGUE_04","암살",CharacterClass.Rogue,80,SkillType.SingleTarget,26,150,0,800,1f,0,10,0,"단일 대상 {value}% 피해, 대상 체력 50% 이하면 두 배"),
 
-        new Def("SKILL_MERCHANT_01","금화 수색",CharacterClass.Merchant,15,SkillType.Passive,0,0,0,25,0,0,0,0,"(패시브) 골드 획득량 {value}% 증가, 장비·재료 드롭률 10% 증가"),
-        new Def("SKILL_MERCHANT_02","투전 난사",CharacterClass.Merchant,35,SkillType.AreaOfEffect,6,30,100,150,1.2f,0,9,0,"마력이 깃든 금화를 난사하여 전방 적 3명에게 {value}의 방어 무시 피해 5연타. (소모: {mpCost} MP, {goldCost} Gold)"),
-        new Def("SKILL_MERCHANT_03","용병 고용: 묵직한 방패병",CharacterClass.Merchant,55,SkillType.Summon,40,120,0,30,0,180,0,7,"{duration}초간 철갑 용병 소환: 도발, 상인이 받는 피해의 {value}%를 대신 흡수"),
-        new Def("SKILL_MERCHANT_04","만복의 상단진",CharacterClass.Merchant,80,SkillType.Buff,90,250,0,15,0,60,0,7,"{duration}초 황금 결계: 공격력 {value}% 증가, 물약 회복량 50% 증가, 처치 경험치 15% 추가"),
-
-        new Def("SKILL_SHAMAN_01","령환의 가호",CharacterClass.Shaman,15,SkillType.Buff,10,40,0,100,2.2f,10,0,0,"체력을 {value} 회복하고 {duration}초간 최대 체력 20% 영혼 보호막"),
-        new Def("SKILL_SHAMAN_02","파령 부적",CharacterClass.Shaman,35,SkillType.SingleTarget,6,60,0,260,1.5f,5,13,0,"붉은 뇌전 부적: {value} 피해 + {duration}초간 마법 저하, 이동 속도 40% 감소"),
-        new Def("SKILL_SHAMAN_03","아수라 봉인진",CharacterClass.Shaman,55,SkillType.AreaOfEffect,16,150,0,45,0.8f,5,14,5,"{duration}초 주술진: 초당 {value} 피해, 2초마다 1.5초 기절, 언데드/원혼 50% 추가 피해"),
-        new Def("SKILL_SHAMAN_04","강신: 천신 강림",CharacterClass.Shaman,85,SkillType.Transformation,120,300,0,50,0,30,0,4,"{duration}초 변신: 모든 스킬 쿨타임 {value}% 감소, 모든 공격에 신성 파동, 사망한 파티원 1명 즉시 부활"),
+        new Def("SKILL_SHAMAN_01","치유의 빛",CharacterClass.Shaman,15,SkillType.Heal,8,40,0,100,2.6f,6,0,0,"체력을 {value} 회복하고 {duration}초간 초당 최대 체력 3%를 회복합니다."),
+        new Def("SKILL_SHAMAN_02","신성 보호막",CharacterClass.Shaman,35,SkillType.Buff,14,60,0,30,1.6f,10,0,4,"{duration}초간 최대 체력 {value}% 보호막 + 반경 4m 적에게 160% 신성 피해."),
+        new Def("SKILL_SHAMAN_03","성역",CharacterClass.Shaman,55,SkillType.AreaOfEffect,18,120,0,5,0.6f,6,0,5,"{duration}초간 빛의 성역: 안에 있으면 초당 체력 {value}% 회복, 적은 초당 60% 신성 피해 + 1초 기절 (언데드·원혼 2배)."),
+        new Def("SKILL_SHAMAN_04","신의 강림",CharacterClass.Shaman,85,SkillType.Transformation,120,300,0,50,0,30,0,4,"체력 완전 회복 + {duration}초 변신: 치유량 {value}% 증가, 쿨타임 50% 감소, 쓰러지면 즉시 부활(1회)."),
     };
 
     [MenuItem("Game System/Generate Skill Assets")]

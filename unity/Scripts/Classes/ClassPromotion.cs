@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 직업별 스탯 (전사: HP/STR, 도적: DEX/CRI, 상인: GOLD_BONUS/LUK, 신: MP/INT)
+// 직업별 스탯 (전사: HP/STR, 도적: DEX/CRI, 신: MP/INT/치유)
 [Serializable]
 public class PlayerStats
 {
@@ -16,6 +16,7 @@ public class PlayerStats
     public float luk = 10f;          // 행운: 드롭률
     public float critChance = 0.12f; // 치명타 확률 (0~1)
     public float goldBonus = 0f;     // 추가 골드 획득률 (0.25 = +25%)
+    public float healBonus = 0f;     // 추가 치유량 (0.30 = +30%, 신)
 }
 
 /// <summary>
@@ -80,12 +81,9 @@ public class ClassPromotion : MonoBehaviour
             case PlayerClass.Rogue:
                 stats.dex *= 1.45f; stats.critChance = Mathf.Max(stats.critChance, 0.28f);
                 return "민첩 +45% · 치명타 확률 28%";
-            case PlayerClass.Merchant:
-                stats.goldBonus += 0.25f; stats.luk *= 1.10f;
-                return "골드 획득 +25% · 행운 +10%";
             case PlayerClass.Shaman:
-                stats.maxMp *= 2.20f; stats.intel *= 1.23f;
-                return "최대 마력 +120% · 지능 +23%";
+                stats.maxMp *= 2.20f; stats.intel *= 1.23f; stats.healBonus += 0.30f;
+                return "치유량 +30% · 최대 마력 +120%";
         }
         return "";
     }

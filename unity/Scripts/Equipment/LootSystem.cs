@@ -11,11 +11,11 @@ public class LootSystem : MonoBehaviour
     [Tooltip("월드에 떨어뜨릴 픽업 프리팹 (없으면 인벤토리로 바로 지급)")]
     public GameObject pickupPrefab;
 
-    static readonly PlayerClass[] Promoted = { PlayerClass.Warrior, PlayerClass.Rogue, PlayerClass.Merchant, PlayerClass.Shaman };
+    static readonly PlayerClass[] Promoted = { PlayerClass.Warrior, PlayerClass.Rogue, PlayerClass.Shaman };
 
     public LootTable GetTable(HuntingZone zone) { return tables.Find(t => t != null && t.zone == zone); }
 
-    /// <param name="luckBonus">상인 '금화 수색' 패시브면 0.10 (드롭률 +10%)</param>
+    /// <param name="luckBonus">추가 드롭률 보너스 (0.10 = +10%)</param>
     public EquipmentItem DropLoot(HuntingZone zone, int monsterLevel, bool isBoss, PlayerClass playerClass, float luckBonus, Vector3 position)
     {
         LootTable table = GetTable(zone);

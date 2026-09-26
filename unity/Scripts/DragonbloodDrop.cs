@@ -80,8 +80,6 @@ public class DragonbloodDrop : MonoBehaviour
                 return new DragonbloodWeapon("용혈 파천검", cls, "기본 공격 시 일정 확률로 전방에 공격력 200% 광역 피해");
             case PlayerClass.Rogue:
                 return new DragonbloodWeapon("용혈 섬광단검", cls, "기본 공격 적중 시 일정 확률로 용의 표식: 3초 속박 + 받는 피해 30% 증가");
-            case PlayerClass.Merchant:
-                return new DragonbloodWeapon("용혈 만복주판", cls, "기본 공격 적중 시 일정 확률로 황금 용 폭발(광역 180%) + 추가 골드");
             default:
                 return new DragonbloodWeapon("용혈 멸세령", cls, "스킬 사용 시 일정 확률로 마력 소모 0 + 대상 위치에 용암 폭발");
         }
@@ -93,7 +91,6 @@ public class DragonbloodDrop : MonoBehaviour
         {
             case PlayerClass.Warrior: return new DragonbloodWeapon("용혈 파천중갑", cls, "방어 +90, 받는 피해 감소");
             case PlayerClass.Rogue: return new DragonbloodWeapon("용혈 섬광가죽갑", cls, "방어 +90, 은신 중 이동 속도 증가");
-            case PlayerClass.Merchant: return new DragonbloodWeapon("용혈 만복비단포", cls, "방어 +90, 골드 획득 증가");
             default: return new DragonbloodWeapon("용혈 멸세제사장복", cls, "방어 +90, 보호막 강화");
         }
     }
@@ -110,7 +107,7 @@ public class DragonbloodDrop : MonoBehaviour
 
         // [0,100) 범위에 < 비교 (EnhanceSystem과 같은 규칙)
         // 초보자가 잡았다면 네 직업 중 하나의 장비 (진급 후 사용)
-        if (cls == PlayerClass.Novice) cls = (PlayerClass)UnityEngine.Random.Range(1, 5);
+        if (cls == PlayerClass.Novice) cls = (PlayerClass)UnityEngine.Random.Range(1, 4); // 전사·도적·신
         if (UnityEngine.Random.Range(0f, 100f) < dropRate)
         {
             r.weapon = CreateWeapon(cls);
