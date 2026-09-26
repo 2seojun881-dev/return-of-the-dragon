@@ -5,7 +5,10 @@
       "kind": "boss",
       "height": 6.0,
       "mob": "ignis",
-      "imported": true
+      "imported": true,
+      "zones": [
+        "altar"
+      ]
     },
     "mob_beastBoar": {
       "file": "m_AnxiousPanda.glb.txt",
@@ -21,7 +24,10 @@
         "hit": "m_AnxiousPanda.hit.glb.txt",
         "death": "m_AnxiousPanda.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "beasts"
+      ]
     },
     "mob_beastWolf": {
       "file": "m_AzurefangWarden.glb.txt",
@@ -37,7 +43,10 @@
         "hit": "m_AzurefangWarden.hit.glb.txt",
         "death": "m_AzurefangWarden.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "beasts"
+      ]
     },
     "mob_graveSkel": {
       "file": "m_SkullboundRaider.glb.txt",
@@ -53,21 +62,30 @@
         "hit": "m_SkullboundRaider.hit.glb.txt",
         "death": "m_SkullboundRaider.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "grave"
+      ]
     },
     "mob_graveGhost": {
       "file": "m_LanternKeeper.glb.txt",
       "kind": "monster",
       "height": 2.2,
       "mob": "graveGhost",
-      "imported": true
+      "imported": true,
+      "zones": [
+        "grave"
+      ]
     },
     "mob_clockDoll": {
       "file": "m_MischiefMouse.glb.txt",
       "kind": "monster",
       "height": 1.9,
       "mob": "clockDoll",
-      "imported": true
+      "imported": true,
+      "zones": [
+        "clock"
+      ]
     },
     "mob_clockGolem": {
       "file": "m_CrystalGolem.glb.txt",
@@ -83,7 +101,10 @@
         "hit": "m_CrystalGolem.hit.glb.txt",
         "death": "m_CrystalGolem.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "clock"
+      ]
     },
     "mob_asuraGoblin": {
       "file": "m_SkullboundRaider.glb.txt",
@@ -99,7 +120,10 @@
         "hit": "m_SkullboundRaider.hit.glb.txt",
         "death": "m_SkullboundRaider.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "asura"
+      ]
     },
     "mob_asuraWarrior": {
       "file": "m_IvorywyrmLancer.glb.txt",
@@ -115,7 +139,10 @@
         "hit": "m_IvorywyrmLancer.hit.glb.txt",
         "death": "m_IvorywyrmLancer.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "asura"
+      ]
     },
     "mob_turka": {
       "file": "m_MireclawBehemoth.glb.txt",
@@ -131,7 +158,10 @@
         "hit": "m_MireclawBehemoth.hit.glb.txt",
         "death": "m_MireclawBehemoth.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
     },
     "mob_wolfBoss": {
       "file": "m_CarrotstaffConjurer.glb.txt",
@@ -147,14 +177,20 @@
         "hit": "m_CarrotstaffConjurer.hit.glb.txt",
         "death": "m_CarrotstaffConjurer.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "village"
+      ]
     },
     "mob_raider": {
       "file": "m_MischiefMouse.glb.txt",
       "kind": "monster",
       "height": 1.8,
       "mob": "raider",
-      "imported": true
+      "imported": true,
+      "zones": [
+        "plains"
+      ]
     },
     "mob_ox": {
       "file": "m_Nerdzilla.glb.txt",
@@ -170,7 +206,10 @@
         "hit": "m_Nerdzilla.hit.glb.txt",
         "death": "m_Nerdzilla.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
     },
     "mob_ashGoblin": {
       "file": "m_SkullboundRaider.glb.txt",
@@ -186,7 +225,10 @@
         "hit": "m_SkullboundRaider.hit.glb.txt",
         "death": "m_SkullboundRaider.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "village"
+      ]
     },
     "mob_boar": {
       "file": "m_AnxiousPanda.glb.txt",
@@ -202,7 +244,10 @@
         "hit": "m_AnxiousPanda.hit.glb.txt",
         "death": "m_AnxiousPanda.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
     },
     "mob_slinger": {
       "file": "m_ShellboundShaman.glb.txt",
@@ -218,7 +263,10 @@
         "hit": "m_ShellboundShaman.hit.glb.txt",
         "death": "m_ShellboundShaman.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
     },
     "mob_beastsBoss": {
       "file": "m_VerdantSentinel.glb.txt",
@@ -234,7 +282,10 @@
         "hit": "m_VerdantSentinel.hit.glb.txt",
         "death": "m_VerdantSentinel.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "beasts"
+      ]
     },
     "mob_graveBoss": {
       "file": "m_CrimsonRevenantKnight.glb.txt",
@@ -250,7 +301,10 @@
         "hit": "m_CrimsonRevenantKnight.hit.glb.txt",
         "death": "m_CrimsonRevenantKnight.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "grave"
+      ]
     },
     "mob_clockBoss": {
       "file": "m_GildedSeraph.glb.txt",
@@ -266,7 +320,10 @@
         "hit": "m_GildedSeraph.hit.glb.txt",
         "death": "m_GildedSeraph.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "clock"
+      ]
     },
     "mob_asuraBoss": {
       "file": "m_IronjawGoblinWarlord.glb.txt",
@@ -282,7 +339,10 @@
         "hit": "m_IronjawGoblinWarlord.hit.glb.txt",
         "death": "m_IronjawGoblinWarlord.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "zones": [
+        "asura"
+      ]
     },
     "ignisFly": {
       "file": "ignisFly.glb.txt",
@@ -290,7 +350,10 @@
       "height": 6.0,
       "mob": "ignisFly",
       "prompt": "A massive ancient boss dragon hovering mid-air with huge wings fully spread, neck arched back with glowing mouth preparing to breathe fire, obsidian red and black scales, glowing magma veins across the chest, dark fantasy game asset, clean mesh topology, high detail, flying pose",
-      "meshy_task": "01a0de5e-9de7-779b-8007-c29adb2e0354"
+      "meshy_task": "01a0de5e-9de7-779b-8007-c29adb2e0354",
+      "zones": [
+        "altar"
+      ]
     },
     "p_rogue": {
       "file": "p_rogue.glb.txt",
@@ -367,6 +430,1216 @@
         "death": "p_warrior.death.glb.txt"
       },
       "rigged": true
+    },
+    "w_barrel": {
+      "file": "w_barrel.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "barrel",
+        "keg",
+        "barrel_large"
+      ],
+      "zones": [
+        "citadel",
+        "clock",
+        "inn",
+        "plains",
+        "village"
+      ],
+      "prompt": "wooden barrel with iron hoops",
+      "meshy_task": "01a0de8e-d5ae-74e6-a39c-a7555e5da337"
+    },
+    "w_rock": {
+      "file": "w_rock.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "rock_single_A",
+        "rock_single_B",
+        "rock_single_C"
+      ],
+      "zones": [
+        "asura",
+        "beasts",
+        "plains",
+        "title",
+        "village"
+      ],
+      "prompt": "large mossy grey boulder",
+      "meshy_task": "01a0de8f-e84f-7766-abd8-9675d2eca7cf"
+    },
+    "w_tree_dead": {
+      "file": "w_tree_dead.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tree_dead_large",
+        "tree_dead_medium",
+        "tree_dead_small"
+      ],
+      "zones": [
+        "asura",
+        "grave",
+        "plains"
+      ],
+      "prompt": "dead leafless twisted tree with gnarled black branches",
+      "meshy_task": "01a0de93-d0f7-7725-8e6f-9c9e2a096588"
+    },
+    "w_rock_flat": {
+      "file": "w_rock_flat.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "rock_single_D",
+        "rock_single_E"
+      ],
+      "zones": [
+        "asura",
+        "beasts",
+        "plains",
+        "title"
+      ],
+      "prompt": "cluster of flat broken grey stones",
+      "meshy_task": "01a0de93-e323-7463-95df-4afb3875b131"
+    },
+    "w_tree_leafy": {
+      "file": "w_tree_leafy.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tree_single_A",
+        "tree_single_B",
+        "trees_A_medium"
+      ],
+      "zones": [
+        "beasts",
+        "citadel",
+        "plains",
+        "village"
+      ],
+      "prompt": "single round leafy oak tree with thick trunk and lush green canopy",
+      "meshy_task": "01a0de93-f84d-76c6-97bd-0b91e9202c10"
+    },
+    "w_tree_pine": {
+      "file": "w_tree_pine.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "trees_B_large",
+        "trees_B_medium"
+      ],
+      "zones": [
+        "beasts",
+        "plains",
+        "village"
+      ],
+      "prompt": "cluster of three tall dark green pine trees on a small root base",
+      "meshy_task": "01a0de94-0d51-7149-b47b-dea3a4d5c7de"
+    },
+    "w_mountain": {
+      "file": "w_mountain.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "mountain_A",
+        "mountain_C"
+      ],
+      "zones": [
+        "altar",
+        "asura",
+        "beasts",
+        "citadel",
+        "grave",
+        "plains",
+        "showcase",
+        "title",
+        "village"
+      ],
+      "prompt": "jagged dark rocky mountain peak",
+      "meshy_task": "01a0de93-e5e0-72fb-b000-d2033d4db343"
+    },
+    "n_kallen": {
+      "file": "n_kallen.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "kallen",
+      "prompt": "veteran guard captain in steel plate armor with a dark red cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de94-4c5f-73be-b473-b46df5e4f463",
+      "zones": [
+        "village"
+      ],
+      "anims": {
+        "walk": "n_kallen.walk.glb.txt",
+        "run": "n_kallen.run.glb.txt",
+        "idle": "n_kallen.idle.glb.txt"
+      },
+      "rigged": true
+    },
+    "n_runba": {
+      "file": "n_runba.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "runba",
+      "prompt": "burly village blacksmith with grey beard, leather apron and bare arms, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de94-36ca-7792-9cd8-8fec5aff6c27",
+      "zones": [
+        "village"
+      ],
+      "anims": {
+        "walk": "n_runba.walk.glb.txt",
+        "run": "n_runba.run.glb.txt",
+        "idle": "n_runba.idle.glb.txt"
+      },
+      "rigged": true
+    },
+    "n_aldus": {
+      "file": "n_aldus.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "aldus",
+      "prompt": "elderly village chief with long white beard in purple robes holding a wooden staff, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de94-7451-7245-af08-ef7017945a09",
+      "zones": [
+        "village"
+      ],
+      "anims": {
+        "walk": "n_aldus.walk.glb.txt",
+        "run": "n_aldus.run.glb.txt",
+        "idle": "n_aldus.idle.glb.txt"
+      },
+      "rigged": true
+    },
+    "g_dirt": {
+      "file": "g_dirt.glb.txt",
+      "kind": "groundtex",
+      "ground": "dirt",
+      "prompt": "thin flat square slab of packed brown dirt road with small pebbles, top surface fully covered",
+      "meshy_task": "01a0de95-a4a7-77b2-8473-4d7aca68d223"
+    },
+    "w_mountain_green": {
+      "file": "w_mountain_green.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "mountain_A_grass_trees",
+        "mountain_B_grass_trees",
+        "hills_A_trees"
+      ],
+      "zones": [
+        "beasts",
+        "plains",
+        "village"
+      ],
+      "prompt": "green grassy hill mountain covered with small pine trees",
+      "meshy_task": "01a0de95-ca3a-7036-bca9-38fec4421794"
+    },
+    "w_hex_grass": {
+      "file": "w_hex_grass.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "hex_grass"
+      ],
+      "zones": [
+        "altar",
+        "showcase"
+      ],
+      "prompt": "hexagonal stone platform tile with grass on top, flat",
+      "meshy_task": "01a0de95-eee5-76c6-a319-011ae41991e0"
+    },
+    "w_ribcage": {
+      "file": "w_ribcage.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "ribcage"
+      ],
+      "zones": [
+        "asura",
+        "grave",
+        "plains"
+      ],
+      "prompt": "large animal ribcage skeleton lying on the ground",
+      "meshy_task": "01a0de96-1e16-720a-9de0-2384ad99c0d5"
+    },
+    "g_grass": {
+      "file": "g_grass.glb.txt",
+      "kind": "groundtex",
+      "ground": "grass",
+      "prompt": "thin flat square slab of ground covered with short green grass and small clover, top surface fully covered",
+      "meshy_task": "01a0de95-f7b7-7753-b831-00971b419508"
+    },
+    "w_bones": {
+      "file": "w_bones.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "bone_A"
+      ],
+      "zones": [
+        "beasts",
+        "grave",
+        "plains"
+      ],
+      "prompt": "small pile of scattered old bones",
+      "meshy_task": "01a0de96-4219-77b2-96da-0cb1899efb2e"
+    },
+    "w_skull": {
+      "file": "w_skull.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "skull"
+      ],
+      "zones": [
+        "asura",
+        "grave",
+        "plains"
+      ],
+      "prompt": "old cracked human skull",
+      "meshy_task": "01a0de96-44b4-76e8-bcba-b2a72223e181"
+    },
+    "g_stone": {
+      "file": "g_stone.glb.txt",
+      "kind": "groundtex",
+      "ground": "stone",
+      "prompt": "thin flat square slab of grey cobblestone pavement, top surface fully covered",
+      "meshy_task": "01a0de97-2cc2-72d4-90e7-a19aef1c1513"
+    },
+    "w_gravemarker": {
+      "file": "w_gravemarker.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "gravemarker_A"
+      ],
+      "zones": [
+        "grave",
+        "plains"
+      ],
+      "prompt": "wooden cross grave marker",
+      "meshy_task": "01a0de97-5d90-71a4-b157-8c4488badcaf"
+    },
+    "w_gravestone": {
+      "file": "w_gravestone.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "gravestone"
+      ],
+      "zones": [
+        "grave",
+        "plains"
+      ],
+      "prompt": "weathered rounded stone gravestone tombstone",
+      "meshy_task": "01a0de97-4edc-75c7-a920-8c8f07d5d0e3"
+    },
+    "g_soil": {
+      "file": "g_soil.glb.txt",
+      "kind": "groundtex",
+      "ground": "soil",
+      "prompt": "thin flat square slab of dark damp graveyard soil with dead leaves, top surface fully covered",
+      "meshy_task": "01a0de97-7a2b-71b3-83e3-638a771a2de5"
+    },
+    "n_villager": {
+      "file": "n_villager.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "villager",
+      "prompt": "humble medieval peasant villager in a simple brown tunic, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de97-94ec-7134-b817-2369d1118bef",
+      "anims": {
+        "walk": "n_villager.walk.glb.txt",
+        "run": "n_villager.run.glb.txt",
+        "idle": "n_villager.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "village"
+      ]
+    },
+    "w_grave": {
+      "file": "w_grave.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "grave_A"
+      ],
+      "zones": [
+        "grave",
+        "plains"
+      ],
+      "prompt": "stone grave with dirt burial mound and headstone",
+      "meshy_task": "01a0de97-8d49-77d3-81bf-a0903b54cb03"
+    },
+    "n_guard": {
+      "file": "n_guard.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "guard",
+      "prompt": "medieval town guard in chainmail and steel helmet with a blue tabard, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de97-807c-7627-b58d-f1dc44f4e750",
+      "anims": {
+        "walk": "n_guard.walk.glb.txt",
+        "run": "n_guard.run.glb.txt",
+        "idle": "n_guard.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel",
+        "plains",
+        "village"
+      ]
+    },
+    "w_post_skull": {
+      "file": "w_post_skull.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "post_skull"
+      ],
+      "zones": [
+        "asura",
+        "plains"
+      ],
+      "prompt": "wooden stake post with a skull on top",
+      "meshy_task": "01a0de97-b310-74fa-8515-d0d8edd5ac7c"
+    },
+    "n_logan": {
+      "file": "n_logan.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "logan",
+      "prompt": "young dispatched soldier in blue-grey padded armor and steel helmet, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de97-c748-77e6-b57e-049cb6dda8dc",
+      "anims": {
+        "walk": "n_logan.walk.glb.txt",
+        "run": "n_logan.run.glb.txt",
+        "idle": "n_logan.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
+    },
+    "w_shrine": {
+      "file": "w_shrine.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "shrine_candles"
+      ],
+      "zones": [
+        "citadel",
+        "grave"
+      ],
+      "prompt": "small stone roadside shrine with lit candles",
+      "meshy_task": "01a0de97-df5f-74ad-a32b-34e6a01189f1"
+    },
+    "w_fence": {
+      "file": "w_fence.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "fence_wood_straight"
+      ],
+      "zones": [
+        "plains",
+        "village"
+      ],
+      "prompt": "straight wooden palisade fence segment of sharpened logs",
+      "meshy_task": "01a0de98-7ec6-7129-83b3-8fa613a1f98e"
+    },
+    "g_ash": {
+      "file": "g_ash.glb.txt",
+      "kind": "groundtex",
+      "ground": "ash",
+      "prompt": "thin flat square slab of dark volcanic rock ground with glowing orange cracks, top surface fully covered",
+      "meshy_task": "01a0de98-7321-7564-9112-11059857bf62"
+    },
+    "w_wall": {
+      "file": "w_wall.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "wall_straight"
+      ],
+      "zones": [
+        "citadel",
+        "clock",
+        "plains",
+        "title"
+      ],
+      "prompt": "straight stone castle wall segment with battlements, long rectangular block",
+      "meshy_task": "01a0de98-8b3e-7087-b966-e83abf5db958"
+    },
+    "w_fence_broken": {
+      "file": "w_fence_broken.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "fence_broken"
+      ],
+      "zones": [
+        "grave",
+        "plains",
+        "village"
+      ],
+      "prompt": "broken leaning wooden fence segment",
+      "meshy_task": "01a0de98-d6fd-76de-93c0-983e98e22f24"
+    },
+    "w_arch_gate": {
+      "file": "w_arch_gate.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "arch_gate"
+      ],
+      "zones": [
+        "altar",
+        "asura",
+        "beasts",
+        "citadel",
+        "clock",
+        "grave",
+        "plains",
+        "village"
+      ],
+      "prompt": "stone archway gate with keystone",
+      "meshy_task": "01a0de99-3380-71e7-86c7-8917eee3f39c"
+    },
+    "w_pillar": {
+      "file": "w_pillar.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "pillar_decorated",
+        "column"
+      ],
+      "zones": [
+        "altar",
+        "citadel",
+        "inn",
+        "showcase",
+        "title",
+        "village"
+      ],
+      "prompt": "tall ornate carved stone pillar column",
+      "meshy_task": "01a0de99-6385-74a6-80db-ddf5d499796f"
+    },
+    "w_lamp_post": {
+      "file": "w_lamp_post.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "post_lantern"
+      ],
+      "zones": [
+        "asura",
+        "citadel",
+        "clock",
+        "grave",
+        "plains",
+        "village"
+      ],
+      "prompt": "iron street lamp post with a hanging lantern",
+      "meshy_task": "01a0de99-deef-74c3-86e4-eba60b9f6aa6"
+    },
+    "n_thomas": {
+      "file": "n_thomas.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "thomas",
+      "prompt": "injured traveling merchant with a bandaged arm, brown vest and satchel, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de99-f44e-7580-9d30-1dff6e57c333",
+      "anims": {
+        "walk": "n_thomas.walk.glb.txt",
+        "run": "n_thomas.run.glb.txt",
+        "idle": "n_thomas.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
+    },
+    "w_torch_wall": {
+      "file": "w_torch_wall.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "torch_mounted"
+      ],
+      "zones": [
+        "inn",
+        "showcase",
+        "title"
+      ],
+      "prompt": "iron wall-mounted torch bracket with wooden torch",
+      "meshy_task": "01a0de9a-4c28-757f-a3c9-fe91a7760b42"
+    },
+    "n_hector": {
+      "file": "n_hector.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "hector",
+      "prompt": "gate commander knight in polished silver armor with a blue cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9a-3e00-76cb-8937-a32f6e009606",
+      "anims": {
+        "walk": "n_hector.walk.glb.txt",
+        "run": "n_hector.run.glb.txt",
+        "idle": "n_hector.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "plains"
+      ]
+    },
+    "w_rubble": {
+      "file": "w_rubble.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "rubble_large"
+      ],
+      "zones": [
+        "asura",
+        "clock",
+        "title"
+      ],
+      "prompt": "pile of broken stone rubble and bricks",
+      "meshy_task": "01a0de9a-71bc-74d4-bac7-7501eefbd470"
+    },
+    "n_eldric": {
+      "file": "n_eldric.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "eldric",
+      "prompt": "stern knight commander in ornate silver plate armor with a royal blue cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9a-756c-76b7-9129-a457baddea83",
+      "anims": {
+        "walk": "n_eldric.walk.glb.txt",
+        "run": "n_eldric.run.glb.txt",
+        "idle": "n_eldric.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_banner_red": {
+      "file": "w_banner_red.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "banner_red",
+        "flag_red"
+      ],
+      "zones": [
+        "citadel",
+        "title"
+      ],
+      "prompt": "red heraldic banner flag hanging from a wooden pole",
+      "meshy_task": "01a0de9a-762b-7520-808d-762078feaecf"
+    },
+    "w_banner_blue": {
+      "file": "w_banner_blue.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "banner_blue",
+        "flag_blue",
+        "banner_patternA_blue"
+      ],
+      "zones": [
+        "citadel",
+        "plains"
+      ],
+      "prompt": "blue heraldic banner flag hanging from a wooden pole",
+      "meshy_task": "01a0de9a-9160-75c5-89af-0780f53bbca9"
+    },
+    "w_tower": {
+      "file": "w_tower.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_tower_A_blue",
+        "building_tower_B_blue"
+      ],
+      "zones": [
+        "citadel",
+        "plains",
+        "title"
+      ],
+      "prompt": "medieval stone watch tower with blue cone roof",
+      "meshy_task": "01a0de9b-12ce-71dc-ae19-4a17f0991be2"
+    },
+    "w_house": {
+      "file": "w_house.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_home_A_red",
+        "building_home_B_red"
+      ],
+      "zones": [
+        "village"
+      ],
+      "prompt": "small medieval timber cottage with red tiled roof",
+      "meshy_task": "01a0de9b-b9a6-7608-9ad7-195cf7e55bfc"
+    },
+    "n_aide": {
+      "file": "n_aide.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "aide",
+      "prompt": "young military aide in a blue officer uniform holding a scroll, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9b-f45f-71c6-b1ca-7a7198bd9df2",
+      "anims": {
+        "walk": "n_aide.walk.glb.txt",
+        "run": "n_aide.run.glb.txt",
+        "idle": "n_aide.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_tavern": {
+      "file": "w_tavern.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_tavern_red"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "prompt": "two story medieval tavern inn building with red roof and hanging sign",
+      "meshy_task": "01a0de9b-dc45-756d-8b98-817a60109900"
+    },
+    "w_ruin": {
+      "file": "w_ruin.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_destroyed"
+      ],
+      "zones": [
+        "title",
+        "village"
+      ],
+      "prompt": "burned ruined medieval house with collapsed roof",
+      "meshy_task": "01a0de9b-de4d-7496-843a-a870f58b7563"
+    },
+    "w_market": {
+      "file": "w_market.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_market_blue"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "prompt": "medieval market hall building with blue roof and open stalls",
+      "meshy_task": "01a0de9b-e1bb-722a-a100-51cd94c420e1"
+    },
+    "w_church": {
+      "file": "w_church.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_church_blue"
+      ],
+      "zones": [
+        "citadel",
+        "title"
+      ],
+      "prompt": "small medieval stone chapel with blue roof and bell tower",
+      "meshy_task": "01a0de9c-30c5-706d-a43e-6344345848a9"
+    },
+    "n_sylvia": {
+      "file": "n_sylvia.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "sylvia",
+      "prompt": "elegant female auctioneer in a green velvet dress holding a small gavel, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9c-d45d-7635-9e1d-17268e3b6858",
+      "anims": {
+        "walk": "n_sylvia.walk.glb.txt",
+        "run": "n_sylvia.run.glb.txt",
+        "idle": "n_sylvia.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "n_elara": {
+      "file": "n_elara.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "elara",
+      "prompt": "female mage in deep blue robes with glowing rune tattoos, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9c-d7fe-7204-9f81-7b4abe4db505",
+      "anims": {
+        "walk": "n_elara.walk.glb.txt",
+        "run": "n_elara.run.glb.txt",
+        "idle": "n_elara.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_windmill": {
+      "file": "w_windmill.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_windmill_red"
+      ],
+      "zones": [
+        "village"
+      ],
+      "prompt": "medieval wooden windmill with red roof and four sails",
+      "meshy_task": "01a0de9d-0caf-7178-a8a7-8dc5fd9d68b8"
+    },
+    "w_castle": {
+      "file": "w_castle.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_castle_blue"
+      ],
+      "zones": [
+        "citadel",
+        "title"
+      ],
+      "prompt": "medieval stone castle keep with towers and blue roofs",
+      "meshy_task": "01a0de9c-f63c-76e0-8b0d-efd2211abe17"
+    },
+    "w_blacksmith": {
+      "file": "w_blacksmith.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_blacksmith_red"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "prompt": "medieval blacksmith forge building with chimney, anvil and red roof",
+      "meshy_task": "01a0de9d-1fa1-734f-9491-8b2802379fdc"
+    },
+    "w_well": {
+      "file": "w_well.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_well_red"
+      ],
+      "zones": [
+        "village"
+      ],
+      "prompt": "stone water well with small red wooden roof and bucket",
+      "meshy_task": "01a0de9d-758a-7331-8a84-72c71825ceb2"
+    },
+    "n_varkan": {
+      "file": "n_varkan.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "varkan",
+      "prompt": "stern guild manager in dark leather coat with a ledger book, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9d-ce48-749f-a9b3-4494f56134ed",
+      "anims": {
+        "walk": "n_varkan.walk.glb.txt",
+        "run": "n_varkan.run.glb.txt",
+        "idle": "n_varkan.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_tent": {
+      "file": "w_tent.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tent"
+      ],
+      "zones": [
+        "plains"
+      ],
+      "prompt": "canvas military camp tent",
+      "meshy_task": "01a0de9d-c713-7622-b4c4-eef7461b2e43"
+    },
+    "w_crate": {
+      "file": "w_crate.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "box_large",
+        "crate_A_big",
+        "crate_B_small",
+        "crate_long_A"
+      ],
+      "zones": [
+        "citadel",
+        "clock",
+        "plains",
+        "title",
+        "village"
+      ],
+      "prompt": "wooden supply crate",
+      "meshy_task": "01a0de9e-179d-756e-b6fb-db3e235666fe"
+    },
+    "w_sack": {
+      "file": "w_sack.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "sack"
+      ],
+      "zones": [
+        "beasts",
+        "citadel",
+        "plains",
+        "village"
+      ],
+      "prompt": "tied burlap grain sack",
+      "meshy_task": "01a0de9e-380e-74c2-ba93-23d51b5bd9e3"
+    },
+    "w_crates_stack": {
+      "file": "w_crates_stack.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "crates_stacked"
+      ],
+      "zones": [
+        "citadel",
+        "clock",
+        "inn"
+      ],
+      "prompt": "stack of three wooden crates",
+      "meshy_task": "01a0de9e-3a93-7532-9472-832953e567d2"
+    },
+    "w_candles": {
+      "file": "w_candles.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "candle_triple",
+        "shelf_small_candles"
+      ],
+      "zones": [
+        "citadel",
+        "inn"
+      ],
+      "prompt": "three lit wax candles on an iron holder",
+      "meshy_task": "01a0de9e-b5c5-708d-a9da-bd41ee17164f"
+    },
+    "w_lumber": {
+      "file": "w_lumber.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "resource_lumber"
+      ],
+      "zones": [
+        "beasts",
+        "plains"
+      ],
+      "prompt": "stacked pile of cut lumber logs",
+      "meshy_task": "01a0de9e-e128-75b7-bc8e-e647339b16a6"
+    },
+    "n_mari": {
+      "file": "n_mari.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "mari",
+      "prompt": "cheerful female tavern keeper with an apron and a tray, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9e-e225-75dc-9e7e-dbe4f36d1693",
+      "anims": {
+        "walk": "n_mari.walk.glb.txt",
+        "run": "n_mari.run.glb.txt",
+        "idle": "n_mari.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_weaponrack": {
+      "file": "w_weaponrack.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "weaponrack"
+      ],
+      "zones": [
+        "citadel",
+        "plains",
+        "village"
+      ],
+      "prompt": "wooden weapon rack holding swords and spears",
+      "meshy_task": "01a0de9f-1e02-7298-b9fd-a2f87c509373"
+    },
+    "n_aril": {
+      "file": "n_aril.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "aril",
+      "prompt": "friendly innkeeper in a simple vest holding a key ring, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9f-4be2-7212-94c1-511ea64fb7b3",
+      "anims": {
+        "walk": "n_aril.walk.glb.txt",
+        "run": "n_aril.run.glb.txt",
+        "idle": "n_aril.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_target": {
+      "file": "w_target.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "target"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "prompt": "archery training target on a wooden stand",
+      "meshy_task": "01a0de9f-557a-74e2-9a04-967a94a041c7"
+    },
+    "w_wheelbarrow": {
+      "file": "w_wheelbarrow.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "wheelbarrow"
+      ],
+      "zones": [
+        "plains"
+      ],
+      "prompt": "old wooden wheelbarrow",
+      "meshy_task": "01a0de9f-6b72-74eb-88da-8cc3b28ff9fc"
+    },
+    "n_rowen": {
+      "file": "n_rowen.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "rowen",
+      "prompt": "high priest in white and gold vestments with a tall mitre hat, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0de9f-a8ff-700b-9aac-b228e028ac08",
+      "anims": {
+        "walk": "n_rowen.walk.glb.txt",
+        "run": "n_rowen.run.glb.txt",
+        "idle": "n_rowen.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_arrow_bucket": {
+      "file": "w_arrow_bucket.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "bucket_arrows"
+      ],
+      "zones": [
+        "plains",
+        "village"
+      ],
+      "prompt": "wooden bucket full of arrows",
+      "meshy_task": "01a0de9f-a694-759a-9782-f06dc605a412"
+    },
+    "w_table": {
+      "file": "w_table.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "table_long",
+        "table_medium_tablecloth_decorated_B"
+      ],
+      "zones": [
+        "citadel",
+        "inn",
+        "village"
+      ],
+      "prompt": "long rustic wooden table",
+      "meshy_task": "01a0de9f-faf0-7239-86de-ff1359439f89"
+    },
+    "w_stool": {
+      "file": "w_stool.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "stool"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "small round wooden stool",
+      "meshy_task": "01a0de9f-f84d-7799-ab2a-2f7c3f77a07d"
+    },
+    "w_chest": {
+      "file": "w_chest.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "chest"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "wooden treasure chest with iron bands, closed",
+      "meshy_task": "01a0dea0-5927-7370-89cd-b486127194e6"
+    },
+    "w_bed": {
+      "file": "w_bed.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "bed_decorated"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "medieval wooden single bed with white sheets and pillow",
+      "meshy_task": "01a0dea0-832c-72d7-8405-1960c687e75d"
+    },
+    "w_sword_shield": {
+      "file": "w_sword_shield.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "sword_shield"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "prompt": "crossed sword and round shield wall display",
+      "meshy_task": "01a0dea0-aea4-73a9-b63e-2b277e29d84b"
+    },
+    "n_burkan": {
+      "file": "n_burkan.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "burkan",
+      "prompt": "master dwarf-like blacksmith with braided black beard, heavy leather apron and forge hammer, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0dea0-cdc2-7503-8ccf-9d902e1aa096",
+      "anims": {
+        "walk": "n_burkan.walk.glb.txt",
+        "run": "n_burkan.run.glb.txt",
+        "idle": "n_burkan.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_gear": {
+      "file": "w_gear.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "Skeleton_Shield_Large_B"
+      ],
+      "zones": [
+        "clock"
+      ],
+      "prompt": "large bronze clockwork cog gear, flat disc",
+      "meshy_task": "01a0dea0-ff09-7405-986d-437f61cb3bd2"
+    },
+    "w_barricade": {
+      "file": "w_barricade.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "barrier"
+      ],
+      "zones": [
+        "plains"
+      ],
+      "prompt": "wooden spiked barricade",
+      "meshy_task": "01a0dea1-114c-712d-b1f9-38233cafd2d1"
+    },
+    "n_dabin": {
+      "file": "n_dabin.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "dabin",
+      "prompt": "warrior guild master in heavy steel armor with a greatsword on his back, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0dea1-388f-71b1-8e0a-a0538d9648d7",
+      "anims": {
+        "walk": "n_dabin.walk.glb.txt",
+        "run": "n_dabin.run.glb.txt",
+        "idle": "n_dabin.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_wall_inner": {
+      "file": "w_wall_inner.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "wall",
+        "wall_shelves"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "interior wall panel of timber frame and plaster, flat rectangular",
+      "meshy_task": "01a0dea1-7463-72d0-a3d6-a7822a6a8dc0"
+    },
+    "n_taewan": {
+      "file": "n_taewan.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "taewan",
+      "prompt": "rogue guild master in black hooded leather armor with a face mask, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0dea1-8699-75f6-a817-94662700d193",
+      "anims": {
+        "walk": "n_taewan.walk.glb.txt",
+        "run": "n_taewan.run.glb.txt",
+        "idle": "n_taewan.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "w_floor_wood": {
+      "file": "w_floor_wood.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "floor_wood_large",
+        "floor_wood_large_dark"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "square wooden plank floor tile, flat, seen from above",
+      "meshy_task": "01a0dea1-8cfe-749d-aaf9-68583b4bca32",
+      "tint": "#d8a070"
+    },
+    "w_wall_window": {
+      "file": "w_wall_window.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "wall_window_open"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "interior timber and plaster wall panel with an open wooden window",
+      "meshy_task": "01a0dea1-a1d8-75ee-96cd-74137acaafce"
+    },
+    "w_wall_door": {
+      "file": "w_wall_door.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "wall_doorway"
+      ],
+      "zones": [
+        "inn"
+      ],
+      "prompt": "interior timber and plaster wall panel with an open doorway",
+      "meshy_task": "01a0dea2-199c-774b-b96c-1c414638360f"
+    },
+    "n_dongjun": {
+      "file": "n_dongjun.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "dongjun",
+      "prompt": "general store shopkeeper in a brown merchant coat with a coin pouch, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0dea3-2f44-7566-b0fe-e25a793b5ef3",
+      "anims": {
+        "walk": "n_dongjun.walk.glb.txt",
+        "run": "n_dongjun.run.glb.txt",
+        "idle": "n_dongjun.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
+    },
+    "n_seojun": {
+      "file": "n_seojun.glb.txt",
+      "kind": "npc",
+      "height": 2.25,
+      "npc": "seojun",
+      "prompt": "divine god figure in radiant white and gold robes with a glowing halo, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
+      "meshy_task": "01a0dea3-64b1-7580-9198-21661d01bb64",
+      "anims": {
+        "walk": "n_seojun.walk.glb.txt",
+        "run": "n_seojun.run.glb.txt",
+        "idle": "n_seojun.idle.glb.txt"
+      },
+      "rigged": true,
+      "zones": [
+        "citadel"
+      ]
     }
   }
 }

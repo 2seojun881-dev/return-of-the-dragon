@@ -75,12 +75,15 @@ def wait(path, label):
         time.sleep(5)
 
 # ---------------------------------------------------------------- meshy tasks
-def text_to_3d(prompt, style, polycount, texture_prompt, refine=True, model='latest'):
+def text_to_3d(prompt, style, polycount, texture_prompt, refine=True, model='latest', preview_id=None):
     body = {'mode': 'preview', 'prompt': prompt[:600], 'art_style': style, 'ai_model': model,
             'topology': 'triangle', 'target_polycount': polycount, 'should_remesh': True, 'symmetry_mode': 'auto'}
-    pid = api('POST', '/openapi/v2/text-to-3d', body)['result']
-    print('미리보기 작업', pid)
-    t = wait('/openapi/v2/text-to-3d/' + pid, '미리보기(형태)')
+    if preview_id:  # reuse an existing preview (shape) task
+        pid, t = preview_id, api('GET', '/openapi/v2/text-to-3d/' + preview_id)
+    else:
+        pid = api('POST', '/openapi/v2/text-to-3d', body)['result']
+        print('미리보기 작업', pid)
+        t = wait('/openapi/v2/text-to-3d/' + pid, '미리보기(형태)')
     if not refine:
         return t, pid
     body = {'mode': 'refine', 'preview_task_id': pid, 'enable_pbr': False}
@@ -124,6 +127,53 @@ def triangles(path):
             n += acc['count'] // 3
     return n
 
+def _accessor(j, b, i):
+    import struct
+    a = j['accessors'][i]; v = j['bufferViews'][a['bufferView']]
+    comp = {'VEC4': 4, 'VEC3': 3, 'VEC2': 2, 'SCALAR': 1}[a['type']]
+    fmt = {5126: 'f', 5123: 'H', 5125: 'I', 5121: 'B'}[a['componentType']]
+    st = v.get('byteStride') or struct.calcsize(fmt) * comp
+    o = v.get('byteOffset', 0) + a.get('byteOffset', 0)
+    return [struct.unpack_from('<' + fmt * comp, b, o + k * st) for k in range(a['count'])]
+
+def _uv_mask(j, b, img_index, w, h):
+    """Pixels covered by the UV triangles of every primitive whose material uses this image."""
+    from PIL import Image, ImageDraw
+    mask = Image.new('L', (w, h), 0); dr = ImageDraw.Draw(mask)
+    mats = {i for i, mt in enumerate(j.get('materials', [])) for key in ('baseColorTexture',)
+            if (mt.get('pbrMetallicRoughness') or {}).get(key, {}).get('index') is not None
+            and j['textures'][(mt['pbrMetallicRoughness'][key])['index']].get('source') == img_index}
+    for me in j.get('meshes', []):
+        for pr in me['primitives']:
+            if pr.get('material') not in mats or 'TEXCOORD_0' not in pr['attributes']:
+                continue
+            uv = _accessor(j, b, pr['attributes']['TEXCOORD_0'])
+            idx = [t[0] for t in _accessor(j, b, pr['indices'])] if 'indices' in pr else list(range(len(uv)))
+            for t in range(0, len(idx) - 2, 3):
+                dr.polygon([(uv[idx[t + k]][0] * w, uv[idx[t + k]][1] * h) for k in range(3)], fill=255, outline=255)
+    return mask
+
+def _pushpull(im, mask):
+    """Fill texels outside the UV islands with nearby island colours so mipmaps don't bleed black in."""
+    import numpy as np
+    from PIL import Image
+    a = np.asarray(im.convert('RGB'), dtype=np.float32); m = (np.asarray(mask) > 0).astype(np.float32)
+    if m.mean() > .995 or m.sum() == 0:
+        return im
+    levels = [(a * m[..., None], m)]
+    while min(levels[-1][1].shape) > 1:
+        c, w = levels[-1]; H, W = w.shape; H2, W2 = H // 2 * 2, W // 2 * 2
+        c = c[:H2, :W2].reshape(H2 // 2, 2, W2 // 2, 2, 3).sum((1, 3)); w = w[:H2, :W2].reshape(H2 // 2, 2, W2 // 2, 2).sum((1, 3))
+        levels.append((c, w))
+    col = levels[-1][0] / np.maximum(levels[-1][1], 1e-6)[..., None]
+    for c, w in reversed(levels[:-1]):
+        H, W = w.shape; up = np.repeat(np.repeat(col, 2, 0), 2, 1)
+        up = np.pad(up, ((0, max(0, H - up.shape[0])), (0, max(0, W - up.shape[1])), (0, 0)), mode='edge')[:H, :W]
+        known = w > 0
+        col = np.where(known[..., None], c / np.maximum(w, 1e-6)[..., None], up)
+    out = np.where(m[..., None] > 0, a, col)
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+
 def shrink_textures(path, size):
     """Resize embedded images to at most size x size (needs Pillow; gltf-transform resize needs sharp)."""
     try:
@@ -133,6 +183,7 @@ def shrink_textures(path, size):
         return
     import io
     j, b = _glb_split(open(path, 'rb').read())
+    j0 = json.loads(json.dumps(j))  # buffer views get rewritten below; UV masks read the original layout
     views, out = j['bufferViews'], bytearray()
     remap = {}
     for i, v in enumerate(views):
@@ -142,6 +193,11 @@ def shrink_textures(path, size):
             im = Image.open(io.BytesIO(chunk))
             if max(im.size) > size:
                 im = im.resize((min(size, im.size[0]), min(size, im.size[1])), Image.LANCZOS)
+            try:  # pad UV islands (Meshy atlases have black gaps that bleed into mipmaps -> dark props at a distance)
+                if im.mode not in ('RGBA', 'LA'):
+                    im = _pushpull(im, _uv_mask(j0, b, j['images'].index(img), im.size[0], im.size[1]))
+            except Exception as ex:
+                print('  (텍스처 여백 채우기 건너뜀: %s)' % str(ex)[:80])
             buf = io.BytesIO()
             opaque = im.mode in ('RGB', 'L', 'P') or (im.mode in ('RGBA', 'LA') and im.getextrema()[-1][0] == 255)
             if img.get('mimeType') == 'image/png' and not opaque:
@@ -240,7 +296,7 @@ def cmd_gen(a):
     if a.image:
         t, tid = image_to_3d(a.image, a.polycount)
     else:
-        t, tid = text_to_3d(a.prompt + (STYLE if not a.raw else ''), a.style, a.polycount, a.texture_prompt, refine=not a.no_refine)
+        t, tid = text_to_3d(a.prompt + (STYLE if not a.raw else ''), a.style, a.polycount, a.texture_prompt, refine=not a.no_refine, model=a.model)
     url = (t.get('model_urls') or {}).get('glb')
     if not url:
         sys.exit('GLB 다운로드 주소가 없습니다: ' + json.dumps(t)[:300])
@@ -320,6 +376,52 @@ def cmd_rigfile(a):
         save_manifest(m)
     print('리깅 완료:', fname, '→', ', '.join(users) or '(manifest 항목 없음)')
 
+def _manifest_update(fn):
+    import fcntl
+    with open(MANIFEST + '.lock', 'w') as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        m = load_manifest(); fn(m); save_manifest(m)
+
+def cmd_world(a):
+    """Batch-replace KayKit props with Meshy models (props_world.json). meshy-5 = 5 + 10 credits per model.
+    Several KayKit names can share one model; each entry lists the zones it appears in so the game loads it lazily."""
+    from concurrent.futures import ThreadPoolExecutor
+    spec = json.load(open(os.path.join(HERE, a.spec), encoding='utf-8'))
+    zones_of = json.load(open(os.path.join(HERE, 'prop_zones.json'), encoding='utf-8'))
+    done = load_manifest()['models']
+    todo = [k for k in spec if (not a.only or k in a.only.split(',')) and (a.redo or k not in done)]
+    print('생성할 모델 %d개 (예상 %d 크레딧)' % (len(todo), len(todo) * 15))
+    def one(key):
+        v = spec[key]
+        try:
+            t, tid = text_to_3d(v['prompt'] + STYLE, 'realistic', v.get('tris', 2000), None, model=a.model, preview_id=v.get('preview'))
+            url = (t.get('model_urls') or {}).get('glb')
+            src = download(url, os.path.join(tempfile.mkdtemp(), key + '.glb'))
+            f = store(key, src, v.get('tex', 256), max(v.get('tris', 2000), 800) * 2)
+            zs = sorted({z for r in v['replace'] for z in (zones_of.get(r) or {})})
+            if v.get('ground'):  # flat tile rendered top-down into a repeating ground texture by the game
+                e = {'file': f, 'kind': 'groundtex', 'ground': v['ground'], 'prompt': v['prompt'], 'meshy_task': tid}
+            else:
+                e = {'file': f, 'kind': 'prop', 'replace': v['replace'], 'zones': zs, 'prompt': v['prompt'], 'meshy_task': tid}
+            _manifest_update(lambda m: m['models'].__setitem__(key, e))
+            print('OK', key, '→', ', '.join(v['replace']), flush=True)
+        except BaseException as ex:  # api() exits via SystemExit on HTTP errors
+            print('FAIL', key, str(ex)[:200], flush=True)
+    with ThreadPoolExecutor(a.workers) as ex:
+        list(ex.map(one, todo))
+
+def cmd_zones(a):
+    """Tag monster/NPC entries with the zones they appear in (entity_zones.json) so the game loads them lazily."""
+    ez = json.load(open(os.path.join(HERE, 'entity_zones.json'), encoding='utf-8'))
+    def fix(m):
+        n = 0
+        for k, e in m['models'].items():
+            z = ez['mob'].get(e.get('mob')) if e.get('mob') else ez['npc'].get(e.get('npc')) if e.get('npc') else None
+            if z and e.get('zones') != z:
+                e['zones'] = z; n += 1
+        print('zones 갱신:', n)
+    _manifest_update(fix)
+
 def cmd_import(a):
     check_target(a)
     files = {'model': store(a.key, a.glb, a.texture_size), 'anims': {}}
@@ -359,7 +461,7 @@ def main():
     g = sp.add_parser('gen'); common(g)
     g.add_argument('--prompt'); g.add_argument('--image', help='이미지 URL로 image-to-3D')
     g.add_argument('--texture-prompt'); g.add_argument('--style', default='realistic', choices=['realistic', 'sculpture'])
-    g.add_argument('--polycount', type=int, default=12000); g.add_argument('--rig', action='store_true', help='사람형 자동 리깅 (걷기·달리기)')
+    g.add_argument('--polycount', type=int, default=12000); g.add_argument('--model', default='latest', help='latest(30크레딧) 또는 meshy-5(15크레딧)'); g.add_argument('--rig', action='store_true', help='사람형 자동 리깅 (걷기·달리기)')
     g.add_argument('--rig-height', type=float); g.add_argument('--actions', default='idle=0,attack=4,hit=178,death=8'); g.add_argument('--no-refine', action='store_true'); g.add_argument('--raw', action='store_true', help='게임 스타일 문구를 붙이지 않음')
     i = sp.add_parser('import'); common(i); i.add_argument('glb'); i.add_argument('--anim', action='append', help='name=path.glb (예: run=run.glb)')
     rf = sp.add_parser('rigfile', help='이미 넣은 모델 파일에 뼈대(걷기·달리기) 입히기')
@@ -369,6 +471,10 @@ def main():
     rf.add_argument('--max-tris', type=int, default=12000)
     rf.add_argument('--actions', default='idle=0,attack=4,hit=178,death=8',
                     help='추가 동작 (Meshy 애니메이션 라이브러리 action_id, 개당 3크레딧)')
+    sp.add_parser('zones', help='몬스터·NPC 모델에 등장 구역 표시 (지연 로딩)')
+    wd = sp.add_parser('world', help='props_world.json 의 소품을 한꺼번에 Meshy 모델로 교체')
+    wd.add_argument('--spec', default='props_world.json'); wd.add_argument('--only'); wd.add_argument('--redo', action='store_true')
+    wd.add_argument('--workers', type=int, default=5); wd.add_argument('--model', default='meshy-5')
     a = ap.parse_args()
     if a.cmd == 'balance':
         print('Meshy 크레딧:', api('GET', '/openapi/v1/balance').get('balance'))
@@ -396,6 +502,10 @@ def main():
             sys.exit('--prompt 또는 --image 가 필요합니다')
         a.texture_prompt = a.texture_prompt
         cmd_gen(a)
+    elif a.cmd == 'zones':
+        cmd_zones(a)
+    elif a.cmd == 'world':
+        cmd_world(a)
     elif a.cmd == 'rigfile':
         cmd_rigfile(a)
     elif a.cmd == 'import':

@@ -1,0 +1,143 @@
+{
+ "mob": {
+  "ashGoblin": [
+   "village"
+  ],
+  "wolfBoss": [
+   "village"
+  ],
+  "scarecrow": [
+   "village"
+  ],
+  "boar": [
+   "plains"
+  ],
+  "raider": [
+   "plains"
+  ],
+  "slinger": [
+   "plains"
+  ],
+  "barricade": [
+   "plains"
+  ],
+  "tent": [
+   "plains"
+  ],
+  "turka": [
+   "plains"
+  ],
+  "ox": [
+   "plains"
+  ],
+  "beastBoar": [
+   "beasts"
+  ],
+  "beastWolf": [
+   "beasts"
+  ],
+  "beastsBoss": [
+   "beasts"
+  ],
+  "graveSkel": [
+   "grave"
+  ],
+  "graveGhost": [
+   "grave"
+  ],
+  "graveBoss": [
+   "grave"
+  ],
+  "clockDoll": [
+   "clock"
+  ],
+  "clockGolem": [
+   "clock"
+  ],
+  "clockBoss": [
+   "clock"
+  ],
+  "asuraGoblin": [
+   "asura"
+  ],
+  "asuraWarrior": [
+   "asura"
+  ],
+  "asuraBoss": [
+   "asura"
+  ],
+  "ignis": [
+   "altar"
+  ],
+  "ignisFly": [
+   "altar"
+  ]
+ },
+ "npc": {
+  "aldus": [
+   "village"
+  ],
+  "kallen": [
+   "village"
+  ],
+  "runba": [
+   "village"
+  ],
+  "guard": [
+   "citadel",
+   "plains",
+   "village"
+  ],
+  "villager": [
+   "village"
+  ],
+  "logan": [
+   "plains"
+  ],
+  "thomas": [
+   "plains"
+  ],
+  "hector": [
+   "plains"
+  ],
+  "eldric": [
+   "citadel"
+  ],
+  "aide": [
+   "citadel"
+  ],
+  "aril": [
+   "citadel"
+  ],
+  "mari": [
+   "citadel"
+  ],
+  "varkan": [
+   "citadel"
+  ],
+  "rowen": [
+   "citadel"
+  ],
+  "burkan": [
+   "citadel"
+  ],
+  "elara": [
+   "citadel"
+  ],
+  "sylvia": [
+   "citadel"
+  ],
+  "dabin": [
+   "citadel"
+  ],
+  "taewan": [
+   "citadel"
+  ],
+  "dongjun": [
+   "citadel"
+  ],
+  "seojun": [
+   "citadel"
+  ]
+ }
+}

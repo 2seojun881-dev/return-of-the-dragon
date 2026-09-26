@@ -1,0 +1,493 @@
+{
+ "w_tree_pine": {
+  "replace": [
+   "trees_B_large",
+   "trees_B_medium"
+  ],
+  "tris": 3500,
+  "tex": 512,
+  "prompt": "cluster of three tall dark green pine trees on a small root base"
+ },
+ "w_tree_leafy": {
+  "replace": [
+   "tree_single_A",
+   "tree_single_B",
+   "trees_A_medium"
+  ],
+  "tris": 3500,
+  "tex": 512,
+  "prompt": "single round leafy oak tree with thick trunk and lush green canopy"
+ },
+ "w_tree_dead": {
+  "replace": [
+   "tree_dead_large",
+   "tree_dead_medium",
+   "tree_dead_small"
+  ],
+  "tris": 2500,
+  "tex": 256,
+  "prompt": "dead leafless twisted tree with gnarled black branches"
+ },
+ "w_rock": {
+  "replace": [
+   "rock_single_A",
+   "rock_single_B",
+   "rock_single_C"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "large mossy grey boulder"
+ },
+ "w_rock_flat": {
+  "replace": [
+   "rock_single_D",
+   "rock_single_E"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "cluster of flat broken grey stones"
+ },
+ "w_mountain": {
+  "replace": [
+   "mountain_A",
+   "mountain_C"
+  ],
+  "tris": 3000,
+  "tex": 512,
+  "prompt": "jagged dark rocky mountain peak"
+ },
+ "w_mountain_green": {
+  "replace": [
+   "mountain_A_grass_trees",
+   "mountain_B_grass_trees",
+   "hills_A_trees"
+  ],
+  "tris": 3500,
+  "tex": 512,
+  "prompt": "green grassy hill mountain covered with small pine trees"
+ },
+ "w_hex_grass": {
+  "replace": [
+   "hex_grass"
+  ],
+  "tris": 1500,
+  "tex": 512,
+  "prompt": "hexagonal stone platform tile with grass on top, flat"
+ },
+ "w_skull": {
+  "replace": [
+   "skull"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "old cracked human skull"
+ },
+ "w_ribcage": {
+  "replace": [
+   "ribcage"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "large animal ribcage skeleton lying on the ground"
+ },
+ "w_bones": {
+  "replace": [
+   "bone_A"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "small pile of scattered old bones"
+ },
+ "w_gravestone": {
+  "replace": [
+   "gravestone"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "weathered rounded stone gravestone tombstone"
+ },
+ "w_gravemarker": {
+  "replace": [
+   "gravemarker_A"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "wooden cross grave marker"
+ },
+ "w_grave": {
+  "replace": [
+   "grave_A"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "stone grave with dirt burial mound and headstone"
+ },
+ "w_post_skull": {
+  "replace": [
+   "post_skull"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "wooden stake post with a skull on top"
+ },
+ "w_shrine": {
+  "replace": [
+   "shrine_candles"
+  ],
+  "tris": 2000,
+  "tex": 256,
+  "prompt": "small stone roadside shrine with lit candles"
+ },
+ "w_wall": {
+  "replace": [
+   "wall_straight"
+  ],
+  "tris": 1500,
+  "tex": 512,
+  "prompt": "straight stone castle wall segment with battlements, long rectangular block"
+ },
+ "w_fence": {
+  "replace": [
+   "fence_wood_straight"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "straight wooden palisade fence segment of sharpened logs"
+ },
+ "w_fence_broken": {
+  "replace": [
+   "fence_broken"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "broken leaning wooden fence segment"
+ },
+ "w_arch_gate": {
+  "replace": [
+   "arch_gate"
+  ],
+  "tris": 2500,
+  "tex": 512,
+  "prompt": "stone archway gate with keystone"
+ },
+ "w_pillar": {
+  "replace": [
+   "pillar_decorated",
+   "column"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "tall ornate carved stone pillar column"
+ },
+ "w_lamp_post": {
+  "replace": [
+   "post_lantern"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "iron street lamp post with a hanging lantern"
+ },
+ "w_torch_wall": {
+  "replace": [
+   "torch_mounted"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "iron wall-mounted torch bracket with wooden torch"
+ },
+ "w_rubble": {
+  "replace": [
+   "rubble_large"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "pile of broken stone rubble and bricks"
+ },
+ "w_banner_red": {
+  "replace": [
+   "banner_red",
+   "flag_red"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "red heraldic banner flag hanging from a wooden pole"
+ },
+ "w_banner_blue": {
+  "replace": [
+   "banner_blue",
+   "flag_blue",
+   "banner_patternA_blue"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "blue heraldic banner flag hanging from a wooden pole"
+ },
+ "w_tower": {
+  "replace": [
+   "building_tower_A_blue",
+   "building_tower_B_blue"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "medieval stone watch tower with blue cone roof"
+ },
+ "w_market": {
+  "replace": [
+   "building_market_blue"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "medieval market hall building with blue roof and open stalls"
+ },
+ "w_ruin": {
+  "replace": [
+   "building_destroyed"
+  ],
+  "tris": 4000,
+  "tex": 512,
+  "prompt": "burned ruined medieval house with collapsed roof"
+ },
+ "w_house": {
+  "replace": [
+   "building_home_A_red",
+   "building_home_B_red"
+  ],
+  "tris": 4000,
+  "tex": 512,
+  "prompt": "small medieval timber cottage with red tiled roof"
+ },
+ "w_tavern": {
+  "replace": [
+   "building_tavern_red"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "two story medieval tavern inn building with red roof and hanging sign"
+ },
+ "w_church": {
+  "replace": [
+   "building_church_blue"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "small medieval stone chapel with blue roof and bell tower"
+ },
+ "w_castle": {
+  "replace": [
+   "building_castle_blue"
+  ],
+  "tris": 6000,
+  "tex": 512,
+  "prompt": "medieval stone castle keep with towers and blue roofs"
+ },
+ "w_blacksmith": {
+  "replace": [
+   "building_blacksmith_red"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "medieval blacksmith forge building with chimney, anvil and red roof"
+ },
+ "w_windmill": {
+  "replace": [
+   "building_windmill_red"
+  ],
+  "tris": 5000,
+  "tex": 512,
+  "prompt": "medieval wooden windmill with red roof and four sails"
+ },
+ "w_well": {
+  "replace": [
+   "building_well_red"
+  ],
+  "tris": 2000,
+  "tex": 256,
+  "prompt": "stone water well with small red wooden roof and bucket"
+ },
+ "w_tent": {
+  "replace": [
+   "tent"
+  ],
+  "tris": 2000,
+  "tex": 256,
+  "prompt": "canvas military camp tent"
+ },
+ "w_barrel": {
+  "replace": [
+   "barrel",
+   "keg",
+   "barrel_large"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "wooden barrel with iron hoops",
+  "preview": "01a0de8b-3c44-73b5-8b46-d30056c626e2"
+ },
+ "w_crate": {
+  "replace": [
+   "box_large",
+   "crate_A_big",
+   "crate_B_small",
+   "crate_long_A"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "wooden supply crate"
+ },
+ "w_crates_stack": {
+  "replace": [
+   "crates_stacked"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "stack of three wooden crates"
+ },
+ "w_sack": {
+  "replace": [
+   "sack"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "tied burlap grain sack"
+ },
+ "w_candles": {
+  "replace": [
+   "candle_triple",
+   "shelf_small_candles"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "three lit wax candles on an iron holder"
+ },
+ "w_lumber": {
+  "replace": [
+   "resource_lumber"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "stacked pile of cut lumber logs"
+ },
+ "w_weaponrack": {
+  "replace": [
+   "weaponrack"
+  ],
+  "tris": 2000,
+  "tex": 256,
+  "prompt": "wooden weapon rack holding swords and spears"
+ },
+ "w_target": {
+  "replace": [
+   "target"
+  ],
+  "tris": 1000,
+  "tex": 256,
+  "prompt": "archery training target on a wooden stand"
+ },
+ "w_wheelbarrow": {
+  "replace": [
+   "wheelbarrow"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "old wooden wheelbarrow"
+ },
+ "w_arrow_bucket": {
+  "replace": [
+   "bucket_arrows"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "wooden bucket full of arrows"
+ },
+ "w_table": {
+  "replace": [
+   "table_long",
+   "table_medium_tablecloth_decorated_B"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "long rustic wooden table"
+ },
+ "w_stool": {
+  "replace": [
+   "stool"
+  ],
+  "tris": 600,
+  "tex": 256,
+  "prompt": "small round wooden stool"
+ },
+ "w_chest": {
+  "replace": [
+   "chest"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "wooden treasure chest with iron bands, closed"
+ },
+ "w_bed": {
+  "replace": [
+   "bed_decorated"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "medieval wooden single bed with white sheets and pillow"
+ },
+ "w_sword_shield": {
+  "replace": [
+   "sword_shield"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "crossed sword and round shield wall display"
+ },
+ "w_gear": {
+  "replace": [
+   "Skeleton_Shield_Large_B"
+  ],
+  "tris": 1200,
+  "tex": 256,
+  "prompt": "large bronze clockwork cog gear, flat disc"
+ },
+ "w_barricade": {
+  "replace": [
+   "barrier"
+  ],
+  "tris": 1500,
+  "tex": 256,
+  "prompt": "wooden spiked barricade"
+ },
+ "w_floor_wood": {
+  "replace": [
+   "floor_wood_large",
+   "floor_wood_large_dark"
+  ],
+  "tris": 600,
+  "tex": 512,
+  "prompt": "square wooden plank floor tile, flat, seen from above"
+ },
+ "w_wall_inner": {
+  "replace": [
+   "wall",
+   "wall_shelves"
+  ],
+  "tris": 1200,
+  "tex": 512,
+  "prompt": "interior wall panel of timber frame and plaster, flat rectangular"
+ },
+ "w_wall_window": {
+  "replace": [
+   "wall_window_open"
+  ],
+  "tris": 1500,
+  "tex": 512,
+  "prompt": "interior timber and plaster wall panel with an open wooden window"
+ },
+ "w_wall_door": {
+  "replace": [
+   "wall_doorway"
+  ],
+  "tris": 1500,
+  "tex": 512,
+  "prompt": "interior timber and plaster wall panel with an open doorway"
+ }
+}

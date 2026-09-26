@@ -432,7 +432,7 @@ body.cine #hud>*{pointer-events:none}
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
-    <div class="t-foot">© 용의 귀환 · KayKit 에셋 CC0 (Kay Lousberg)</div>
+    <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
 </div>
 <div id="tfx"></div>
@@ -854,12 +854,33 @@ function resolve(p,rad){
 }
 
 /* ---------- scenery builders ---------- */
+/* ground surfaces use Meshy tiles: each tile model is rendered once from above into a repeating texture */
+const GTEX={};
+function groundKind(col){const c=new THREE.Color(col),h={};c.getHSL(h);
+  if(h.l<.05)return null;if(c.b>=c.r*.95&&c.b>c.g*.9&&h.l>.25)return 'stone';if(c.g>c.r*1.05&&c.g>c.b)return 'grass';
+  if(c.r>c.g*1.25&&h.l<.25)return 'ash';if(c.r>c.b*1.2&&h.l>=.22)return 'dirt';return 'soil';}
+function groundTex(kind){if(!kind||!CUSTOM.ground[kind])return null;if(GTEX[kind])return GTEX[kind];
+  const e=CUSTOM.ground[kind],sc=new THREE.Scene(),tile=e.gltf.scene.clone();sc.add(tile);
+  tile.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshBasicMaterial({map:o.material.map||null,color:o.material.map?0xffffff:o.material.color});});  // unlit albedo
+  const bb=new THREE.Box3().setFromObject(tile),c=bb.getCenter(new V()),hw=Math.min(bb.max.x-bb.min.x,bb.max.z-bb.min.z)*.24;  // centre of the top face only
+  const oc=new THREE.OrthographicCamera(-hw,hw,hw,-hw,.01,100);oc.position.set(c.x,bb.max.y+5,c.z);oc.up.set(0,0,-1);oc.lookAt(c.x,bb.min.y,c.z);
+  const rtg=new THREE.WebGLRenderTarget(512,512,{minFilter:THREE.LinearMipmapLinearFilter,generateMipmaps:true});
+  const prevT=renderer.getRenderTarget(),pc=renderer.getClearColor(new THREE.Color()),pa=renderer.getClearAlpha();renderer.setRenderTarget(rtg);renderer.setClearColor(0x000000,1);renderer.clear();renderer.render(sc,oc);renderer.setRenderTarget(prevT);renderer.setClearColor(pc,pa);
+  // keep only the tile's light/dark pattern (normalised to 0.5 on average) so each zone keeps its own ground colour
+  const px=new Uint8Array(512*512*4);renderer.readRenderTargetPixels(rtg,0,0,512,512,px);rtg.dispose();let sum=0;
+  for(let i=0;i<px.length;i+=4)sum+=px[i]*.3+px[i+1]*.59+px[i+2]*.11;const avg=Math.max(1,sum/(512*512));
+  const ct=kind==='ash'?.4:.65;  // pattern strength
+  for(let i=0;i<px.length;i+=4){const l=(px[i]*.3+px[i+1]*.59+px[i+2]*.11)/avg,v=Math.max(0,Math.min(255,Math.round((.5+(l-1)*.5*ct)*255)));px[i]=px[i+1]=px[i+2]=v;px[i+3]=255;}
+  const t=new THREE.DataTexture(px,512,512,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=4;t.needsUpdate=true;return GTEX[kind]=t;}
 function ground(cx,cz,w,d,col,jit,y){
   const geo=new THREE.PlaneGeometry(w,d,Math.max(1,Math.ceil(w/5)),Math.max(1,Math.ceil(d/5)));geo.rotateX(-Math.PI/2);
-  const c=new THREE.Color(col),cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
+  const tex=groundTex(groundKind(col));
+  const c=new THREE.Color(col);if(tex)c.multiplyScalar(2);  // detail texture averages 0.5
+  const cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
   for(let i=0;i<n;i++){const f=1+(srand()-.5)*j*2;cols.push(c.r*f,c.g*f,c.b*f);}
   geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
-  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:true,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2}));
+  if(tex){const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(uv.getX(i)*w+cx)/7,(uv.getY(i)*d-cz)/7);}  // ~7m per tile, continuous across patches
+  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2}));
   m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;W.root.add(m);return m;
 }
 function grass(cx,cz,w,d,n,col){
@@ -1141,25 +1162,51 @@ function loadHeroes(onProgress){
   return glbPromise;
 }
 /* ---------- Meshy AI custom models (tools/meshy/meshy_gen.py -> models/custom/manifest.json) ---------- */
-const CUSTOM={mobs:{},npcs:{},props:{},players:{},n:0};
+const CUSTOM={mobs:{},npcs:{},props:{},players:{},ground:{},n:0};
 /* the game moves entities itself: pin the root bone's horizontal drift (root motion) to its first key */
 function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.userData={inPlace:1};
   clip.tracks.forEach(t=>{if(!/Hips\.position$/.test(t.name))return;const v=t.values,x=v[0],z=v[2];for(let i=0;i<v.length;i+=3){v[i]=x;v[i+2]=z;}});return clip;}
-function loadCustom(){const once={},parse=f=>once[f]||(once[f]=parseB64('models/custom/'+f));
-  return fetch('models/custom/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{models:{}}).catch(()=>({models:{}})).then(m=>Promise.all(Object.entries(m.models||{}).map(([k,e])=>
-    parse(e.file).then(async g=>{
+/* Meshy models: entries with "zones" load only when a zone that uses them is built (and its neighbours are
+   prefetched in the background), so phones don't download every model at startup. */
+let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
+const ZONE_NEAR={inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
+function parseCustom(f){return CUSTOM_ONCE[f]||(CUSTOM_ONCE[f]=parseB64('models/custom/'+f));}
+function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
+  return CUSTOM_LOAD[k]=parseCustom(e.file).then(async g=>{
       e.key=k;e.gltf=g;e.clips={};(g.animations||[]).forEach((c,i)=>{e.clips[i?c.name:'_base']=c;});
-      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parse(f);if(ag.animations&&ag.animations[0])e.clips[an]=inPlace(ag.animations[0]);}catch(err){console.warn('custom anim failed',k,an);}}
-      g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material&&o.material.map)o.material.map.encoding=THREE.sRGBEncoding;}});
+      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parseCustom(f);if(ag.animations&&ag.animations[0])e.clips[an]=inPlace(ag.animations[0]);}catch(err){console.warn('custom anim failed',k,an);}}
+      g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;const mt=o.material;if(mt&&mt.map)mt.map.encoding=THREE.sRGBEncoding;
+        if(mt&&mt.isMeshStandardMaterial&&!mt.metalnessMap){mt.metalness=0;mt.roughness=Math.max(mt.roughness,.7);}
+        if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
       if(e.skinned){/* rigged exports keep bones in cm under a 0.01 armature: measure the posed, skinned vertices instead */
         bb=new THREE.Box3();const v=new THREE.Vector3();g.scene.traverse(o=>{if(!o.isSkinnedMesh)return;const pa=o.geometry.attributes.position,st=Math.max(1,Math.floor(pa.count/4000));
           for(let i=0;i<pa.count;i+=st){v.fromBufferAttribute(pa,i);o.boneTransform(i,v);bb.expandByPoint(v.applyMatrix4(o.matrixWorld));}});}
       const hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;e.sc=(e.height||2.2)/hh;
-      if(e.kind==='prop'&&e.replace){PROPS[e.replace]=g.scene;PBOX[e.replace]=bb;CUSTOM.props[e.replace]=e;}
+      if(e.kind==='prop'&&e.replace){liftProp(g.scene);if(e.tint)g.scene.traverse(o=>{if(o.isMesh)o.material.color.multiply(new THREE.Color(e.tint));});
+        [].concat(e.replace).forEach(r=>{const f=fitToKit(g.scene,bb,PBOX[r]);PROPS[r]=f.obj;PBOX[r]=f.box;CUSTOM.props[r]=e;});}
+      else if(e.kind==='groundtex')CUSTOM.ground[e.ground]=e;
       else if(e.mob)CUSTOM.mobs[e.mob]=e;else if(e.npc)CUSTOM.npcs[e.npc]=e;else if(e.player)CUSTOM.players[e.player]=e;
-      CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err))))).then(()=>{if(CUSTOM.n)console.log('Meshy custom models loaded:',CUSTOM.n);});}
+      CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err));}
+/* scale (and turn) a Meshy prop to the KayKit prop's footprint so every existing layout keeps its sizes */
+function fitToKit(src,mb,kb){if(!kb)return {obj:src,box:mb};const ks=kb.getSize(new V()),ms0=mb.getSize(new V());
+  const rot=(ks.x>ks.z*1.3&&ms0.z>ms0.x*1.3)||(ks.z>ks.x*1.3&&ms0.x>ms0.z*1.3),ms=rot?new V(ms0.z,ms0.y,ms0.x):ms0;
+  let sx=ks.x/Math.max(ms.x,1e-3),sz=ks.z/Math.max(ms.z,1e-3);const m=(sx+sz)/2;sx=clamp(sx,m*.6,m*1.6);sz=clamp(sz,m*.6,m*1.6);
+  const sy=ks.y/Math.max(ms.y,1e-3),w=new THREE.Group(),r=new THREE.Group();r.add(src.clone());if(rot)r.rotation.y=Math.PI/2;w.add(r);w.scale.set(sx,sy,sz);
+  w.updateMatrixWorld(true);return {obj:w,box:new THREE.Box3().setFromObject(w)};}
+/* Meshy textures are much darker than KayKit's palette the lighting was tuned for: lift dark props toward it */
+function liftProp(root){const cv=document.createElement('canvas');cv.width=cv.height=24;const cx=cv.getContext('2d');
+  root.traverse(o=>{if(!o.isMesh||!o.material||!o.material.map||!o.material.map.image||o.material.userData.lifted)return;const mt=o.material;mt.userData.lifted=1;
+    try{cx.clearRect(0,0,24,24);cx.drawImage(mt.map.image,0,0,24,24);const d=cx.getImageData(0,0,24,24).data;let s=0,n=0;
+      for(let i=0;i<d.length;i+=4){const l=(d[i]*.3+d[i+1]*.59+d[i+2]*.11)/255;if(l>.02){s+=Math.pow(l,2.2);n++;}}
+      const avg=n?s/n:.2,k=Math.min(3,Math.max(1,.2/avg));mt.color.multiplyScalar(k);}catch(err){}});}
+function loadFor(test){if(!MANI)return Promise.resolve();return Promise.all(Object.entries(MANI).filter(([k,e])=>test(e)).map(([k,e])=>loadEntry(k,e)));}
+function loadCustom(){
+  return fetch('models/custom/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{models:{}}).catch(()=>({models:{}})).then(m=>{MANI=m.models||{};
+    return loadFor(e=>!e.zones||!e.zones.length||e.zones.some(z=>BOOT_ZONES.includes(z)));}).then(()=>{if(CUSTOM.n)console.log('Meshy custom models loaded:',CUSTOM.n);});}
+/* await before building zone z; neighbours are fetched quietly afterwards */
+function needZone(z){const p=loadFor(e=>e.zones&&e.zones.includes(z));p.then(()=>(ZONE_NEAR[z]||[]).forEach(n=>setTimeout(()=>loadFor(e=>e.zones&&e.zones.includes(n)),1500)));return p;}
 /* a rig-like wrapper so custom models plug into the same animation code as KayKit rigs.
    Meshy auto-rig gives walk/run clips; everything else (idle, attack, hit, roar, death) is procedural. */
 function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.clone(e.gltf.scene):e.gltf.scene.clone();
@@ -1227,7 +1274,7 @@ function prop(name,x,z,o){
   let s=o.s||1;if(o.fit)s=o.fit/Math.max(sz.x,sz.z);if(o.h)s=o.h/sz.y;if(o.w)s=o.w/sz.x;if(o.d)s=o.d/sz.z;
   const obj=src.clone();obj.position.set(-c.x*s,-bb.min.y*s+(o.y||0),-c.z*s);obj.scale.multiplyScalar(s);
   if(o.tint)obj.traverse(m=>{if(m.isMesh)m.material=tintedMat(m.material,o.tint);});
-  const g=new THREE.Group();g.add(obj);g.position.set(x,0,z);g.rotation.y=o.rot||0;(o.par||W.root).add(g);g.userData.size=sz.clone().multiplyScalar(s);return g;
+  const g=new THREE.Group();g.add(obj);g.position.set(x,0,z);g.rotation.y=o.rot||0;(o.par||W.root).add(g);g.userData.size=sz.clone().multiplyScalar(s);g.userData.prop=name;return g;
 }
 const pick=(arr)=>arr[Math.floor(srand()*arr.length)%arr.length];
 /* art bible recolor: palette texture → dark fantasy (steel stays cold, gold/magic stays bright) */
@@ -1845,7 +1892,7 @@ function buildPrologue(){
   W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.6)*.25;});});
 }
 function buildInn(){
-  setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.42,sun:0xffc890,si:.55,ash:false});
+  setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.62,sun:0xffc890,si:.75,ash:false});
   W.bounds=[-6,6,-4.4,4.6];
   ground(0,0,120,120,0x0c0908,.02);
   const S2=.8,T=4*S2;
@@ -2930,6 +2977,7 @@ let transitioning=false;
 async function gotoZone(z,arrive){
   transitioning=true;if(P){P.target=null;P.dest=null;P.hunt=null;}
   await fade(1,.45);
+  await needZone(z);
   buildZone(z);S.zone=z;
   const a=arrive||ZONES[z].spawn;P.pos.set(a[0],0,a[1]);if(P.mercLeft>0)spawnMerc();updSetFx();P.face=z==='plains'&&a[1]<0?Math.PI:Math.PI;P.mesh.rotation.y=P.face;
   cam.pos.copy(P.pos).add(CAM_OFF);cam.look.copy(P.pos);
@@ -3650,6 +3698,7 @@ async function startGame(s,resume){
     await runPrologue();
   }else{
     $('#fade').style.opacity=1;
+    await needZone(S.zone);
     buildZone(S.zone);const a=S.pos||ZONES[S.zone].spawn;P.pos.set(a[0],0,a[1]);resolve(P.pos,P.rad);
     cam.pos.copy(P.pos).add(CAM_OFF);cam.look.copy(P.pos);
     gameOn=true;$('#hud').hidden=false;setAuto(AUTO.on,true);$('#zname').textContent=ZONES[S.zone].name;refreshHud();refreshQuest();
@@ -3657,7 +3706,7 @@ async function startGame(s,resume){
   }
 }
 async function runPrologue(){
-  P.mesh.visible=false;
+  P.mesh.visible=false;needZone('inn');  // start fetching the inn while the intro plays
   await cutscene(async()=>{
     await fade(1,.5);
     buildZone('prologue');dragon.g.visible=true;dragon.g.position.set(0,-10,-110);dragon.wings.forEach(w=>w.scale.x=.1);
@@ -3676,6 +3725,7 @@ async function runPrologue(){
     await wait(3);caption('');
     await fade(1,1.2);
   });
+  await needZone('inn');
   buildZone('inn');S.zone='inn';
   // lie flat on the bed: feet at the bed's foot end, head on the pillow (north), face up
   const bp=W.bedPos;P.mesh.visible=true;P.pos.set(bp.x,0,bp.z);P.face=0;P.mesh.rotation.y=0;P.y=bp.y;

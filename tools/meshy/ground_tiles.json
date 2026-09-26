@@ -1,0 +1,7 @@
+{
+ "g_grass": {"ground":"grass", "tris":800, "tex":512, "replace":[], "prompt":"thin flat square slab of ground covered with short green grass and small clover, top surface fully covered"},
+ "g_dirt":  {"ground":"dirt",  "tris":800, "tex":512, "replace":[], "prompt":"thin flat square slab of packed brown dirt road with small pebbles, top surface fully covered"},
+ "g_stone": {"ground":"stone", "tris":800, "tex":512, "replace":[], "prompt":"thin flat square slab of grey cobblestone pavement, top surface fully covered"},
+ "g_soil":  {"ground":"soil",  "tris":800, "tex":512, "replace":[], "prompt":"thin flat square slab of dark damp graveyard soil with dead leaves, top surface fully covered"},
+ "g_ash":   {"ground":"ash",   "tris":800, "tex":512, "replace":[], "prompt":"thin flat square slab of dark volcanic rock ground with glowing orange cracks, top surface fully covered"}
+}
