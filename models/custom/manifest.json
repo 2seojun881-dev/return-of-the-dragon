@@ -8,108 +8,136 @@
       "imported": true
     },
     "mob_beastBoar": {
-      "file": "mob_beastBoar.glb.txt",
+      "file": "m_AnxiousPanda.glb.txt",
       "kind": "monster",
       "height": 1.7,
       "mob": "beastBoar",
       "imported": true
     },
     "mob_beastWolf": {
-      "file": "mob_beastWolf.glb.txt",
+      "file": "m_AzurefangWarden.glb.txt",
       "kind": "monster",
       "height": 2.5,
       "mob": "beastWolf",
       "imported": true
     },
     "mob_graveSkel": {
-      "file": "mob_graveSkel.glb.txt",
+      "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
-      "height": 2.4,
+      "height": 2.1,
       "mob": "graveSkel",
       "imported": true
     },
     "mob_graveGhost": {
-      "file": "mob_graveGhost.glb.txt",
+      "file": "m_LanternKeeper.glb.txt",
       "kind": "monster",
       "height": 2.2,
       "mob": "graveGhost",
       "imported": true
     },
     "mob_clockDoll": {
-      "file": "mob_clockDoll.glb.txt",
+      "file": "m_MischiefMouse.glb.txt",
       "kind": "monster",
-      "height": 2.6,
+      "height": 1.9,
       "mob": "clockDoll",
       "imported": true
     },
     "mob_clockGolem": {
-      "file": "mob_clockGolem.glb.txt",
+      "file": "m_CrystalGolem.glb.txt",
       "kind": "monster",
       "height": 3.6,
       "mob": "clockGolem",
       "imported": true
     },
     "mob_asuraGoblin": {
-      "file": "mob_asuraGoblin.glb.txt",
+      "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
-      "height": 2.1,
+      "height": 2.2,
       "mob": "asuraGoblin",
       "imported": true
     },
     "mob_asuraWarrior": {
-      "file": "mob_asuraWarrior.glb.txt",
+      "file": "m_IvorywyrmLancer.glb.txt",
       "kind": "monster",
       "height": 2.8,
       "mob": "asuraWarrior",
       "imported": true
     },
     "mob_turka": {
-      "file": "mob_turka.glb.txt",
+      "file": "m_MireclawBehemoth.glb.txt",
       "kind": "monster",
       "height": 3.2,
       "mob": "turka",
       "imported": true
     },
     "mob_wolfBoss": {
-      "file": "mob_wolfBoss.glb.txt",
+      "file": "m_CarrotstaffConjurer.glb.txt",
       "kind": "monster",
       "height": 2.5,
       "mob": "wolfBoss",
       "imported": true
     },
     "mob_raider": {
-      "file": "mob_raider.glb.txt",
+      "file": "m_MischiefMouse.glb.txt",
       "kind": "monster",
       "height": 1.8,
       "mob": "raider",
       "imported": true
     },
     "mob_ox": {
-      "file": "mob_ox.glb.txt",
+      "file": "m_Nerdzilla.glb.txt",
       "kind": "monster",
       "height": 2.4,
       "mob": "ox",
       "imported": true
     },
     "mob_ashGoblin": {
-      "file": "mob_ashGoblin.glb.txt",
+      "file": "m_SkullboundRaider.glb.txt",
       "kind": "monster",
       "height": 1.9,
       "mob": "ashGoblin",
       "imported": true
     },
     "mob_boar": {
-      "file": "mob_boar.glb.txt",
+      "file": "m_AnxiousPanda.glb.txt",
       "kind": "monster",
-      "height": 2.6,
+      "height": 1.7,
       "mob": "boar",
       "imported": true
     },
     "mob_slinger": {
-      "file": "mob_slinger.glb.txt",
+      "file": "m_ShellboundShaman.glb.txt",
       "kind": "monster",
       "height": 2.3,
       "mob": "slinger",
+      "imported": true
+    },
+    "mob_beastsBoss": {
+      "file": "m_VerdantSentinel.glb.txt",
+      "kind": "boss",
+      "height": 4.4,
+      "mob": "beastsBoss",
+      "imported": true
+    },
+    "mob_graveBoss": {
+      "file": "m_CrimsonRevenantKnight.glb.txt",
+      "kind": "boss",
+      "height": 3.6,
+      "mob": "graveBoss",
+      "imported": true
+    },
+    "mob_clockBoss": {
+      "file": "m_GildedSeraph.glb.txt",
+      "kind": "boss",
+      "height": 3.8,
+      "mob": "clockBoss",
+      "imported": true
+    },
+    "mob_asuraBoss": {
+      "file": "m_IronjawGoblinWarlord.glb.txt",
+      "kind": "boss",
+      "height": 3.6,
+      "mob": "asuraBoss",
       "imported": true
     }
   }
