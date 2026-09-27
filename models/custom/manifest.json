@@ -370,7 +370,6 @@
         "idle": "p_rogue.idle.glb.txt",
         "attack": "p_rogue.attack.glb.txt",
         "skill": "p_rogue.skill.glb.txt",
-        "cast": "p_rogue.cast.glb.txt",
         "hit": "p_rogue.hit.glb.txt",
         "death": "p_rogue.death.glb.txt"
       },
@@ -408,7 +407,6 @@
         "idle": "p_shaman.idle.glb.txt",
         "attack": "p_shaman.attack.glb.txt",
         "skill": "p_shaman.skill.glb.txt",
-        "cast": "p_shaman.cast.glb.txt",
         "hit": "p_shaman.hit.glb.txt",
         "death": "p_shaman.death.glb.txt"
       },
@@ -427,7 +425,6 @@
         "idle": "p_warrior.idle.glb.txt",
         "attack": "p_warrior.attack.glb.txt",
         "skill": "p_warrior.skill.glb.txt",
-        "cast": "p_warrior.cast.glb.txt",
         "hit": "p_warrior.hit.glb.txt",
         "death": "p_warrior.death.glb.txt"
       },
