@@ -240,7 +240,7 @@ details summary{cursor:pointer;color:var(--gold);font-size:13px;margin-top:10px}
 .tabs{display:flex;gap:6px;margin-bottom:10px}
 .tabs button{padding:6px 14px;border-radius:14px;border:1px solid var(--line2);font-size:13px}
 .tabs button.on{background:var(--gold);color:#1d130a;border-color:var(--gold);font-weight:700}
-canvas.spark{width:90px;height:30px;flex:none}
+canvas.pspark{width:90px;height:30px;flex:none}
 .note{font-size:12px;color:var(--dim)}
 input[type=text]{background:#120d0d;border:1px solid var(--line);border-radius:4px;padding:7px 10px;color:var(--text);font:inherit;width:100%;box-sizing:border-box}
 
@@ -365,6 +365,11 @@ body.cine #hud>*{pointer-events:none}
 #rotate[hidden]{display:none}#rotate b{font-size:20px}#rotate small{font-size:13px;color:#b8a888}
 #rotate .rot-ico{width:46px;height:78px;border:3px solid #d8a860;border-radius:9px;animation:rotHint 2.2s ease-in-out infinite}
 @keyframes rotHint{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#joy{position:absolute;left:calc(18px + env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:150px;height:150px;touch-action:none;z-index:6;display:none}
+body.touch #joy{display:block}
+#joy .jb{position:absolute;left:15px;top:15px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(40,30,26,.35),rgba(20,14,12,.55));border:2px solid rgba(216,168,96,.45);box-shadow:inset 0 0 18px rgba(0,0,0,.6)}
+#joy i{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f0d8a8,#a8783c 70%);border:2px solid #f6e2b8;box-shadow:0 3px 10px rgba(0,0,0,.6)}
+#joy.on .jb{border-color:rgba(255,210,130,.9)}
 </style>
 </head>
 <body>
@@ -374,6 +379,7 @@ body.cine #hud>*{pointer-events:none}
 <div id="tags"></div>
 
 <div id="hud" hidden>
+<div id="joy"><div class="jb"><i></i></div></div>
   <div id="pbox">
     <div id="portrait"></div>
     <div id="pinfo">
@@ -824,7 +830,21 @@ function goLandscapeFull(){if(!TOUCH)return;const d=document.documentElement,rq=
   if(!isFull()&&rq){try{const p=rq.call(d,{navigationUI:'hide'});if(p&&p.then)p.then(lock,lock);else lock();}catch(err){lock();}}else lock();}
 function updRotate(){$('#rotate').hidden=!(TOUCH&&innerHeight>innerWidth);}
 addEventListener('pointerdown',goLandscapeFull,{capture:true});addEventListener('touchend',goLandscapeFull,{capture:true});
-addEventListener('resize',updRotate);addEventListener('orientationchange',()=>setTimeout(()=>{updRotate();resize();},250));updRotate();
+addEventListener('resize',updRotate);
+/* left-thumb virtual joystick (touch) + arrow keys (desktop): free movement in all directions */
+const JOY={x:0,z:0,m:0,id:null,keys:{}};if(TOUCH)document.body.classList.add('touch');
+(()=>{const el=$('#joy'),knob=el.querySelector('i'),R=48;
+  const upd=ev=>{const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=ev.clientX-cx,dy=ev.clientY-cy;const d=Math.hypot(dx,dy);if(d>R){dx*=R/d;dy*=R/d;}
+    knob.style.transform='translate('+dx+'px,'+dy+'px)';JOY.m=Math.min(1,d/R);JOY.x=dx/R;JOY.z=dy/R;};
+  el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();JOY.id=ev.pointerId;el.setPointerCapture(ev.pointerId);el.classList.add('on');upd(ev);});
+  el.addEventListener('pointermove',ev=>{if(ev.pointerId===JOY.id)upd(ev);});
+  const end=ev=>{if(ev.pointerId!==JOY.id)return;JOY.id=null;JOY.m=0;JOY.x=JOY.z=0;knob.style.transform='';el.classList.remove('on');};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);})();
+addEventListener('keydown',ev=>{if(/^Arrow/.test(ev.key)&&ev.target.tagName!=='INPUT'){JOY.keys[ev.key]=1;ev.preventDefault();}});
+addEventListener('keyup',ev=>{delete JOY.keys[ev.key];});
+addEventListener('blur',()=>{JOY.keys={};});
+function joyVec(){if(JOY.m>.12)return {x:JOY.x,z:JOY.z,m:JOY.m};const k=JOY.keys,x=(k.ArrowRight?1:0)-(k.ArrowLeft?1:0),z=(k.ArrowDown?1:0)-(k.ArrowUp?1:0);
+  if(!x&&!z)return null;const l=Math.hypot(x,z);return {x:x/l,z:z/l,m:1};}addEventListener('orientationchange',()=>setTimeout(()=>{updRotate();resize();},250));updRotate();
 
 const MC={};
 function M(c,o){const k=c+'|'+(o?JSON.stringify(o):'');return MC[k]||(MC[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85,metalness:.05,flatShading:true},o||{})));}
@@ -2895,7 +2915,11 @@ function updPlayer(dt){
   if(P.shieldT>0)P.shieldT-=dt;if(P.shieldT>0||P.barrier>0){P.shield.visible=true;P.shield.material.color.setHex(P.barrier>0?0xfff4d8:0xffd070);P.shield.material.opacity=.14+Math.sin(rt*8)*.05;}else P.shield.visible=false;
   if(P.kb){P.pos.x+=P.kb.x*dt;P.pos.z+=P.kb.z*dt;P.kb.t-=dt;resolve(P.pos,P.rad);if(P.kb.t<=0)P.kb=null;}
   let moving=false;
+  const jv=(!paused()&&!P.lying)?joyVec():null;
   if(P.lock>0){P.lock-=dt;}
+  else if(jv){  // camera looks north: screen up = -z, screen right = +x
+    if(AUTO.on)setAuto(false);P.target=null;P.dest=null;P.hunt=null;P.detour=null;
+    const s=P.speed*dt*(.35+.65*jv.m);P.pos.x+=jv.x*s;P.pos.z+=jv.z*s;P.face=Math.atan2(jv.x,jv.z);resolve(P.pos,P.rad);P.walk+=s*2.3;moving=true;}
   else{
     let T=P.target;if(T&&(T.dead||T.gone)){P.target=T=null;}
     if(!T&&P.hunt){const e=nearestEnemy(12,P.hunt);if(e){P.target=T=e;P.dest=null;}}
@@ -3310,11 +3334,11 @@ function renderMarket(){
   let h='<div class="tabs"><button data-t="buy" class="'+(mTab==='buy'?'on':'')+'">구매</button><button data-t="sell" class="'+(mTab==='sell'?'on':'')+'">판매 등록</button></div>';
   h+='<p class="note num">보유 골드 '+fmt(S.gold)+' · 그래프는 최근 7일 평균 거래가입니다.'+(mTab==='sell'?' 등록 시 등록가의 1%를 수수료로 선차감하고, 판매 완료 시 5%를 제외한 대금이 우편으로 지급됩니다.':'')+'</p>';
   MARKET.forEach((it,i)=>{const hist=priceHist(it),p=hist[6];
-    if(mTab==='buy'){h+='<div class="row"><canvas class="spark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">현재가 '+fmt(p)+' G · 보유 '+owned(it.id)+'</small></div><div style="display:flex;gap:4px"><button class="btn sm" data-b="'+i+'" data-n="1"'+(S.gold<p?' disabled':'')+'>1개</button>'+(p<10000?'<button class="btn sm" data-b="'+i+'" data-n="10"'+(S.gold<p*10?' disabled':'')+'>10개</button>':'')+'</div></div>';}
-    else{if(it.id==='potion')return;h+='<div class="row"><canvas class="spark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">등록가 '+fmt(p)+' G · 수수료 '+fmt(p*.01)+' G · 보유 '+owned(it.id)+'</small></div><button class="btn sm pri" data-sl="'+i+'"'+(owned(it.id)<1||S.gold<p*.01?' disabled':'')+'>등록</button></div>';}});
+    if(mTab==='buy'){h+='<div class="row"><canvas class="pspark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">현재가 '+fmt(p)+' G · 보유 '+owned(it.id)+'</small></div><div style="display:flex;gap:4px"><button class="btn sm" data-b="'+i+'" data-n="1"'+(S.gold<p?' disabled':'')+'>1개</button>'+(p<10000?'<button class="btn sm" data-b="'+i+'" data-n="10"'+(S.gold<p*10?' disabled':'')+'>10개</button>':'')+'</div></div>';}
+    else{if(it.id==='potion')return;h+='<div class="row"><canvas class="pspark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">등록가 '+fmt(p)+' G · 수수료 '+fmt(p*.01)+' G · 보유 '+owned(it.id)+'</small></div><button class="btn sm pri" data-sl="'+i+'"'+(owned(it.id)<1||S.gold<p*.01?' disabled':'')+'>등록</button></div>';}});
   $('#pbody').innerHTML=h;
   document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{mTab=b.dataset.t;renderMarket();});
-  document.querySelectorAll('canvas.spark').forEach(cv=>{const it=MARKET[+cv.dataset.s],a=priceHist(it),g=cv.getContext('2d'),W2=cv.width,H=cv.height;const mn=Math.min(...a),mx=Math.max(...a),r=mx-mn||1;
+  document.querySelectorAll("canvas.pspark").forEach(cv=>{const it=MARKET[+cv.dataset.s],a=priceHist(it),g=cv.getContext('2d'),W2=cv.width,H=cv.height;const mn=Math.min(...a),mx=Math.max(...a),r=mx-mn||1;
     const pts=a.map((v,i)=>[6+i/6*(W2-12),H-8-(v-mn)/r*(H-16)]);g.clearRect(0,0,W2,H);g.strokeStyle='rgba(220,182,94,.15)';g.lineWidth=1;[.33,.66].forEach(f=>{g.beginPath();g.moveTo(0,H*f);g.lineTo(W2,H*f);g.stroke();});
     g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.lineTo(pts[6][0],H);g.lineTo(pts[0][0],H);g.closePath();g.fillStyle='rgba(220,182,94,.18)';g.fill();
     g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.strokeStyle='#dcb65e';g.lineWidth=3;g.stroke();g.fillStyle='#fff';g.beginPath();g.arc(pts[6][0],pts[6][1],5,0,7);g.fill();});

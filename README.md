@@ -258,3 +258,8 @@ Meshy AI로 캐릭터·몬스터·집·바닥 모델을 만들어 게임에 바�
 - KayKit은 Meshy 모델을 못 불러왔을 때의 대체용으로만 남아 있습니다.
 - **코드 도형도 교체:** 풀잎(Meshy 풀 덤불을 인스턴싱, 한 필드 최대 약 4.5만 삼각형), 배경 화산(Meshy 화산 + 분화구 불빛), 화산 연기·타이틀 먹구름(Meshy 연기 구름), 타이틀 절벽(Meshy 절벽), 타이틀·프롤로그의 이그니스(Meshy 비행 드래곤). 목록은 `tools/meshy/extras_world.json`.
 - **바닥 경계선:** 길·광장처럼 겹쳐 까는 바닥 조각은 가장자리 약 1.5m가 부드럽게 투명해져서 네모난 경계선이 보이지 않습니다.
+
+### 조작 · Unity 직업 데이터 (ScriptableObject)
+- **조이스틱:** 휴대폰에서는 화면 왼쪽 아래 가상 조이스틱으로 8방향 자유 이동 (터치 이동도 그대로). 조이스틱을 쓰면 자동 전투가 꺼집니다. PC에서는 방향키로 이동.
+- `unity/Scripts/ClassSystem/`: `StatType` · `SkillType`(Active/Passive) · `SkillAttribute` · `CharacterStat` · `SkillData`(레벨 테이블, 설명 포맷, 요구 레벨) · `ClassData`(기본 스탯, 레벨 성장률, 배울 수 있는 스킬) · `ClassCharacterController`(직업 적용, 마나·쿨타임 확인 후 스킬 사용). 네임스페이스 `Game.ClassSystem` 으로 기존 `Game.SkillSystem.SkillData` 와 이름이 겹치지 않습니다.
+- `Editor/ClassDataGenerator.cs`: 메뉴 **Game System > Generate Class Data** 로 Class_Novice / Class_Warrior / Class_Rogue / Class_God 와 스킬 13개를 웹 프로토타입 수치로 생성합니다 (스킬은 5레벨, 레벨마다 +15%).
