@@ -1892,6 +1892,78 @@
       "kind": "groundtex",
       "ground": "grass",
       "userModel": "SodBlock"
+    },
+    "u_t_knight": {
+      "file": "u_t_knight.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_knight"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "AzureAegisKnight"
+    },
+    "u_t_portal": {
+      "file": "u_t_portal.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_portal"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "GothicPortal"
+    },
+    "u_t_gothic": {
+      "file": "u_t_gothic.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_gothic"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "GothicWindow"
+    },
+    "u_t_column": {
+      "file": "u_t_column.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_column"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "GrapevineCarvedColumn"
+    },
+    "u_t_pedestal": {
+      "file": "u_t_pedestal.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_pedestal"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "OrnateGoldenMarblePedestal"
+    },
+    "u_t_mary": {
+      "file": "u_t_mary.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_t_mary"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "VirginMaryStatue"
     }
   }
 }

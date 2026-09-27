@@ -450,7 +450,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-4</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-5</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -923,6 +923,7 @@ function groundTex(kind){if(!kind||!CUSTOM.ground[kind])return null;if(GTEX[kind
 function edgeFade(mat){mat.transparent=true;mat.depthWrite=false;mat.customProgramCacheKey=()=>'edgefade';
   mat.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float edge;varying float vEdge;').replace('#include <begin_vertex>','#include <begin_vertex>\nvEdge=edge;');
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vEdge;').replace('#include <alphamap_fragment>','#include <alphamap_fragment>\ndiffuseColor.a*=smoothstep(0.,1.,vEdge);');};return mat;}
+const GTILE=6;
 function ground(cx,cz,w,d,col,jit,y){
   const fe=!!y,seg=v=>fe?Math.min(40,Math.max(4,Math.ceil(v/1.2))):Math.max(1,Math.ceil(v/5));  // layered patches fade out over ~1.5m at their borders
   const geo=new THREE.PlaneGeometry(w,d,seg(w),seg(d));geo.rotateX(-Math.PI/2);
@@ -932,7 +933,7 @@ function ground(cx,cz,w,d,col,jit,y){
   const cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
   for(let i=0;i<n;i++){const f=1+(srand()-.5)*j*2;cols.push(c.r*f,c.g*f,c.b*f);}
   geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
-  if(tex){const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(uv.getX(i)*w+cx)/7,(uv.getY(i)*d-cz)/7);}  // ~7m per tile, continuous across patches
+  if(tex){const uv=geo.attributes.uv,p=geo.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)+cx)/GTILE,-(p.getZ(i)+cz)/GTILE);}  // world-space tiling: same stone size everywhere, seamless across patches
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2});
   const m=new THREE.Mesh(geo,fe?edgeFade(mat):mat);if(fe)m.renderOrder=y;
   m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;m.userData.area=true;W.root.add(m);return m;
@@ -1261,16 +1262,44 @@ function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.
    prefetched in the background), so phones don't download every model at startup. */
 let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
 const ZONE_NEAR={hall:['citadel'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
+/* Meshy's library clips bend chibi heroes' head ~35° off the neck (a sheared chin, a flat-looking skull from the side):
+   pull head/neck (and, outside one-shot moves, the spine) most of the way back to the modelled pose, in the clip data itself */
+/* hero clips were generated on an earlier rig of the same character whose bones point differently: replaying their local
+   rotations on the new skeleton twists the head and shears the face. Re-express every frame as a world-space change from
+   the rest pose on the source rig, then apply that change to the target rig's own rest pose. */
+function retargetClip(clip,aScene,tScene){try{
+  const A=THREE.SkeletonUtils.clone(aScene),aB={},tB={};A.traverse(o=>{if(o.isBone)aB[o.name]=o;});tScene.traverse(o=>{if(o.isBone)tB[o.name]=o;});
+  const names=Object.keys(tB).filter(n=>aB[n]);if(names.length<5)return clip;
+  A.updateMatrixWorld(true);tScene.updateMatrixWorld(true);
+  const rA={},rT={},pT={};names.forEach(n=>{rA[n]=aB[n].getWorldQuaternion(new THREE.Quaternion()).invert();rT[n]=tB[n].getWorldQuaternion(new THREE.Quaternion());
+    const p=tB[n].parent;pT[n]=p&&names.includes(p.name)?p.name:null;});
+  const pRest={};names.forEach(n=>{if(!pT[n]){const p=tB[n].parent;pRest[n]=p?p.getWorldQuaternion(new THREE.Quaternion()):new THREE.Quaternion();}});
+  const mx=new THREE.AnimationMixer(A),act=mx.clipAction(clip);act.play();
+  const fps=30,N=Math.max(2,Math.ceil(clip.duration*fps)+1),times=new Float32Array(N),vals={};names.forEach(n=>vals[n]=new Float32Array(N*4));
+  const W={},q=new THREE.Quaternion();
+  for(let i=0;i<N;i++){const t=Math.min(clip.duration,i/fps);times[i]=t;mx.setTime(t);A.updateMatrixWorld(true);
+    names.forEach(n=>{W[n]=aB[n].getWorldQuaternion(new THREE.Quaternion()).multiply(rA[n]).multiply(rT[n]);});   // world delta applied to target rest
+    names.forEach(n=>{const pw=pT[n]?W[pT[n]]:pRest[n];q.copy(pw).invert().multiply(W[n]);q.toArray(vals[n],i*4);});}
+  const tracks=names.map(n=>new THREE.QuaternionKeyframeTrack(n+'.quaternion',times,vals[n]));
+  clip.tracks.forEach(t=>{if(!/\.quaternion$/.test(t.name))tracks.push(t);});  // keep the hips height track
+  mx.stopAllAction();const out=new THREE.AnimationClip(clip.name,clip.duration,tracks);out.userData=clip.userData||{};return out;
+}catch(err){console.warn('retarget failed',err);return clip;}}
+function uprightClips(scene,clips){const rest={};scene.traverse(o=>{if(o.isBone)rest[o.name]=o.quaternion.clone();});const q=new THREE.Quaternion();
+  for(const [cn,c] of Object.entries(clips)){if(!c||!c.tracks)continue;const loop=/^(idle|walk|run|_base)$/.test(cn);
+    c.tracks.forEach(t=>{const m=/^(.+)\.quaternion$/.exec(t.name);if(!m)return;const bn=m[1],r=rest[bn];if(!r)return;
+      const k=/^(head|neck)$/i.test(bn)?.85:(loop&&/^spine0?[12]?$/i.test(bn))?.5:0;if(!k)return;const v=t.values;
+      for(let i=0;i<v.length;i+=4){q.fromArray(v,i);if(q.angleTo(r)<.9){q.slerp(r,k);q.toArray(v,i);}}});}}
 function parseCustom(f){return CUSTOM_ONCE[f]||(CUSTOM_ONCE[f]=parseB64('models/custom/'+f));}
 function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
   return CUSTOM_LOAD[k]=parseCustom(e.file).then(async g=>{
       e.key=k;e.gltf=g;e.clips={};(g.animations||[]).forEach((c,i)=>{e.clips[i?c.name:'_base']=c;});
-      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parseCustom(f);if(ag.animations&&ag.animations[0])e.clips[an]=inPlace(ag.animations[0]);}catch(err){console.warn('custom anim failed',k,an);}}
+      for(const [an,f] of Object.entries(e.anims||{})){try{const ag=await parseCustom(f);if(ag.animations&&ag.animations[0]){const c=inPlace(ag.animations[0]);e.clips[an]=e.player?retargetClip(c,ag.scene,g.scene):c;}}catch(err){console.warn('custom anim failed',k,an,err);}}
       alignClips(e.clips);
+      if(e.player)uprightClips(g.scene,e.clips);
       g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;const mt=o.material;if(mt&&mt.map)mt.map.encoding=THREE.sRGBEncoding;
         if(mt&&mt.isMeshStandardMaterial&&!mt.metalnessMap){mt.metalness=0;mt.roughness=Math.max(mt.roughness,.7);}
         if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
-      if(e.player){const env=ENV();if(env)g.scene.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial){o.material.envMap=env;o.material.envMapIntensity=1;o.material.needsUpdate=true;}});}  // Meshy-viewer look: metal and gold need something to reflect
+      if(e.player||e.kind==='prop'){const env=ENV();if(env)g.scene.traverse(o=>{const mt=o.material;if(o.isMesh&&mt&&mt.isMeshStandardMaterial&&(e.player||mt.metalnessMap)){mt.envMap=env;mt.envMapIntensity=e.player?1:1.6;if(!e.player)mt.roughness=Math.min(mt.roughness,.75);mt.needsUpdate=true;}});}  // Meshy-viewer look: metal and gold need something to reflect
       if(e.autoRig==='dragon')rigDragonMesh(g.scene);
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
@@ -1366,10 +1395,7 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
     if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
   const dbn={};h.dragonRig=e.autoRig==='dragon';if(e.autoRig==='dragon')model.traverse(o=>{if(o.isBone){const n={D_neck:'neck',D_head:'head',D_tail1:'t1',D_tail2:'t2',D_tail3:'t3',D_wingL1:'wl1',D_wingL2:'wl2',D_wingR1:'wr1',D_wingR2:'wr2'}[o.name];if(n)dbn[n]=o;}});
-  // Meshy's library clips tilt the head ~35° forward; on chibi heroes that reads as a flat head, so keep it mostly upright
-  const hB=[];if(e.player||e.npc)model.traverse(o=>{if(o.isBone&&/^(head|neck|spine0?[12]?)$/i.test(o.name))hB.push([o,o.quaternion.clone(),/head/i.test(o.name)?.8:.5]);});
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
-    hB.forEach(([b,q,k])=>{if(k<.8&&st.one)return;if(b.quaternion.angleTo(q)<.8)b.quaternion.slerp(q,k);});
     if(dbn.wl1)animDragonBones(dbn,T,dt,st.mv,!!h.airborne,st.one,st.one?Math.min(1,st.t/st.dur):0);
     // walk/idle blend eases in and out so start/stop never snaps
     st.mk=(st.mk||0)+((st.mv?1:0)-(st.mk||0))*Math.min(1,dt*4);const mk=st.mk;
@@ -1935,7 +1961,9 @@ function expandZone(z){const k=ZS(z);if(k===1)return;
     if(o.isInstancedMesh){const m=new THREE.Matrix4(),p=new V(),q=new THREE.Quaternion(),s=new V();for(let i=0;i<o.count;i++){o.getMatrixAt(i,m);m.decompose(p,q,s);p.x*=k;p.z*=k;m.compose(p,q,s);o.setMatrixAt(i,m);}o.instanceMatrix.needsUpdate=true;return;}
     if(Math.hypot(o.position.x,o.position.z)>b0*2.6)return;  // distant backdrop (volcanoes) stays put
     const u=o.userData||{};
-    if(u.area)o.scale.set(o.scale.x*k,o.scale.y,o.scale.z*k);
+    if(u.area){o.scale.set(o.scale.x*k,o.scale.y,o.scale.z*k);
+      const g=o.geometry,mp=o.material&&o.material.map;if(g&&mp&&g.attributes.uv&&!(o.material.map.repeat&&o.material.map.repeat.x!==1)){const uv=g.attributes.uv,p=g.attributes.position;  // keep tiles world-sized after stretching
+        for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)*o.scale.x+o.position.x*k)/GTILE,-(p.getZ(i)*o.scale.z+o.position.z*k)/GTILE);uv.needsUpdate=true;}}
     else if(o.isMesh&&o.geometry&&/Plane|Circle|Ring/.test(o.geometry.type)&&Math.abs(o.rotation.x+Math.PI/2)<.01){o.geometry.computeBoundingBox();const bs=o.geometry.boundingBox.getSize(new V());if(Math.max(bs.x,bs.y)>6){o.scale.x*=k;o.scale.y*=k;}}
     else if(u.prop&&/wall|fence/.test(u.prop)&&u.size){if(u.size.x>=u.size.z)o.scale.x*=k;else o.scale.z*=k;}
     else if(u.prop&&/^building_/.test(u.prop)&&!u.grown)o.scale.multiplyScalar(k);
@@ -2281,14 +2309,21 @@ function buildCitadel(){
     [-1,1].forEach(s=>{mesh(new THREE.BoxGeometry(.5,TH+.2,4.2),stone,s*3.45,(TH+.2)/2,8,tg);mesh(new THREE.BoxGeometry(.6,.12,4.3),trim,s*3.45,TH+.26,8,tg);});
     W.hts.push({x0:-8,x1:8,z0:-29,z1:-17,h:TH,ex:0,ez:-12.2,ew:2.8},{x0:-3.2,x1:3.2,z0:-17,z1:-13,h:TH,rz:-13,rz1:-17});
     [[-5.6,-17,2.4,.3],[5.6,-17,2.4,.3],[-8,-23,.3,6],[8,-23,.3,6],[-3.4,-15,.2,2],[3.4,-15,.2,2]].forEach(([x,z,hw,hd])=>{addBox(x,z,hw,hd).line=true;});
-    [[-7,-18],[7,-18],[-7,-27.5],[7,-27.5],[-3.6,-27.5],[3.6,-27.5]].forEach(([x,z])=>{prop('pillar_decorated',x,z,{h:4.6,y:TH});addCircle(x,z,.45);});
+    // temple set (user Meshy models): stained-glass gothic door = way to the dragon altar, gothic windows, spires, gold-marble columns
+    const tp=(n,x,z,o,r)=>{const g=prop(n,x,z,o);if(g&&r)addCircle(x,z,r);return g;};
+    if(PROPS.meshy_t_portal){tp('meshy_t_portal',0,-28.6,{h:9,y:TH});[-1,1].forEach(s=>tp('meshy_t_gothic',s*4.7,-28.7,{h:7.5,y:TH}));}
+    [-1,1].forEach(s=>[-17.8,-22.4,-27.6].forEach(z=>tp(PROPS.meshy_t_pedestal?'meshy_t_pedestal':'pillar_decorated',s*7.2,z,{h:5.4,y:TH},.45)));
+    // twin knight guardians at the head of the stairs
+    [-1,1].forEach(s=>tp('meshy_t_knight',s*4.7,-18.3,{h:6,y:TH,rot:-s*.12},.8));
+    tp('meshy_t_mary',0,-25.4,{h:3.4,y:TH},.5);
+    const colH=4.4;[-1,1].forEach(s=>tp(PROPS.meshy_t_column?'meshy_t_column':'pillar_decorated',s*4.5,-12.6,{h:colH},.4));
     const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0x8ab8ff,transparent:true,opacity:.6,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(0,TH+.14,-22);W.root.add(al);
     const beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,1.3,12,20,1,true),new THREE.MeshBasicMaterial({color:0x5a8aff,transparent:true,opacity:.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(0,TH+6,-22);W.root.add(beam);
     const bl=new THREE.PointLight(0x6a8aff,1,12,2);bl.position.set(0,TH+3,-22);W.root.add(bl);
     // blue soul-fire braziers on the stair posts instead of bright lamps
-    [-3.45,3.45].forEach(x=>{const f=flameFx(0x3a6aff,0xb8d0ff,1.3);f.position.set(x,TH+.45,-15.2);W.root.add(f);W.anim.push(t=>f.userData.tick(t));});
+    [-4.5,4.5].forEach(x=>{const f=flameFx(0x3a6aff,0xb8d0ff,1.3);f.position.set(x,colH+.25,-12.6);W.root.add(f);W.anim.push(t=>f.userData.tick(t));});
     W.anim.push(t=>{al.rotation.z=t*.3;al.material.opacity=.45+Math.sin(t*2)*.15;beam.material.opacity=.08+Math.sin(t*1.3)*.03;bl.intensity=.9+Math.sin(t*2)*.2;});
-    if(KIT){prop('shrine_candles',-2.6,-24.6,{h:1.6,y:TH});prop('shrine_candles',2.6,-24.6,{h:1.6,y:TH});prop('banner_blue',-5.4,-28,{h:4.4,y:TH});prop('banner_blue',5.4,-28,{h:4.4,y:TH});}
+    if(KIT){prop('shrine_candles',-2.4,-24.8,{h:1.4,y:TH});prop('shrine_candles',2.4,-24.8,{h:1.4,y:TH});}
     decor([['meshy_sakura',-11,-18.5,5.5,.8],['meshy_sakura',11,-18.5,5.5,.8],['meshy_bush',-6,-16.2,1.6,.7],['meshy_bush',6,-16.2,1.6,.7]]);}
   // 철화 대장간 (south-east, beside the east gate and away from the plaza)
   bigBuilding(21,18,8,8,5.5,0x6a3a2a,0xb8b0a4,'building_blacksmith_red');const fg=new THREE.PointLight(0xff7a2a,1.5,10,2);fg.position.set(16,1.5,15);W.root.add(fg);W.anim.push(t=>{fg.intensity=1.3+Math.sin(t*9)*.3;});
@@ -2326,7 +2361,7 @@ function buildCitadel(){
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
   portal(-22,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
   portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
-  portal(0,-28.2,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›').g.position.y=1.6;
+  portal(0,-27.6,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
   portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
 }
 function scatterProps(list,n,x0,x1,z0,z1,avoid){if(!KIT)return;for(let i=0;i<n;i++){const x=x0+srand()*(x1-x0),z=z0+srand()*(z1-z0);if(avoid&&avoid(x,z))continue;const it=list[Math.floor(srand()*list.length)];prop(it[0],x,z,{fit:it[1]*(.8+srand()*.4),rot:srand()*6.28,tint:it[2]});}}
@@ -2880,12 +2915,18 @@ function makeSetFx(cls){const root=new THREE.Group();W.root.add(root);const att=
     const eyeM=glowM(0xd04aff);const eyes=[];if(head)[-1,1].forEach(s=>{const e1=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),eyeM);e1.position.set(s*.16,.32,.4);e1.scale.setScalar(1/P.parts.sc);head.add(e1);eyes.push(e1);objs.push(e1);});
     const smoke=canvasTex((g,w,h)=>{const gr=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);},64,64);
     const wisps=[];for(let i=0;i<9;i++){const m=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),new THREE.MeshBasicMaterial({map:smoke,color:i%3?0x0a0610:0x3a1a5a,transparent:true,opacity:.45,depthWrite:false}));att.add(m);wisps.push(m);}
-    const ghosts=KIT?[0,1,2,3].map(i=>{const h=ghostRig('Rogue_Hooded',0x6a2aa0,1,['Knife','Knife_Offhand'],.28-i*.06,true);root.add(h.g);h.g.visible=false;return h;}):[];const hist=[];
+    // afterimages: violet copies of the player's own model trailing its exact pose (normal blending so they read on bright stone too)
+    const pb=[];if(P.parts.custom)P.parts.model.traverse(o=>{if(o.isBone)pb.push(o);});
+    const ghosts=P.parts.custom?[.46,.32,.19].map(op=>{const h=heroModel(S.cls);const gb=[];h.model.traverse(o=>{if(o.isBone)gb.push(o);if(o.isMesh){o.material=new THREE.MeshBasicMaterial({color:0x8a4aff,transparent:true,opacity:op,depthWrite:false,skinning:!!o.isSkinnedMesh,fog:false});o.castShadow=false;o.receiveShadow=false;o.renderOrder=10;}});  // after the (transparent, edge-faded) floor layers
+        h.gb=gb;h.mixer.stopAllAction();h.g.scale.copy(P.mesh.scale);root.add(h.g);h.g.visible=false;return h;})
+      :KIT?[0,1,2,3].map(i=>{const h=ghostRig('Rogue_Hooded',0x8a4aff,1,['Knife','Knife_Offhand'],.4-i*.08,false);root.add(h.g);h.g.visible=false;return h;}):[];const hist=[];
     const wp=new V();
     ticks.push((dt,mv)=>{wisps.forEach((m,i)=>{const a=T*1.6+i*.7;m.position.set(Math.cos(a)*.8,.4+((T*.5+i*.13)%1)*1.8,Math.sin(a)*.8);m.lookAt(cam.pos);m.material.opacity=.4*(1-((T*.5+i*.13)%1));});
       eyes.forEach(e1=>{if(Math.random()<dt*30){e1.getWorldPosition(wp);burst(wp.x,wp.y,wp.z,0xc04aff,1,.5,.45,.12,0);}});
-      hist.unshift({x:P.pos.x,z:P.pos.z,r:P.mesh.rotation.y,t:T});if(hist.length>60)hist.pop();
-      ghosts.forEach((h,i)=>{const want=T-.1*(i+1);const s=hist.find(q=>q.t<=want);h.g.visible=mv&&!!s;if(s){h.g.position.set(s.x,0,s.z);h.g.rotation.y=s.r;}const b=P.parts.base;if(b)h.setBase(b.getClip().name);h.mixer.update(dt);});});
+      hist.unshift({x:P.pos.x,y:P.pos.y,z:P.pos.z,r:P.mesh.rotation.y,t:T,q:pb.map(b=>b.quaternion.clone()),by:P.parts.b.position.y});if(hist.length>90)hist.pop();
+      let acc=0;const at=[];for(let k=1;k<hist.length&&at.length<ghosts.length;k++){acc+=Math.hypot(hist[k].x-hist[k-1].x,hist[k].z-hist[k-1].z);if(acc>=.75*(at.length+1))at.push(hist[k]);}  // one afterimage every 0.75 m of path
+      ghosts.forEach((h,i)=>{const s=h.gb?at[i]:hist.find(q=>q.t<=T-.1*(i+1));h.g.visible=mv&&!!s;if(!s)return;h.g.position.set(s.x,s.y,s.z);h.g.rotation.y=s.r;
+        if(h.gb){h.b.position.y=s.by;h.gb.forEach((b,k)=>{if(s.q[k])b.quaternion.copy(s.q[k]);});}else{const b=P.parts.base;if(b)h.setBase(b.getClip().name);h.mixer.update(dt);}});});
     fx.skill=()=>{burst(P.pos.x,1,P.pos.z,0x0a0610,50,5,.8,.6,1);burst(P.pos.x,1,P.pos.z,0x9a4aff,25,6,.5,.3,0);auSlash(1);};
     fx.attack=()=>{auSlash(.4);};
   }else{
