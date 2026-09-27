@@ -88,7 +88,17 @@ svg{display:block}
 #mm{width:100%;height:100%}
 #zname{font:700 12px 'Gowun Batang',serif;color:#f3e3bb;text-shadow:0 1px 2px #000;text-align:right}
 #mpBadge{margin-top:4px;padding:3px 8px;border-radius:10px;background:#1a3a5acc;border:1px solid #6ab8ff;color:#dff0ff;font-size:11px;text-align:right;cursor:pointer;pointer-events:auto;display:inline-block;float:right}
-#mpChat{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 190px);max-width:46vw;pointer-events:none;z-index:6;display:flex;flex-direction:column;gap:2px}
+.chatwin{position:fixed;left:calc(50% - 44px);transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 6px);width:min(400px,40vw);z-index:8;pointer-events:none;font-size:12px}
+.chatwin .clog{display:flex;flex-direction:column;gap:1px;max-height:96px;overflow:hidden;justify-content:flex-end;margin-bottom:3px}
+.chatwin .clog div{background:#000a;border-radius:5px;padding:2px 7px;color:#f2f2f2;text-shadow:0 1px 1px #000;word-break:break-all}
+.chatwin .clog .ch-g{color:#8dff9a}.chatwin .clog .ch-w{color:#ffb0e0}.chatwin .clog .ch-s{color:#c8c0a8}.chatwin .clog b{color:#8fd0ff;font-weight:700}
+.chatwin .cbar{display:flex;gap:3px;pointer-events:auto;background:#140f0cdd;border:1px solid #5a4632;border-radius:8px;padding:3px}
+.chatwin .cbar button{flex:none;font-size:11px;padding:4px 7px;border-radius:5px;border:1px solid #5a4632;background:#241a14;color:#d8c8a8}
+.chatwin .cbar button.on{background:#c8903a;color:#1a120c;border-color:#e0b050}
+.chatwin input{min-width:0;font-size:12px;padding:4px 6px;border-radius:5px;border:1px solid #5a4632;background:#0e0a08;color:#fff}
+.chatwin #chatIn{flex:1}.chatwin #chatTo{width:64px}
+.chatwin.min .clog{max-height:40px}.chatwin.min .cbar input,.chatwin.min .cbar .ctab,.chatwin.min #chatGo{display:none}
+#mpChat{display:none;position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 190px);max-width:46vw;pointer-events:none;z-index:6;display:flex;flex-direction:column;gap:2px}
 #mpChat div{font-size:12px;color:#fff;background:#0009;border-radius:6px;padding:2px 7px;text-shadow:0 1px 1px #000;transition:opacity .6s}
 #mpChat b{color:#8fd0ff;font-weight:700}
 .tag.mp .nm{color:#9fdcff}
@@ -472,7 +482,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-10</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-11</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -937,12 +947,14 @@ function groundKind(col){const c=new THREE.Color(col),h={};c.getHSL(h);
 function groundTex(kind){if(!kind||!CUSTOM.ground[kind])return null;if(GTEX[kind])return GTEX[kind];
   const e=CUSTOM.ground[kind],sc=new THREE.Scene(),tile=e.gltf.scene.clone();sc.add(tile);
   tile.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshBasicMaterial({map:o.material.map||null,color:o.material.map?0xffffff:o.material.color});});  // unlit albedo
-  const bb=new THREE.Box3().setFromObject(tile),c=bb.getCenter(new V()),hw=Math.min(bb.max.x-bb.min.x,bb.max.z-bb.min.z)*.24;  // centre of the top face only
+  const orig=kind==='stone';  // stone: the uploaded slab itself, laid whole slab by slab in its own colours
+  const bb=new THREE.Box3().setFromObject(tile),c=bb.getCenter(new V()),hw=Math.min(bb.max.x-bb.min.x,bb.max.z-bb.min.z)*(orig?.47:.24);  // centre of the top face only
   const oc=new THREE.OrthographicCamera(-hw,hw,hw,-hw,.01,100);oc.position.set(c.x,bb.max.y+5,c.z);oc.up.set(0,0,-1);oc.lookAt(c.x,bb.min.y,c.z);
   const rtg=new THREE.WebGLRenderTarget(512,512,{minFilter:THREE.LinearMipmapLinearFilter,generateMipmaps:true});
   const prevT=renderer.getRenderTarget(),pc=renderer.getClearColor(new THREE.Color()),pa=renderer.getClearAlpha();renderer.setRenderTarget(rtg);renderer.setClearColor(0x000000,1);renderer.clear();renderer.render(sc,oc);renderer.setRenderTarget(prevT);renderer.setClearColor(pc,pa);
   // keep only the tile's light/dark pattern (normalised to 0.5 on average) so each zone keeps its own ground colour
   const px=new Uint8Array(512*512*4);renderer.readRenderTargetPixels(rtg,0,0,512,512,px);rtg.dispose();let sum=0;
+  if(orig){let s2=0;for(let i=0;i<px.length;i+=4){px[i+3]=255;s2+=px[i]*.3+px[i+1]*.59+px[i+2]*.11;}const gain=Math.min(3,.62*255/Math.max(1,s2/(512*512)));const t=new THREE.DataTexture(px,512,512,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=8;t.needsUpdate=true;t.userData={orig:true,tile:4.2,gain};return GTEX[kind]=t;}
   for(let i=0;i<px.length;i+=4)sum+=px[i]*.3+px[i+1]*.59+px[i+2]*.11;const avg=Math.max(1,sum/(512*512));
   const ct=kind==='ash'?.4:kind==='stone'?.42:.65;  // pattern strength
   for(let i=0;i<px.length;i+=4){const l=(px[i]*.3+px[i+1]*.59+px[i+2]*.11)/avg,v=Math.max(0,Math.min(255,Math.round((.5+(l-1)*.5*ct)*255)));px[i]=px[i+1]=px[i+2]=v;px[i+3]=255;}
@@ -956,14 +968,15 @@ function ground(cx,cz,w,d,col,jit,y){
   const geo=new THREE.PlaneGeometry(w,d,seg(w),seg(d));geo.rotateX(-Math.PI/2);
   if(fe){const p=geo.attributes.position,ed=[],fw=Math.min(1.6,w*.3,d*.3);for(let i=0;i<p.count;i++){const dx=w/2-Math.abs(p.getX(i)),dz=d/2-Math.abs(p.getZ(i));ed.push(Math.min(1,Math.min(dx,dz)/fw));}geo.setAttribute('edge',new THREE.Float32BufferAttribute(ed,1));}
   const tex=groundTex(groundKind(col));
-  const c=new THREE.Color(col);if(tex)c.multiplyScalar(2);  // detail texture averages 0.5
+  const c=new THREE.Color(col);if(tex&&tex.userData&&tex.userData.orig){c.lerpColors(new THREE.Color(0xffffff),new THREE.Color(col),.15);c.multiplyScalar(tex.userData.gain);}else if(tex)c.multiplyScalar(2);  // detail texture averages 0.5
   const cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
   for(let i=0;i<n;i++){const f=1+(srand()-.5)*j*2;cols.push(c.r*f,c.g*f,c.b*f);}
   geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
-  if(tex){const uv=geo.attributes.uv,p=geo.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)+cx)/GTILE,-(p.getZ(i)+cz)/GTILE);}  // world-space tiling: same stone size everywhere, seamless across patches
+  const TL=tex&&tex.userData&&tex.userData.tile||GTILE;
+  if(tex){const uv=geo.attributes.uv,p=geo.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)+cx)/TL,-(p.getZ(i)+cz)/TL);}  // world-space tiling: same stone size everywhere, seamless across patches
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2});
   const m=new THREE.Mesh(geo,fe?edgeFade(mat):mat);if(fe)m.renderOrder=y;
-  m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;m.userData.area=true;W.root.add(m);return m;
+  m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;m.userData.area=true;m.userData.tile=TL;W.root.add(m);return m;
 }
 let GRASS_G=null;
 function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_grass;GRASS_G=false;if(!src)return false;let mesh0=null;src.updateMatrixWorld(true);src.traverse(o=>{if(o.isMesh&&!mesh0)mesh0=o;});if(!mesh0)return false;
@@ -1050,7 +1063,7 @@ function cart(x,z,rot,broken){if(KIT){prop('wheelbarrow',x,z,{fit:2.6,rot:rot||0
   const b=mesh(new THREE.BoxGeometry(1.8,.6,3),M(0x7a5a3a),0,.9,0,g);if(broken)b.rotation.z=.35;
   [[-1,.8],[1,.8],[-1,-.8],[1,-.8]].forEach(([sx,sz],i)=>{if(broken&&i===1)return;const w=mesh(new THREE.CylinderGeometry(.5,.5,.12,10),M(0x4a3222),sx,.5,sz,g);w.rotation.z=Math.PI/2;});
   if(broken){const w=mesh(new THREE.CylinderGeometry(.5,.5,.12,10),M(0x4a3222),1.8,.06,1,g);}addCircle(x,z,1.5);}
-function stall(x,z,col){if(KIT){const gb=growB(x,z,4,6.5);{const big=ZS(W.zone)>1,sg=prop('building_market_blue',gb.x,gb.z,{fit:big?16:7,rot:Math.PI/2});if(sg)sg.userData.grown=true;if(big){const c=addBox(gb.x,gb.z,2.6,3.6);c.scaleSize=true;return;}}addBox(gb.x,gb.z,2.4,3.2);return;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(3,1,1.4),M(0x7a5a3a),0,.5,0,g);
+function stall(x,z,col){if(KIT){const gb=growB(x,z,4,6.5);{const big=ZS(W.zone)>1,sg=prop('building_market_blue',gb.x,gb.z,{fit:big?15:7,rot:0});if(sg)sg.userData.grown=true;if(big){const c=addBox(gb.x,gb.z,3.4,3);c.scaleSize=true;return;}}addBox(gb.x,gb.z,2.4,3.2);return;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(3,1,1.4),M(0x7a5a3a),0,.5,0,g);
   [-1.4,1.4].forEach(sx=>mesh(new THREE.BoxGeometry(.12,2.6,.12),M(0x4a3222),sx,1.3,.6,g));const r=mesh(new THREE.BoxGeometry(3.4,.1,2),M(col),0,2.6,.2,g);r.rotation.x=-.2;
   for(let i=0;i<4;i++)mesh(new THREE.BoxGeometry(.4,.3,.4),M([0xc84a3a,0xe0b050,0x4a8a4a,0x5a6ac0][i]),-1+i*.66,1.15,0,g);addBox(x,z,1.6,.8);}
 function lamp(x,z){const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);if(KIT)prop('post_lantern',0,0,{h:3.2,par:g});else mesh(new THREE.CylinderGeometry(.08,.12,3,6),M(0x2a2a30,{metalness:.5}),0,1.5,0,g);const b=mesh(new THREE.OctahedronGeometry(.25),B(0xcfe8ff),0,3.1,0,g);b.castShadow=false;const pl=mesh(new THREE.SphereGeometry(.5,8,6),new THREE.MeshBasicMaterial({color:0x7ab8ff,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}),0,3.1,0,g);pl.castShadow=false;addCircle(x,z,.2);}
@@ -1994,7 +2007,7 @@ function expandZone(z){const k=ZS(z);if(k===1)return;
     const u=o.userData||{};
     if(u.area){o.scale.set(o.scale.x*k,o.scale.y,o.scale.z*k);
       const g=o.geometry,mp=o.material&&o.material.map;if(g&&mp&&g.attributes.uv&&!(o.material.map.repeat&&o.material.map.repeat.x!==1)){const uv=g.attributes.uv,p=g.attributes.position;  // keep tiles world-sized after stretching
-        for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)*o.scale.x+o.position.x*k)/GTILE,-(p.getZ(i)*o.scale.z+o.position.z*k)/GTILE);uv.needsUpdate=true;}}
+        const TL=u.tile||GTILE;for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)*o.scale.x+o.position.x*k)/TL,-(p.getZ(i)*o.scale.z+o.position.z*k)/TL);uv.needsUpdate=true;}}
     else if(o.isMesh&&o.geometry&&/Plane|Circle|Ring/.test(o.geometry.type)&&Math.abs(o.rotation.x+Math.PI/2)<.01){o.geometry.computeBoundingBox();const bs=o.geometry.boundingBox.getSize(new V());if(Math.max(bs.x,bs.y)>6){o.scale.x*=k;o.scale.y*=k;}}
     else if(u.prop&&/wall|fence/.test(u.prop)&&u.size){if(u.size.x>=u.size.z)o.scale.x*=k;else o.scale.z*=k;}
     else if(u.prop&&/^building_/.test(u.prop)&&!u.grown)o.scale.multiplyScalar(k);
@@ -2377,7 +2390,6 @@ function buildCitadel(){
   const mc=new THREE.Mesh(new THREE.RingGeometry(1.4,1.7,6),new THREE.MeshBasicMaterial({color:0x7ac8ff,transparent:true,opacity:.7,side:THREE.DoubleSide}));mc.rotation.x=-Math.PI/2;mc.position.set(22,.06,-7.5);W.root.add(mc);W.anim.push(t=>{mc.rotation.z=t*.5;});
   stall(-24,-9.5,0xb03a3a);stall(-10.5,-9.5,0x3a6ab0);crate(-26,-13);
   if(KIT){prop('target',-22,7,{h:2});prop('target',-18.5,7,{h:2});prop('weaponrack',-25.5,9,{h:1.8});}
-  stall(8.5,21,0xc8a03a);
   lamp(-5,-5);lamp(5,-5);lamp(-5,5);lamp(5,5);lamp(-4,14);lamp(4,14);lamp(-25,-4.5);lamp(-25,4.5);lamp(25,-4.5);lamp(25,4.5);
   [[-26,-22],[-26,22],[26,24]].forEach(([x,z])=>tree(x,z,1.1));
   volcano(80,-300,1.8);
@@ -2397,7 +2409,6 @@ function buildCitadel(){
   if(PROPS.banner_red)[[-3.2,'banner_red'],[3.2,'banner_blue']].forEach(([x,n])=>prop(n,SX+x*1.1,SZ+5.4,{h:4.2}));
   spawnNpc('dongjun',-15.5,-4.5,Math.PI/2);
   spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;spawnNpc('guard',3,25,Math.PI).d=NPCS.guard;
-  for(let i=0;i<6;i++)spawnWanderer(rand(-12,12),rand(-8,10));
   const ok=()=>true;
   // statues (user Meshy models) flanking the main road from the south gate to the plaza
   [['meshy_st_angel',-5.6,13,Math.PI/2],['meshy_st_goddess',5.6,13,-Math.PI/2],['meshy_st_archer',-5.6,22,Math.PI/2],['meshy_st_tide',5.6,22,-Math.PI/2]].forEach(([n,x,z,r])=>{if(PROPS[n]){prop(n,x,z,{h:5,rot:r});addCircle(x,z,.9);}});
@@ -3452,9 +3463,10 @@ function gearLabel(g){return (g.type==='w'?'무기':g.type==='a'?'방어구 · '
 /* front-view 2D art for each class's weapon and body armor (img/items/*.png, drawn from the art brief) */
 const ART_CLS=['warrior','rogue','shaman'],ART_KEY={weapon:'w',body:'a',head:'h',hands:'g',ring:'r',belt:'b'};
 /* icons rendered from the uploaded Meshy models, climbing with the item tier; tier 7 (dragon gear) keeps the drawn dragon set */
-const ART3D={w:{warrior:['Cudgel','AzureBlade','ColdLightBladeShortSword','StarlightHalberd','ThePrismaticCrucible','AbyssalMawBlade'],rogue:['FrostbiteDagger','EldritchDagger','RitualCthulhuDaggeroftheAncients'],shaman:['EnchantedScepter','CrystalStaff','DragonScepter']},
-  a:{warrior:['SpikedBattleArmor']},h:{warrior:['VerdantCrestHelmet']}};
-function art3d(k,c,g){const L=ART3D[k]&&ART3D[k][c];if(!L||g.db||(g.tier||0)>=7)return null;return L[Math.min(L.length-1,Math.floor((g.tier||0)*L.length/7))];}
+const ART3D={w:{warrior:['oldAxe','Cudgel','AzureBlade','EternalSword','DwarvenRuneBlade','ColdLightBladeShortSword','StarlightHalberd','HornedWarriorsGreatswordElde','ThePrismaticCrucible','Wrathbearer','AbyssalMawBlade'],
+    rogue:['CrimsonShadowBlade','FrostbiteDagger','Christmas2025WinterWonderlan','EldritchDagger','RitualCthulhuDaggeroftheAncients'],shaman:['EnchantedScepter','CrimsonStarStaff','CrystalStaff','DragonScepter']},
+  a:{warrior:['SpikedBattleArmor']},h:{warrior:['OwlHelm','VerdantCrestHelmet','ArcaneWarlordsHelm'],rogue:['VoidWardenMask']}};
+function art3d(k,c,g){if(k==='r'&&(g.rar||0)<=1)return 'EyeofRadianceRing';const L=ART3D[k]&&ART3D[k][c];if(!L||g.db||(g.tier||0)>=7)return null;return L[Math.min(L.length-1,Math.floor((g.tier||0)*L.length/7))];}
 function itemIcon(g){const k=g&&ART_KEY[itemSlot(g)],c=g&&(ART_CLS.includes(g.cls)?g.cls:ART_CLS.includes(S.cls)?S.cls:null);  // class-neutral items take the wearer's style
   const m3=k&&c&&art3d(k,c,g);if(m3)return '<img class="iart" src="img/items/m_'+m3+'.png" alt="" draggable="false">';
   if(k&&c)return '<img class="iart" src="img/items/'+k+'_'+c+'.png" alt="" draggable="false">';
@@ -3727,90 +3739,125 @@ function openBless(){const done=S.blessDate===today();
   ringFx(P.pos.x,P.pos.z,5,0xfff4c0,1.2);burst(P.pos.x,2,P.pos.z,0xfff4c0,70,5,1.4,.5,2);
   dialog([['seojun','천명의 빛이 그대를 감싸리라. 반 시진 동안 그대의 힘과 육신과 마력이 모두 차오르리니.'],['sys','[천명의 축복] 30분 동안 공격력·방어력·최대 체력·최대 마력 +10%, 체력과 마력 모두 회복']]);}
 /* =========================================================
-   multiplayer (함께하기): browser-to-browser rooms over WebRTC (PeerJS public signalling, no game server).
-   One player opens a room and shares its code; up to 7 friends join. The host relays every message (star).
-   Shared: position/animation/class/level/zone (8 Hz), chat, attack/skill motions, party heals, Divine Shield.
+   multiplayer: everyone on the same server (01~04) shares one world, up to 100 players per server.
+   Transport: MQTT over secure WebSocket through a public broker (no game server to run); a self-hosted
+   broker (dragon-raid/server/broker.js) can be used with ?broker=wss://host. Topics per server:
+     rotd1/<srv>/z/<zone>  positions/motions/party effects (only the zone you are in is subscribed)
+     rotd1/<srv>/chat      server chat        rotd1/<srv>/hb   presence (who is online, player count)
    Monsters and loot stay local to each player.
    ========================================================= */
-const MP={peer:null,host:false,conns:[],code:null,others:{},sendT:0,chat:[],max:7};
-const MP_LIB='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
-function mpLoad(){return window.Peer?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src=MP_LIB;s.onload=ok;s.onerror=()=>no(new Error('lib'));document.head.appendChild(s);});}
-function mpOpts(){return Object.assign({debug:0},window.MP_PEER_OPTS||{});}
-function mpCodeGen(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<5;i++)c+=A[Math.floor(Math.random()*A.length)];return c;}
+const NET_LIB='https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',NET_MAX=100;
+const NET_BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+const MP={client:null,srv:0,id:Math.random().toString(36).slice(2,12),others:{},sendT:0,hbT:0,chat:[],pop:{},subZone:null,off:false,full:false,bi:0,peer:null};
+function netSrv(){let i=0;try{i=+(localStorage.getItem('ignis.srv')||0);}catch(e){}return i;}
+function netBase(s){return 'rotd1/'+String((s==null?MP.srv:s)+1).padStart(2,'0');}
+function netBroker(){try{const q=new URLSearchParams(location.search).get('broker');if(q)return q;}catch(e){}return window.NET_BROKER||NET_BROKERS[MP.bi%NET_BROKERS.length];}
+function netLoad(){return window.mqtt?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src=NET_LIB;s.onload=ok;s.onerror=()=>no(new Error('lib'));document.head.appendChild(s);});}
+function netCount(s){const p=MP.pop[s==null?MP.srv:s]||{};let n=0;for(const k in p)if(rt-p[k]<16)n++;return n;}
+async function netConnect(){if(MP.client||MP.connecting)return;MP.connecting=true;MP.srv=netSrv();
+  try{await netLoad();}catch(err){MP.connecting=false;MP.off=true;toast('멀티플레이 모듈을 불러오지 못했습니다 (인터넷 연결 확인) · 혼자 플레이합니다','bad');return;}
+  const base=netBase(),c=mqtt.connect(netBroker(),{clientId:'rotd_'+String(MP.srv+1).padStart(2,'0')+'_'+MP.id,clean:true,keepalive:30,reconnectPeriod:5000,connectTimeout:8000,
+    will:{topic:base+'/bye',payload:JSON.stringify({t:'bye',id:MP.id}),qos:0,retain:false}});
+  MP.client=c;MP.peer=c;MP.connecting=false;MP.subZone=null;
+  c.on('connect',()=>{MP.fails=0;MP.subGuild=null;MP.subW=false;c.subscribe(['rotd1/+/hb',base+'/chat',base+'/bye'],{qos:0});MP.subZone=null;mpSendHb();
+    if(!MP.hello){MP.hello=true;later(3,()=>{if(!MP.client)return;const n=netCount();if(n>NET_MAX){toast('서버가 가득 찼습니다 ('+NET_MAX+'명) · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}else{toast(SERVERS[MP.srv][0]+' 서버 · 현재 '+Math.max(1,n)+'명 접속 중','gold');mpChatLine(null,SERVERS[MP.srv][0]+' 서버에 접속했습니다 · '+Math.max(1,n)+'명','s');}});}
+    mpUi();});
+  c.on('message',(topic,buf)=>{let m;try{m=JSON.parse(buf.toString());}catch(e2){return;}if(!m||typeof m!=='object'||typeof m.id!=='string'||m.id===MP.id)return;
+    const tp=topic.split('/');if(tp[2]==='hb'){const s=(+tp[1])-1;(MP.pop[s]||(MP.pop[s]={}))[m.id]=rt;if(s===MP.srv)mpRoster(m);return;}
+    if(tp[1]!==base.split('/')[1])return;if(tp[2]==='w'&&tp[3]!==MP.id)return;mpRecv(m);});
+  c.on('error',err=>{if(/full|Not authorized|Server unavailable/i.test(String(err&&err.message))){toast('서버가 가득 찼습니다 · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}});
+  c.on('offline',()=>{MP.fails=(MP.fails||0)+1;if(MP.fails>=2&&!window.NET_BROKER){MP.bi++;const was=MP.client;MP.client=null;try{was.end(true);}catch(e3){}if(MP.bi<NET_BROKERS.length*2)later(1,netConnect);}mpUi();});}
+function netDisconnect(quiet){const c=MP.client;MP.client=null;MP.peer=null;MP.subZone=null;if(c){try{c.publish(netBase()+'/bye',JSON.stringify({t:'bye',id:MP.id}));c.end(true);}catch(e){}}
+  Object.keys(MP.others).forEach(id=>mpRemove(id,true));if(!quiet)toast('서버 연결을 끊었습니다');mpUi();}
+function mpSend(m){const c=MP.client;if(!c||!c.connected)return;m.id=MP.id;const t=m.t==='chat'?netBase()+'/chat':netBase()+'/z/'+(W.zone||'none');try{c.publish(t,JSON.stringify(m),{qos:0});}catch(e){}}
+function mpSendHb(){const c=MP.client;if(!c||!c.connected||!S)return;try{c.publish(netBase()+'/hb',JSON.stringify({t:'hb',id:MP.id,n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone}),{qos:0});}catch(e){}}
+function mpRoster(m){(MP.roster||(MP.roster={}))[m.id]={n:String(m.n||'').slice(0,12),c:m.c,a:m.a,lv:m.lv,z:m.z,t:rt};}
 function mpMyName(){return S.name||ACCOUNT||'모험가';}
-async function mpHost(){if(MP.peer)return;try{await mpLoad();}catch(err){toast('멀티플레이 모듈을 불러오지 못했습니다 (인터넷 연결 확인)','bad');return;}
-  const code=mpCodeGen(),peer=new Peer('rotd-'+code,mpOpts());MP.peer=peer;MP.host=true;MP.code=code;
-  peer.on('open',()=>{toast('방을 만들었습니다 · 코드 '+code,'gold');mpUi();});
-  peer.on('connection',c=>{if(MP.conns.length>=MP.max){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300);});return;}mpWire(c);});
-  peer.on('error',err=>{if(err.type==='unavailable-id'){mpLeave(true);mpHost();return;}toast('멀티플레이 오류: '+(err.type||err),'bad');if(!MP.conns.length&&err.type!=='peer-unavailable')mpLeave(true);});
-  peer.on('disconnected',()=>{try{peer.reconnect();}catch(e2){}});}
-async function mpJoin(code){code=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length<4){toast('방 코드를 확인하세요','bad');return;}if(MP.peer)mpLeave(true);
-  try{await mpLoad();}catch(err){toast('멀티플레이 모듈을 불러오지 못했습니다 (인터넷 연결 확인)','bad');return;}
-  const peer=new Peer(undefined,mpOpts());MP.peer=peer;MP.host=false;MP.code=code;
-  peer.on('open',()=>{const c=peer.connect('rotd-'+code,{reliable:true});mpWire(c);toast('방 '+code+'에 접속 중…');});
-  peer.on('error',err=>{toast(err.type==='peer-unavailable'?'방을 찾을 수 없습니다 · 코드 '+code:'멀티플레이 오류: '+(err.type||err),'bad');mpLeave(true);});}
-function mpWire(c){c.on('open',()=>{MP.conns.push(c);if(!MP.host)toast('방 '+MP.code+' 입장!','gold');mpSendState(true);mpChatLine(null,(MP.host?'새 동료가 들어왔습니다':'방에 들어왔습니다')+' · 현재 '+(Object.keys(MP.others).length+2)+'명');mpUi();});
-  c.on('data',m=>{if(!m||typeof m!=='object')return;if(m.t==='full'){toast('방이 가득 찼습니다 (최대 8명)','bad');mpLeave(true);return;}
-    if(MP.host&&m.id)MP.conns.forEach(o=>{if(o!==c&&o.open)o.send(m);});  // relay to everyone else
-    if(m.id)c._mpid=m.id;mpRecv(m);});
-  c.on('close',()=>{MP.conns=MP.conns.filter(o=>o!==c);if(c._mpid){mpRemove(c._mpid);if(MP.host)MP.conns.forEach(o=>o.open&&o.send({t:'bye',id:c._mpid}));}
-    if(!MP.host){toast('방이 닫혔습니다','bad');mpLeave(true);}mpUi();});}
-function mpLeave(quiet){MP.conns.forEach(c=>{try{c.close();}catch(e2){}});MP.conns=[];if(MP.peer){try{MP.peer.destroy();}catch(e2){}}MP.peer=null;MP.code=null;
-  Object.keys(MP.others).forEach(mpRemove);if(!quiet)toast('멀티플레이를 종료했습니다');mpUi();}
-function mpSend(m){if(!MP.peer||!MP.conns.length)return;m.id=MP.peer.id;MP.conns.forEach(c=>{if(c.open)c.send(m);});}
-function mpSendState(force){if(!P||!S)return;const mv=!!(P.dest||P.target||P._pw!==P.walk);
+function mpSendState(){if(!P||!S)return;
   mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0});P._mpw=P.walk;}
 function mpRecv(m){const id=m.id;
-  if(m.t==='st'){let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
-    r.name=m.n;r.lv=m.lv;r.awk=m.a;r.zone=m.z;r.tgt.set(m.x,m.y||0,m.zz);r.face=m.f;r.moving=!!m.m;r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;r.seen=rt;
-    const lbl=m.n+' <small>Lv.'+m.lv+' '+(m.a&&AWK[m.c]?AWK[m.c].name:(CLASSES[m.c]||{}).name||'')+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}mpUi(true);}
-  else if(m.t==='chat'){const r=MP.others[id];mpChatLine(m.n||'?',m.txt);if(r&&r.h.g.visible)floatText(r.pos,m.txt.slice(0,24),'info',3);}
+  if(m.t==='st'){if(m.z!==W.zone||!CLASSES[m.c])return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
+    r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.awk=m.a;r.zone=m.z;r.tgt.set(+m.x||0,+m.y||0,+m.zz||0);r.face=+m.f||0;r.moving=!!m.m;r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;r.seen=rt;
+    const lbl=r.name.replace(/[<>&]/g,'')+' <small>Lv.'+r.lv+' '+(m.a&&AWK[m.c]?AWK[m.c].name:CLASSES[m.c].name)+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
+  else if(m.t==='chat'){const r=MP.others[id],txt=String(m.txt||'').slice(0,80);mpChatLine(String(m.n||'?').slice(0,12),txt,'all');if(r&&r.h.g.visible)floatText(r.pos,txt.slice(0,24),'info',3);}
   else if(m.t==='fx'){const r=MP.others[id];if(r&&r.h.skinned&&r.h.g.visible)r.h.playOnce(m.k==='skill'?'Spellcast_Shoot':'1H_Melee_Attack_Slice_Diagonal',.5);}
-  else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*m.p);P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+m.n+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
-  else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,m.d);floatText(P.pos,'신성 방패 ('+m.n+')','crit',3);}}
-  else if(m.t==='bye')mpRemove(id);}
+  else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*Math.min(1,Math.max(0,+m.p||0)));P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+String(m.n||'').slice(0,12)+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
+  else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,Math.min(6,+m.d||0));floatText(P.pos,'신성 방패 ('+String(m.n||'').slice(0,12)+')','crit',3);}}
+  else if(m.t==='gchat'){if(guildKey())mpChatLine('[길드] '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'g');}
+  else if(m.t==='whisper'){mpChatLine('← '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'w');if(!CHAT.lastW){CHAT.lastW=1;}const to=$('#chatTo');if(to&&!to.value)to.value=String(m.n||'').slice(0,12);}
+  else if(m.t==='bye'){mpRemove(id,true);const p=MP.pop[MP.srv];if(p)delete p[id];if(MP.roster)delete MP.roster[id];}}
 function mpAvatar(id,m){const h=heroModel(m.c);h.g.visible=false;scene.add(h.g);
-  const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt};r.tag=makeTag(r,'npc mp',m.n,2.35);MP.others[id]=r;
-  mpChatLine(null,m.n+' 님이 함께합니다');return r;}
-function mpRemove(id,silent){const r=MP.others[id];if(!r)return;scene.remove(r.h.g);r.tag.remove();delete MP.others[id];if(!silent)mpChatLine(null,(r.name||'동료')+' 님이 나갔습니다');mpUi(true);}
-function mpChatLine(who,txt){let box=$('#mpChat');if(!box){box=document.createElement('div');box.id='mpChat';document.body.appendChild(box);}
+  const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt};r.tag=makeTag(r,'npc mp',String(m.n||'').replace(/[<>&]/g,''),2.35);MP.others[id]=r;return r;}
+function mpRemove(id,silent){const r=MP.others[id];if(!r)return;scene.remove(r.h.g);r.tag.remove();delete MP.others[id];}
+/* ---------- chat window: 전체 (whole server, any map) · 길드 (same guild) · 귓속말 (one player by name) ---------- */
+const CHAT={ch:'all',min:false};
+function chatUi(){let w=$('#chatWin');if(!w){w=document.createElement('div');w.id='chatWin';w.className='chatwin';w.hidden=true;
+    w.innerHTML='<div class="clog" id="chatLog"></div><div class="cbar"><button id="chatMin" title="채팅창 접기">💬</button><button class="ctab on" data-ch="all">전체</button><button class="ctab" data-ch="guild">길드</button><button class="ctab" data-ch="w">귓속말</button><input id="chatTo" maxlength="12" placeholder="받는 사람" hidden><input id="chatIn" maxlength="80" placeholder="전체 채팅 (서버 모든 맵)"><button id="chatGo">전송</button></div>';
+    document.body.appendChild(w);
+    w.querySelectorAll('.ctab').forEach(b=>b.onclick=()=>{CHAT.ch=b.dataset.ch;w.querySelectorAll('.ctab').forEach(x=>x.classList.toggle('on',x===b));$('#chatTo').hidden=CHAT.ch!=='w';
+      $('#chatIn').placeholder={all:'전체 채팅 (서버 모든 맵)',guild:S&&S.guild?'길드 채팅 · '+S.guild.name:'길드에 가입하면 사용할 수 있습니다',w:'귓속말 내용'}[CHAT.ch];});
+    const go=()=>{chatSend(CHAT.ch,$('#chatIn').value,$('#chatTo').value);$('#chatIn').value='';};$('#chatGo').onclick=go;
+    ['chatIn','chatTo'].forEach(id=>{const el=$('#'+id);el.addEventListener('keydown',ev=>{ev.stopPropagation();if(ev.key==='Enter')go();});el.addEventListener('pointerdown',ev=>ev.stopPropagation());});
+    $('#chatMin').onclick=()=>{CHAT.min=!CHAT.min;w.classList.toggle('min',CHAT.min);};}
+  return w;}
+function chatShow(on){const w=chatUi();if(w.hidden===!on)return;w.hidden=!on;}
+function guildKey(){return S&&S.guild&&S.guild.name?Array.from(S.guild.name).map(ch=>ch.charCodeAt(0).toString(36)).join('').slice(0,24):null;}
+function chatSend(ch,txt,to){txt=(txt||'').trim().slice(0,80);if(!txt)return;const c=MP.client;if(!c||!c.connected){mpChatLine(null,'서버에 연결되지 않았습니다','s');return;}
+  if(ch==='all'){mpSend({t:'chat',n:mpMyName(),txt});mpChatLine(mpMyName(),txt,'all');if(P)floatText(P.pos,txt.slice(0,24),'info',3);return;}
+  if(ch==='guild'){const g=guildKey();if(!g){mpChatLine(null,'길드가 없습니다 · 천명 성채 길드 관리인 바르칸에게 가입하세요','s');return;}
+    try{c.publish(netBase()+'/g/'+g,JSON.stringify({t:'gchat',id:MP.id,n:mpMyName(),txt}));}catch(e2){}mpChatLine('[길드] '+mpMyName(),txt,'g');return;}
+  const nm=(to||'').trim();if(!nm){mpChatLine(null,'귓속말 받을 캐릭터 이름을 입력하세요','s');return;}
+  const hit=Object.entries(MP.roster||{}).find(([id,r])=>r.n===nm&&rt-r.t<16);if(!hit){mpChatLine(null,'['+nm+'] 님은 지금 이 서버에 접속해 있지 않습니다','s');return;}
+  try{c.publish(netBase()+'/w/'+hit[0],JSON.stringify({t:'whisper',id:MP.id,n:mpMyName(),txt}));}catch(e2){}mpChatLine('→ '+nm,txt,'w');}
+function chatSubs(){const c=MP.client;if(!c||!c.connected)return;const g=guildKey();if(MP.subGuild!==g){if(MP.subGuild)c.unsubscribe(netBase()+'/g/'+MP.subGuild);if(g)c.subscribe(netBase()+'/g/'+g);MP.subGuild=g;}
+  if(!MP.subW){c.subscribe(netBase()+'/w/'+MP.id);MP.subW=true;}}
+function mpChatLine(who,txt,ch){const box=$('#chatLog')||(chatUi(),$('#chatLog'));
+  const d=document.createElement('div');d.className='ch-'+(ch||'all');d.innerHTML=(who?'<b>'+String(who).replace(/[<>&]/g,'')+'</b> ':'')+String(txt).replace(/[<>&]/g,'');box.appendChild(d);while(box.children.length>30)box.firstChild.remove();
+  MP.chat.push([who,txt]);if(MP.chat.length>40)MP.chat.shift();}
+function mpChatLineOld(who,txt){let box=$('#mpChat');if(!box){box=document.createElement('div');box.id='mpChat';document.body.appendChild(box);}
   const d=document.createElement('div');d.innerHTML=(who?'<b>'+who.replace(/[<>&]/g,'')+'</b> ':'')+String(txt).replace(/[<>&]/g,'');box.appendChild(d);while(box.children.length>5)box.firstChild.remove();
-  setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),700);},12000);MP.chat.push([who,txt]);if(MP.chat.length>30)MP.chat.shift();}
-function mpSay(txt){txt=(txt||'').trim().slice(0,80);if(!txt||!MP.peer)return;mpSend({t:'chat',n:mpMyName(),txt});mpChatLine(mpMyName(),txt);if(P)floatText(P.pos,txt.slice(0,24),'info',3);}
-function mpParty(kind,val){if(!MP.peer||!MP.conns.length||!P)return;mpSend({t:kind,n:mpMyName(),z:W.zone,x:P.pos.x,zz:P.pos.z,p:val,d:val});}
-function mpTick(dt){MP.sendT-=dt;if(MP.sendT<=0){MP.sendT=.125;mpSendState();}
-  for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>8){mpRemove(id);continue;}
+  setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),700);},12000);MP.chat.push([who,txt]);if(MP.chat.length>40)MP.chat.shift();}
+function mpSay(txt){chatSend('all',txt);}
+function mpParty(kind,val){if(!MP.client||!P)return;mpSend({t:kind,n:mpMyName(),z:W.zone,x:P.pos.x,zz:P.pos.z,p:val,d:val});}
+function mpTick(dt){chatShow(gameOn&&!CS&&W.zone!=='title');const c=MP.client;if(!c)return;chatSubs();
+  if(c.connected&&MP.subZone!==W.zone){if(MP.subZone)c.unsubscribe(netBase()+'/z/'+MP.subZone);MP.subZone=W.zone;c.subscribe(netBase()+'/z/'+W.zone,{qos:0});Object.keys(MP.others).forEach(id=>mpRemove(id,true));mpSendHb();}
+  const moving=P&&(P.walk!==P._mpw);MP.sendT-=dt;if(MP.sendT<=0){MP.sendT=moving?.2:1;mpSendState();}
+  MP.hbT-=dt;if(MP.hbT<=0){MP.hbT=5;mpSendHb();mpUi(true);}
+  for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>6){mpRemove(id,true);continue;}
     const vis=r.zone===W.zone&&!CS&&W.zone!=='title';r.h.g.visible=vis;if(!vis){r.tag.style.display='none';continue;}
-    const d=r.pos.distanceTo(r.tgt);if(d>12)r.pos.copy(r.tgt);else r.pos.lerp(r.tgt,Math.min(1,dt*10));const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
+    const d=r.pos.distanceTo(r.tgt);if(d>12)r.pos.copy(r.tgt);else r.pos.lerp(r.tgt,Math.min(1,dt*8));const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
     animHumanoid(r,dt,mv&&!r.dead);placeTag(r.tag,r.pos,r.tagY);}}
-function mpUi(soft){const n=Object.keys(MP.others).length+1,b=$('#mpBadge');if(b){b.hidden=!MP.peer;b.textContent='👥 '+n+'명 · 방 '+(MP.code||'');b.onclick=openMP;}
-  if(!soft&&$('#panel')&&!$('#panel').hidden&&$('#ptl')&&$('#ptl').textContent.startsWith('함께하기'))openMP();}
-function openMP(){const on=!!MP.peer,list=Object.values(MP.others);
-  let h='<div class="sec"><h3>멀티플레이 · 함께하기</h3><p class="note">방을 만들어 코드를 친구에게 알려 주면, 친구가 코드를 입력해 같은 세계에 들어옵니다 (최대 8명). 같은 지역에 있으면 서로의 캐릭터가 보이고 채팅할 수 있으며, 신(그랜드 오라클)의 치유·신성 방패가 파티원에게도 적용됩니다. 몬스터와 전리품은 각자 따로입니다.</p></div>';
-  if(!on)h+='<div class="sec"><button class="btn pri" id="mpNew" style="width:100%">방 만들기</button><div class="row" style="margin-top:8px"><input id="mpCode" maxlength="6" placeholder="방 코드 입력" style="flex:1;font:700 18px monospace;letter-spacing:4px;text-transform:uppercase;padding:8px;border-radius:8px;border:1px solid #6a5a44;background:#1a1410;color:#ffe8b0"><button class="btn sm pri" id="mpGo">참가</button></div></div>';
-  else h+='<div class="sec"><h3>'+(MP.host?'내 방 코드':'참가한 방')+'</h3><div class="mpcode">'+MP.code+'</div>'+(MP.host?'<p class="note">이 코드를 친구에게 보내세요. 방장이 나가면 방이 닫힙니다.</p>':'')+
-    '<div class="row"><div class="l"><b>'+mpMyName()+' (나)</b><small>Lv.'+S.level+' '+heroClsName()+' · '+(ZONES[W.zone]||{}).name+'</small></div></div>'+
-    list.map(r=>'<div class="row"><div class="l"><b>'+(r.name||'?')+'</b><small>Lv.'+(r.lv||1)+' '+(r.awk&&AWK[r.cls]?AWK[r.cls].name:(CLASSES[r.cls]||{}).name||'')+' · '+((ZONES[r.zone]||{}).name||'')+(r.zone===W.zone?' · 같은 지역':'')+'</small></div></div>').join('')+
-    '<div class="row" style="margin-top:8px"><input id="mpMsg" maxlength="80" placeholder="채팅 입력" style="flex:1;padding:8px;border-radius:8px;border:1px solid #6a5a44;background:#1a1410;color:#fff"><button class="btn sm pri" id="mpSend">보내기</button></div>'+
-    '<button class="btn" id="mpQuit" style="width:100%;margin-top:8px">'+(MP.host?'방 닫기':'방 나가기')+'</button></div>';
-  openPanel('함께하기 · 멀티플레이',h);
-  const nb=$('#mpNew');if(nb)nb.onclick=()=>{mpHost();};const gb=$('#mpGo');if(gb)gb.onclick=()=>mpJoin($('#mpCode').value);
-  const sb=$('#mpSend');if(sb){const go=()=>{mpSay($('#mpMsg').value);$('#mpMsg').value='';};sb.onclick=go;$('#mpMsg').onkeydown=ev=>{if(ev.key==='Enter')go();};}
-  const qb=$('#mpQuit');if(qb)qb.onclick=()=>{mpLeave();closePanel();};}
+function mpUi(){const b=$('#mpBadge');if(!b)return;const on=MP.client&&MP.client.connected;b.hidden=!MP.client;
+  b.textContent=on?'👥 '+SERVERS[MP.srv][0].split('. ')[1]+' · '+Math.max(1,netCount())+'/'+NET_MAX+'명':'서버 연결 중…';b.onclick=openMP;}
+function openMP(){const on=MP.client&&MP.client.connected,ro=Object.values(MP.roster||{}).filter(r=>rt-r.t<16).sort((a,b)=>(b.z===W.zone)-(a.z===W.zone)||b.lv-a.lv);
+  let h='<div class="sec"><h3>'+SERVERS[MP.srv][0]+' 서버 · '+(on?Math.max(1,netCount())+' / '+NET_MAX+'명':'연결 안 됨')+'</h3><p class="note">같은 서버를 고른 모든 플레이어가 한 세계에 함께 있습니다 (서버당 최대 '+NET_MAX+'명). 같은 지역에 있으면 서로 보이고, 신(그랜드 오라클)의 치유·신성 방패가 주변 플레이어에게도 적용됩니다. 몬스터와 전리품은 각자 따로입니다. 서버는 접속 화면에서 바꿀 수 있습니다.</p></div>';
+  h+='<div class="sec"><h3>접속 중인 플레이어</h3><div class="row"><div class="l"><b>'+mpMyName()+' (나)</b><small>Lv.'+S.level+' '+heroClsName()+' · '+((ZONES[W.zone]||{}).name||'')+'</small></div></div>'+
+    ro.slice(0,40).map(r=>'<div class="row"><div class="l"><b>'+r.n.replace(/[<>&]/g,'')+'</b><small>Lv.'+(r.lv|0)+' '+(r.a&&AWK[r.c]?AWK[r.c].name:(CLASSES[r.c]||{}).name||'')+' · '+((ZONES[r.z]||{}).name||'')+(r.z===W.zone?' · 같은 지역':'')+'</small></div></div>').join('')+(ro.length>40?'<p class="note">외 '+(ro.length-40)+'명</p>':'')+'</div>';
+  h+='<div class="sec"><h3>서버 채팅</h3>'+MP.chat.slice(-8).map(([w,t])=>'<div class="note">'+(w?'<b>'+String(w).replace(/[<>&]/g,'')+'</b> ':'')+String(t).replace(/[<>&]/g,'')+'</div>').join('')+
+    '<div class="row" style="margin-top:6px"><input id="mpMsg" maxlength="80" placeholder="채팅 입력" style="flex:1;padding:8px;border-radius:8px;border:1px solid #6a5a44;background:#1a1410;color:#fff"><button class="btn sm pri" id="mpSend">보내기</button></div></div>'+
+    (on?'':'<div class="sec"><button class="btn pri" id="mpRe" style="width:100%">다시 연결</button></div>');
+  openPanel('서버 · 접속자와 채팅',h);
+  const sb=$('#mpSend');if(sb){const go=()=>{mpSay($('#mpMsg').value);$('#mpMsg').value='';openMP();};sb.onclick=go;$('#mpMsg').onkeydown=ev=>{if(ev.key==='Enter')go();};}
+  const rb=$('#mpRe');if(rb)rb.onclick=()=>{MP.off=false;MP.full=false;MP.bi=0;netDisconnect(true);netConnect();closePanel();};}
+/* admin account (운영자): switch freely between the three classes */
+function adminClass(k){if(!S.admin||!CLASSES[k]||S.cls===k)return;const pos=P.pos.clone(),face=P.face;if(P.setFx){P.setFx.dispose();P.setFx=null;}scene.remove(P.mesh);
+  S.cls=k;makePlayer();P.pos.copy(pos);P.face=face;P.mesh.rotation.y=face;refreshSkills();refreshHud();save();closePanel();
+  ringFx(pos.x,pos.z,3,CLASSES[k].color||0xffd070,.6);toast('운영자 · 직업 변경: '+heroClsName(),'gold');}
 function openMenu(){
-  openPanel('메뉴','<div class="sec"><h3>함께하기</h3><div class="row"><div class="l"><b>멀티플레이</b><small>'+(MP.peer?'방 '+MP.code+' · '+(Object.keys(MP.others).length+1)+'명 접속 중':'친구와 방 코드로 같은 세계에서 함께 플레이 (최대 8명)')+'</small></div><button class="btn sm pri" id="mMp">열기</button></div></div><div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
+  openPanel('메뉴','<div class="sec"><h3>서버</h3><div class="row"><div class="l"><b>접속자 · 서버 채팅</b><small>'+SERVERS[MP.srv][0]+' · '+(MP.client&&MP.client.connected?Math.max(1,netCount())+'/'+NET_MAX+'명 접속 중':'연결 안 됨')+'</small></div><button class="btn sm pri" id="mMp">열기</button></div></div><div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
    '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
    (CUSTOM.n?'<div class="sec"><h3>Meshy AI 모델</h3><p class="note">커스텀 모델 '+CUSTOM.n+'개 적용 중: '+[...Object.keys(CUSTOM.props),...Object.keys(CUSTOM.mobs),...Object.keys(CUSTOM.npcs)].join(', ')+'</p></div>':'')+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
-   (S.admin?'<div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
+   (S.admin?'<div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
   $('#mOut').onclick=()=>{save();location.reload();};
+  document.querySelectorAll('[data-adcls]').forEach(b=>b.onclick=()=>adminClass(b.dataset.adcls));
   if(S.admin){const k=S.cls==='novice'?'warrior':S.cls,give=(g,q)=>{g.lv=Math.min(g.lv,S.level);addGear(g,q);};
     $('#adSet').onclick=()=>{ARMOR_PARTS.forEach(p=>{const g=makeDragonGear('a',k,3);g.part=p;g.name=DSET[k].n+' '+(p==='body'?'갑주':PART_SUF[p]);g.def=Math.round(TIERS[7].def*PART_DEF[p]*RAR[3].m);give(g,true);});toast('['+DSET[k].n+'] 영웅 세트 5부위 지급 · 가방에서 장착하세요','gold');save();};
     $('#adW').onclick=()=>{give(makeDragonGear('w',k,3));save();};
@@ -3943,7 +3990,7 @@ function loop(now){
     updProj(dt);updAreas(dt);updSpawners(dt,false);
     // reach goals
   }else if(P&&gameOn){animHumanoid(P,dt,P.walk!==P._pw);P._pw=P.walk;}
-  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(MP.peer)mpTick(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
+  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(!MP.client&&!MP.off&&!MP.full&&!MP.connecting)netConnect();mpTick(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
   updFx(dt);updFloats(dt);
   W.anim.forEach(f=>f(rt));
   // camera
@@ -4032,6 +4079,34 @@ function auStartMusic(){
   AU.next=c.currentTime+.15;AU.bar=0;AU.loops=0;
   AU.timer=setInterval(()=>{while(AU.next<AU.ctx.currentTime+1.2){scheduleBar(AU.next,AU.bar,AU.loops===0);AU.bar++;if(AU.bar%8===0)AU.loops++;AU.next+=BAR;}},250);
 }
+/* ---------- in-game background music: one generated piece per area (town / field / boss), crossfaded on zone change ---------- */
+const SONGS={
+  town:{bpm:72,prog:[[48,52,55],[45,48,52],[41,45,48],[43,47,50],[48,52,55],[45,48,52],[41,45,48],[43,47,50]],mel:[[64,67],[69,67],[65,64],[62],[64,60],[57,60],[65,69],[67]]},
+  field:{bpm:94,prog:[[45,48,52],[41,45,48],[48,52,55],[43,47,50],[45,48,52],[41,45,48],[43,47,50],[40,44,47]],mel:[[69,72],[72,69],[67,64],[67],[69,76],[77,76],[74,71],[68]]},
+  boss:{bpm:132,prog:[[50,53,57],[50,53,57],[46,50,53],[48,52,55],[50,53,57],[50,53,57],[46,50,53],[45,49,52]],mel:null}};
+function bgmStyle(z){return z==='altar'||z==='eternal'?'boss':['village','citadel','hall','inn'].includes(z)?'town':'field';}
+function bgmPad(ms,t,d,vol,saw){const c=AU.ctx;ms.forEach(m=>[-6,6].forEach(dt=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=saw?'sawtooth':'triangle';o.frequency.value=hz(m);o.detune.value=dt;
+  f.type='lowpass';f.frequency.value=saw?1400:2200;o.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,Math.min(.6,d*.25),vol,d*.55,d*.4);o.start(t);o.stop(t+d+.2);}));}
+function bgmPluck(m,t,vol){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(AU.bgmG);env(g,t,.006,vol,.02,.9);o.start(t);o.stop(t+1);}
+function bgmLead(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),v=c.createOscillator(),vg=c.createGain(),f=c.createBiquadFilter(),g=c.createGain();o.type='sine';o.frequency.value=hz(m);v.frequency.value=5;vg.gain.value=hz(m)*.004;v.connect(vg);vg.connect(o.frequency);
+  f.type='lowpass';f.frequency.value=2600;o.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.08,vol,d*.6,d*.4);o.start(t);v.start(t);o.stop(t+d+.1);v.stop(t+d+.1);}
+function bgmBass(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=hz(m);o.connect(g);g.connect(AU.bgmG);env(g,t,.01,vol,d*.5,d*.4);o.start(t);o.stop(t+d+.1);}
+function bgmKick(t,vel){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(42,t+.14);o.connect(g);g.connect(AU.bgmG);env(g,t,.003,.5*vel,.02,.25);o.start(t);o.stop(t+.35);}
+function bgmHat(t,vel){const c=AU.ctx,n=nsrc(AU.white,t,.06),f=c.createBiquadFilter(),g=c.createGain();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.001,.06*vel,.005,.04);}
+function bgmBar(t,bar,style){const S2=SONGS[style],B=60/S2.bpm,i=bar%S2.prog.length,ch=S2.prog[i];
+  if(style==='town'){bgmPad(ch,t,B*4,.018);bgmBass(ch[0]-12,t,B*2,.12);bgmBass(ch[0]-12,t+B*2,B*2,.09);
+    for(let k=0;k<8;k++)bgmPluck(ch[[0,1,2,1][k%4]]+12,t+k*B/2,.035);if(bar>=8){const ml=S2.mel[i];ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.05));}}
+  else if(style==='field'){bgmPad(ch,t,B*4,.014);for(let k=0;k<4;k++){bgmBass(ch[0]-12,t+k*B,B*.9,.11);bgmKick(t+k*B,k%2?.35:.6);bgmHat(t+k*B+B/2,1);}
+    for(let k=0;k<8;k++)bgmPluck(ch[[0,2,1,2][k%4]]+12,t+k*B/2,.03);if(bar>=8){const ml=S2.mel[i];ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.045));}}
+  else{bgmPad(ch.map(m=>m-12),t,B*4,.022,true);for(let k=0;k<8;k++){bgmBass(ch[0]-24,t+k*B/2,B*.45,.14);bgmHat(t+k*B/2+B/4,.8);}
+    for(let k=0;k<4;k++)bgmKick(t+k*B,1);if(i===7){[0,1,2,3].forEach(k=>timpTo(t+k*B,38+k,.6));}}}
+function timpTo(t,m,vel){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(hz(m)*1.7,t);o.frequency.exponentialRampToValueAtTime(hz(m),t+.12);o.connect(g);g.connect(AU.bgmG);env(g,t,.005,.4*vel,.02,1);o.start(t);o.stop(t+1.2);}
+function bgmUpdate(){if(!AU.ctx||!AU.on||!gameOn)return;if(!AU.bgmG){AU.bgmG=AU.ctx.createGain();AU.bgmG.gain.value=0;AU.bgmG.connect(AU.master);AU.bgmG.connect(AU.rv);}
+  const want=bgmStyle(W.zone),c=AU.ctx;if(c.state==='suspended')c.resume();
+  if(AU.bgmStyle!==want&&!AU.bgmFading){AU.bgmFading=true;const t=c.currentTime;AU.bgmG.gain.cancelScheduledValues(t);AU.bgmG.gain.setValueAtTime(AU.bgmG.gain.value,t);AU.bgmG.gain.linearRampToValueAtTime(0,t+1.2);
+    setTimeout(()=>{AU.bgmStyle=want;AU.bgmBarN=0;AU.bgmNext=c.currentTime+.1;const t2=c.currentTime;AU.bgmG.gain.cancelScheduledValues(t2);AU.bgmG.gain.setValueAtTime(0,t2);AU.bgmG.gain.linearRampToValueAtTime(want==='boss'?.8:.7,t2+2.5);AU.bgmFading=false;},1300);return;}
+  if(!AU.bgmStyle||AU.bgmFading)return;const B=60/SONGS[AU.bgmStyle].bpm*4;while(AU.bgmNext<c.currentTime+1.2){bgmBar(AU.bgmNext,AU.bgmBarN,AU.bgmStyle);AU.bgmBarN++;AU.bgmNext+=B;}}
+setInterval(()=>{try{bgmUpdate();}catch(err){}},300);
 function auStopMusic(sec){if(!AU.ctx)return;const c=AU.ctx,t=c.currentTime;[AU.music,AU.amb].forEach(g=>{g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+(sec||2));});
   setTimeout(()=>{if(AU.music.gain.value<.02){clearInterval(AU.timer);AU.timer=null;}},(sec||2)*1000+200);}
 function auStartSfx(){
@@ -4136,10 +4211,15 @@ $('#tNew').onclick=e=>{e.stopPropagation();titleTouch(e,true);};
 $('#tSound').onclick=e=>{e.stopPropagation();const on=!AU.on;auSetOn(on);if(on){auInit();auStartMusic();}};
 $('#tNotice').onclick=e=>{e.stopPropagation();openPanel('공지사항','<div class="sec"><h3>업데이트</h3><div class="row"><div class="l"><b>전체 그래픽 KayKit 교체</b><small>마을·평원·성채, NPC, 해골 군단 몬스터가 새 3D 모델과 애니메이션으로 바뀌었습니다.</small></div></div><div class="row"><div class="l"><b>신규 몬스터</b><small>타락한 해골 주술사 · 잠든 해골병 · 타락한 해골 돌격병</small></div></div><div class="row"><div class="l"><b>타이틀 화면 리뉴얼</b><small>새 BGM과 터치 연출이 추가되었습니다. 우측 상단 스피커 버튼으로 소리를 켜고 끌 수 있습니다.</small></div></div></div><div class="sec"><h3>안내</h3><p class="note">제2장 검은 안개 숲은 다음 업데이트에서 열립니다.</p></div>');};
 $('#tAccount').onclick=e=>{e.stopPropagation();openPanel('계정 연동','<div class="sec"><h3>현재 계정</h3><div class="row"><div class="l"><b>게스트</b><small>진행 상황은 이 기기의 이 브라우저에만 저장됩니다. 브라우저 데이터를 지우면 사라집니다.</small></div></div></div><div class="sec"><h3>연동</h3><div class="row"><div class="l"><b>Google 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div><div class="row"><div class="l"><b>Apple 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div></div>');};
-const SERVERS=[['01. 이그니스','원활','#6fdc6a'],['02. 천명','혼잡','#e0c040'],['03. 잿빛 잎새','원활','#6fdc6a'],['04. 황혼의 잿더미','점검','#d9544a']];
-function srvLabel(){let i=0;try{i=+(localStorage.getItem('ignis.srv')||0);}catch(e){}const sv=SERVERS[i]||SERVERS[0];$('#tSrvName').textContent=sv[0];$('#tServer i').style.background=sv[2];$('#tServer i').style.boxShadow='0 0 6px '+sv[2];}
-$('#tServer').onclick=e=>{e.stopPropagation();openPanel('서버 선택','<div class="sec">'+SERVERS.map((sv,i)=>'<div class="row"><div class="l"><b>'+sv[0]+'</b><small style="color:'+sv[2]+'">● '+sv[1]+'</small></div><button class="btn sm'+(sv[1]==='점검'?'':' pri')+'" data-sv="'+i+'"'+(sv[1]==='점검'?' disabled':'')+'>선택</button></div>').join('')+'</div><p class="note">프로토타입에서는 서버에 관계없이 같은 월드로 접속합니다.</p>');
-  document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}srvLabel();closePanel();});};
+const SERVERS=[['01. 이그니스'],['02. 천명'],['03. 잿빛 잎새'],['04. 황혼의 잿더미']];
+/* live status from the presence channel: 원활 < 60 ≤ 혼잡 < 100 = 가득 (unknown until the first heartbeat arrives) */
+function srvState(i){const on=MP.client&&MP.client.connected,n=netCount(i)+(on&&i===MP.srv?0:0);if(!on)return ['확인 중','#9a9a9a',n];return n>=NET_MAX?['가득',"#d9544a",n]:n>=60?['혼잡','#e0c040',n]:['원활','#6fdc6a',n];}
+function srvLabel(){let i=0;try{i=+(localStorage.getItem('ignis.srv')||0);}catch(e){}const sv=SERVERS[i]||SERVERS[0],st=srvState(i);$('#tSrvName').textContent=sv[0];$('#tServer i').style.background=st[1];$('#tServer i').style.boxShadow='0 0 6px '+st[1];}
+function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map((sv,i)=>{const st=srvState(i);return '<div class="row"><div class="l"><b>'+sv[0]+'</b><small style="color:'+st[1]+'">● '+st[0]+(st[0]==='확인 중'?'':' · '+st[2]+'/'+NET_MAX+'명')+'</small></div><button class="btn sm pri" data-sv="'+i+'"'+(st[0]==='가득'?' disabled':'')+'>선택</button></div>';}).join('')+'</div><p class="note">같은 서버를 고른 플레이어끼리 한 세계에서 만납니다 (서버당 최대 '+NET_MAX+'명).</p>');
+  document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
+$('#tServer').onclick=e=>{e.stopPropagation();openServers();};
+setInterval(()=>{if(!gameOn)srvLabel();},3000);
+netConnect();  // connect already on the title screen so the server list shows live player counts
 srvLabel();
 function renderCsel(){
   const k=SHOW_CLS[SEL],c=CLASSES[k];

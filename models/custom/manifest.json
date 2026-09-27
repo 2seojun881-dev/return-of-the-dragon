@@ -904,18 +904,6 @@
       "prompt": "burned ruined medieval house with collapsed roof",
       "meshy_task": "01a0de9b-de4d-7496-843a-a870f58b7563"
     },
-    "w_market": {
-      "file": "w_market.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_market_blue"
-      ],
-      "zones": [
-        "citadel"
-      ],
-      "prompt": "medieval market hall building with blue roof and open stalls",
-      "meshy_task": "01a0de9b-e1bb-722a-a100-51cd94c420e1"
-    },
     "n_sylvia": {
       "file": "n2_ElvenTownfolkWyrdwoodCreations.glb.txt",
       "kind": "npc",
@@ -1903,6 +1891,18 @@
       ],
       "uniform": true,
       "userModel": "Tidebreaker"
+    },
+    "u_bluecottage": {
+      "file": "u_bluecottage.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_market_blue"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "BlueTileCottage"
     }
   }
 }

@@ -1,0 +1,8 @@
+{
+  "name": "return-of-the-dragon-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "broker.js",
+  "scripts": { "start": "node broker.js" },
+  "dependencies": { "aedes": "0.51.3", "aedes-server-factory": "0.2.1" }
+}
