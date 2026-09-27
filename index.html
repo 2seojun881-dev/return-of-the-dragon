@@ -647,6 +647,8 @@ const MOBS={
  graveBoss:{name:'진홍의 망령기사',lvr:[41,41],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.2,range:2.6,aspd:1.5,aggr:true,sight:14,model:'goblin',rad:1.1,boss:true,special:'whirl',spcd:7,junk:'망령기사의 투구',drop:{mid:1,high:.12}},
  clockBoss:{name:'황금 태엽 세라프',lvr:[71,71],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.4,range:2.6,aspd:1.5,aggr:true,sight:14,model:'goblin',rad:1.1,boss:true,special:'wolf',spcd:5,junk:'황금 태엽 날개',drop:{mid:1,high:.2}},
  asuraBoss:{name:'강철턱 도깨비 대장',lvr:[98,98],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.3,range:2.8,aspd:1.6,aggr:true,sight:14,model:'goblin',rad:1.2,boss:true,special:'whirl',spcd:6,junk:'강철 턱뼈',drop:{high:1,top:.05}},
+ graveLord:{name:'진홍 군주',lvr:[45,45],role:1.8,bm:{hp:22,exp:9,gold:22},spd:3.3,range:3,aspd:1.4,aggr:true,sight:15,model:'goblin',rad:1.3,boss:true,special:'slam',spcd:5,junk:'진홍 군주의 룬검',drop:{mid:1,high:.25}},
+ asuraGate:{name:'지옥 룬검 군주',lvr:[97,97],role:1.9,bm:{hp:24,exp:9,gold:24},spd:3.4,range:3.2,aspd:1.3,aggr:true,sight:15,model:'goblin',rad:1.4,boss:true,special:'whirl',spcd:5,junk:'지옥의 룬 파편',drop:{high:1,top:.1}},
  ignis:{name:'고대 드래곤 이그니스',lv:99,hp:300000,atk:900,spd:.7,range:5,aspd:2.2,aggr:true,sight:40,exp:2000000,gold:[60000,120000],model:'ignis',boss:true,rad:3.2,special:'ignis',spcd:4},
 };
 const NPCS={
@@ -683,7 +685,7 @@ const ENH=[
  [25,30,40,5,50000,'high',1],[20,25,45,10,70000,'high',2],[15,20,50,15,100000,'high',3],
  [10,15,55,20,150000,'high',5],[5,10,60,25,220000,'high',7],[3,7,60,30,300000,'top',1]];
 const STONE={low:'하급 강화석',mid:'중급 강화석',high:'상급 강화석',top:'최고급 강화석'};
-const JUNKV={'짐승 가죽':25,'뼛조각':90,'원혼의 눈물':160,'녹슨 태엽':320,'골렘 핵':650,'도깨비 뿔':950,'아수라의 혼':1600,'고목의 심장':1500,'망령기사의 투구':6000,'황금 태엽 날개':15000,'강철 턱뼈':30000};
+const JUNKV={'짐승 가죽':25,'뼛조각':90,'원혼의 눈물':160,'녹슨 태엽':320,'골렘 핵':650,'도깨비 뿔':950,'아수라의 혼':1600,'고목의 심장':1500,'망령기사의 투구':6000,'황금 태엽 날개':15000,'강철 턱뼈':30000,'진홍 군주의 룬검':9000,'지옥의 룬 파편':45000};
 const DBW={warrior:'용혈 파천검',rogue:'용혈 섬광단검',shaman:'용혈 멸세령'};
 const DB_RATE=.02;
 const SHARD_NEED=3;
@@ -1254,6 +1256,7 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
       g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;const mt=o.material;if(mt&&mt.map)mt.map.encoding=THREE.sRGBEncoding;
         if(mt&&mt.isMeshStandardMaterial&&!mt.metalnessMap){mt.metalness=0;mt.roughness=Math.max(mt.roughness,.7);}
         if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
+      if(e.autoRig==='dragon')rigDragonMesh(g.scene);
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
       if(e.skinned){/* rigged exports keep bones in cm under a 0.01 armature: measure the posed, skinned vertices instead */
@@ -1268,6 +1271,42 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
       else if(e.kind==='groundtex')CUSTOM.ground[e.ground]=e;
       else if(e.mob)CUSTOM.mobs[e.mob]=e;else if(e.npc)CUSTOM.npcs[e.npc]=e;else if(e.player)CUSTOM.players[e.player]=e;
       CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err));}
+/* Meshy's auto-rigger only handles humanoids, so Ignis gets a hand-built skeleton: 2 bones per wing, neck + head,
+   a 3-bone tail. Weights come from where each vertex sits on the (normalised) body: head +z, tail -z, wings +-x. */
+const SS=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+function rigDragonMesh(root){let src=null;root.updateMatrixWorld(true);root.traverse(o=>{if(o.isMesh&&!src)src=o;});if(!src)return;
+  const geo=src.geometry.clone();geo.applyMatrix4(src.matrixWorld);geo.computeBoundingBox();const bb=geo.boundingBox,c=bb.getCenter(new V()),sz=bb.getSize(new V());
+  const L=sz.z/2,Wd=sz.x/2,H=sz.y/2,P=(x,y,z)=>new V(c.x+x*Wd,c.y+y*H,c.z+z*L);
+  const mk=(n,p,par)=>{const b=new THREE.Bone();b.name=n;const wp=p.clone();if(par){par.updateMatrixWorld(true);par.worldToLocal(wp);}b.position.copy(wp);if(par)par.add(b);return b;};
+  const body=mk('D_body',P(0,-.2,.3));body.updateMatrixWorld(true);
+  const neck=mk('D_neck',P(0,.1,.58),body),head=mk('D_head',P(0,.5,.76),neck);
+  const t1=mk('D_tail1',P(0,-.3,-.05),body),t2=mk('D_tail2',P(0,-.6,-.35),t1),t3=mk('D_tail3',P(0,-.6,-.65),t2);
+  const wl1=mk('D_wingL1',P(.22,.1,.25),body),wl2=mk('D_wingL2',P(.55,0,.25),wl1),wr1=mk('D_wingR1',P(-.22,.1,.25),body),wr2=mk('D_wingR2',P(-.55,0,.25),wr1);
+  const bones=[body,neck,head,t1,t2,t3,wl1,wl2,wr1,wr2],pa=geo.attributes.position,si=[],sw=[];
+  for(let i=0;i<pa.count;i++){const x=(pa.getX(i)-c.x)/Wd,y=(pa.getY(i)-c.y)/H,z=(pa.getZ(i)-c.z)/L,ax=Math.abs(x),side=x>0?6:8;const w=new Array(10).fill(0);
+    const wing=z>-.15&&z<.55&&y>-.6?SS(.22,.34,ax):0,wingOut=SS(.45,.62,ax);
+    const tail=SS(-.02,-.14,z),tail2=SS(-.28,-.42,z),tail3=SS(-.58,-.72,z);
+    const nk=SS(.5,.62,z)*(1-wing),hd=SS(.68,.8,z);
+    let rest=1;const put=(k,v)=>{v=Math.min(v,rest);w[k]+=v;rest-=v;};
+    if(wing>0){put(side+1,wing*wingOut);put(side,wing);}
+    if(z<0){put(5,tail3);put(4,tail2);put(3,tail);}
+    if(z>.5){put(2,hd);put(1,nk);}
+    w[0]+=rest;
+    const idx=w.map((v,k)=>[v,k]).sort((a,b)=>b[0]-a[0]).slice(0,4),s=idx.reduce((a,b)=>a+b[0],0)||1;
+    idx.forEach(([v,k])=>{si.push(k);sw.push(v/s);});}
+  geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(si,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sw,4));
+  const mat=src.material.clone();mat.skinning=true;const sm=new THREE.SkinnedMesh(geo,mat);sm.name='IgnisBody';sm.add(body);sm.bind(new THREE.Skeleton(bones));
+  src.parent.remove(src);root.add(sm);root.userData.dragonBones=true;}
+/* per-frame wing/neck/tail motion for the hand-rigged dragon (air = flying, one = current one-shot) */
+function animDragonBones(bn,T,dt,mv,air,one,k){const s=Math.sin;
+  const flap=air?s(T*5.5):s(T*1.1)*.25,fold=air?0:.35;
+  const wa=one==='roar'?-.55*s(k*Math.PI):0,dead=one==='death'?k:0;
+  if(bn.wl1){bn.wl1.rotation.z=-(fold*.3+flap*.55+wa)+dead*.6;bn.wr1.rotation.z=(fold*.3+flap*.55+wa)-dead*.6;
+    bn.wl2.rotation.z=-(flap*.45+fold*.5)+dead*.4;bn.wr2.rotation.z=(flap*.45+fold*.5)-dead*.4;
+    bn.wl1.rotation.y=-fold*.25;bn.wr1.rotation.y=fold*.25;}
+  const bite=one==='attack'?s(k*Math.PI):0,roar=one==='roar'?s(k*Math.PI):0;
+  if(bn.neck){bn.neck.rotation.x=s(T*1.3)*.05+bite*.35-roar*.45+dead*.5;bn.neck.rotation.y=s(T*.7)*.12*(1-bite);bn.head.rotation.x=-bite*.25-roar*.3+s(T*1.3+1)*.04;}
+  const sway=mv?1.6:.8;if(bn.t1){bn.t1.rotation.y=s(T*sway)*.18;bn.t2.rotation.y=s(T*sway-.7)*.25;bn.t3.rotation.y=s(T*sway-1.4)*.32;bn.t1.rotation.x=-.05+s(T*.9)*.04;}}
 /* scale (and turn) a Meshy prop to the KayKit prop's footprint so every existing layout keeps its sizes */
 function fitToKit(src,mb,kb,uniform){if(!kb)return {obj:src,box:mb};const ks=kb.getSize(new V()),ms0=mb.getSize(new V());
   if(uniform){const s=Math.max(ks.x,ks.z)/Math.max(ms0.x,ms0.z,1e-3),w=new THREE.Group();w.add(src.clone());w.scale.setScalar(s);w.updateMatrixWorld(true);return {obj:w,box:new THREE.Box3().setFromObject(w)};}  // hand-made models keep their proportions
@@ -1311,7 +1350,9 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
   h.release=()=>{const was=st.clip;st.one=null;st.clip=false;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);
     if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
+  const dbn={};h.dragonRig=e.autoRig==='dragon';if(e.autoRig==='dragon')model.traverse(o=>{if(o.isBone){const n={D_neck:'neck',D_head:'head',D_tail1:'t1',D_tail2:'t2',D_tail3:'t3',D_wingL1:'wl1',D_wingL2:'wl2',D_wingR1:'wr1',D_wingR2:'wr2'}[o.name];if(n)dbn[n]=o;}});
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
+    if(dbn.wl1)animDragonBones(dbn,T,dt,st.mv,!!h.airborne,st.one,st.one?Math.min(1,st.t/st.dur):0);
     // walk/idle blend eases in and out so start/stop never snaps
     st.mk=(st.mk||0)+((st.mv?1:0)-(st.mk||0))*Math.min(1,dt*4);const mk=st.mk;
     if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;pose.scale.setScalar(1);
@@ -2230,6 +2271,7 @@ function buildGrave(){
   spawner('graveSkel',-12,-14,6,4,8,always,null,[15,21]);spawner('graveSkel',-14,16,6,4,8,always,null,[20,26]);spawner('graveSkel',6,0,6,4,8,always,null,[25,30]);
   spawner('graveGhost',18,-16,6,4,9,always,null,[28,34]);spawner('graveGhost',22,16,6,4,9,always,null,[34,40]);
   spawner('graveBoss',31,0,0,1,180,always);
+  spawner('graveLord',-4,-28,0,1,300,always);  // 묘지 가장 안쪽: 진홍 군주 (5분마다)
   portal(-37,0,'citadel',[25,0],always,'','천명 성채 동문 ›');
 }
 function buildClock(){
@@ -2263,6 +2305,7 @@ function buildAsura(){
   spawner('asuraGoblin',-10,18,6,4,8,always,null,[70,76]);spawner('asuraGoblin',12,4,6,4,8,always,null,[76,84]);
   spawner('asuraWarrior',-12,-18,5,3,9,always,null,[84,90]);spawner('asuraWarrior',10,-34,5,3,9,always,null,[90,97]);
   spawner('asuraBoss',0,-47,0,1,180,always);
+  spawner('asuraGate',11,-54,0,1,300,always);  // 용혈의 제단 입구를 지키는 지옥 룬검 군주
   portal(0,36.5,'citadel',[-14,-25],always,'','천명 성채 북문 ›');
   portal(0,-58.5,'altar',[0,24],always,'','용혈의 제단 ›');
 }
@@ -2886,12 +2929,12 @@ function startSpecial(e,dP){
 /* Ignis air breath: takeoff -> aim/charge -> fire breath sweeping onto the ground -> landing shockwave -> cooldown.
    Mirrors unity/Scripts/Boss/BossDragonAI.cs. While airborne the Meshy "flying" model (ignisFly) is shown if present. */
 const AIRB={h:6.5,up:1.2,charge:1.5,breath:2.6,down:.9,cd:8,L:20,W:8};
-function ignisFly(e,on){const fm=CUSTOM.mobs.ignisFly;if(!fm)return;
+function ignisFly(e,on){const fm=CUSTOM.mobs.ignisFly;if(!fm||e.parts.dragonRig)return;  // the rigged Ignis flaps its own wings
   if(on&&!e.flyH){e.flyH=customRig(fm);e.mesh.add(e.flyH.g);}
   if(e.flyH){e.flyH.g.visible=on;e.parts.model.visible=!on;}}
 function mouthPos(e){const f=new V(Math.sin(e.face),0,Math.cos(e.face));return new V(e.pos.x+f.x*4.2,e.mesh.position.y+3.2,e.pos.z+f.z*4.2);}
 function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z);let d=want-e.face;d=Math.atan2(Math.sin(d),Math.cos(d));e.face+=d*Math.min(1,dt*rate);e.mesh.rotation.y=e.face;};
-  e.spCd=A.up+A.charge+A.breath+A.down+A.cd;e.airborne=true;
+  e.spCd=A.up+A.charge+A.breath+A.down+A.cd;e.airborne=true;e.parts.airborne=true;
   // 1) takeoff: ring dust + ground crack, rise to A.h
   ringFx(e.pos.x,e.pos.z,7,0xc8a080,.6);burst(e.pos.x,.4,e.pos.z,0x6a5a4a,50,8,1,.9);shake(.7);ignisFly(e,true);
   const crack=new THREE.Mesh(new THREE.CircleGeometry(5.5,24),new THREE.MeshBasicMaterial({color:0x140806,transparent:true,opacity:.75,depthWrite:false}));crack.rotation.x=-Math.PI/2;crack.position.set(e.pos.x,.05,e.pos.z);W.root.add(crack);
@@ -2913,7 +2956,7 @@ function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.ata
         tick-=dt;if(tick<=0){tick=.3;shake(.25);const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,al=dx*f.x+dz*f.z,sd2=Math.abs(dx*f.z-dz*f.x);if(al>-1&&al<A.L&&sd2<A.W/2+P.rad)hurtPlayer(e.atk*.7*sm,e);}},end:()=>{
         // 4) landing shockwave
         e.cast={t:0,dur:A.down,full:true,upd:(dt,c)=>{const k=c.t/A.down;e.mesh.position.y=A.h*(1-k*k);if(e.flyH)e.flyH.tick(rt);},end:()=>{
-          e.mesh.position.y=0;e.airborne=false;ignisFly(e,false);shake(1);ringFx(e.pos.x,e.pos.z,8,0xff8a3a,.6);burst(e.pos.x,.5,e.pos.z,0x3a2020,60,9,1,.8);
+          e.mesh.position.y=0;e.airborne=false;e.parts.airborne=false;ignisFly(e,false);shake(1);ringFx(e.pos.x,e.pos.z,8,0xff8a3a,.6);burst(e.pos.x,.5,e.pos.z,0x3a2020,60,9,1,.8);
           if(d2(e.pos,P.pos)<8+P.rad)hurtPlayer(e.atk*1.5*sm,e);e.spCd=A.cd;}};}};}};}};}
 function updDash(e,dt){const d=e.dash,s=Math.min(d.left,22*dt);const bx=e.pos.x,bz=e.pos.z;e.pos.addScaledVector(d.dir,s);resolve(e.pos,e.rad*.8);d.left-=s;e.walk+=s*3;
   if(Math.random()<.5)burst(e.pos.x,.3,e.pos.z,0x8a7a6a,3,2,.4,.5,0);

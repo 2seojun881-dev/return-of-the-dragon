@@ -8,7 +8,8 @@
       "imported": true,
       "zones": [
         "altar"
-      ]
+      ],
+      "autoRig": "dragon"
     },
     "mob_beastBoar": {
       "file": "m_AnxiousPanda.glb.txt",
@@ -1727,6 +1728,36 @@
       ],
       "uniform": true,
       "userModel": "StoneBridge"
+    },
+    "mob_graveLord": {
+      "file": "m_CrimsonDreadlord.glb.txt",
+      "kind": "boss",
+      "height": 3.4,
+      "mob": "graveLord",
+      "zones": [
+        "grave"
+      ],
+      "imported": true,
+      "anims": {
+        "walk": "m_CrimsonDreadlord.walk.glb.txt",
+        "run": "m_CrimsonDreadlord.run.glb.txt"
+      },
+      "rigged": true
+    },
+    "mob_asuraGate": {
+      "file": "m_InfernalRunebladeWarlord.glb.txt",
+      "kind": "boss",
+      "height": 3.6,
+      "mob": "asuraGate",
+      "zones": [
+        "asura"
+      ],
+      "imported": true,
+      "anims": {
+        "walk": "m_InfernalRunebladeWarlord.walk.glb.txt",
+        "run": "m_InfernalRunebladeWarlord.run.glb.txt"
+      },
+      "rigged": true
     }
   }
 }
