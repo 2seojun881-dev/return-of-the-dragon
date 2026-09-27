@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-25</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-26</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4209,15 +4209,22 @@ async function netConnect(){if(MP.client||MP.connecting)return;MP.connecting=tru
   c.on('offline',()=>{MP.fails=(MP.fails||0)+1;if(MP.fails>=2&&!window.NET_BROKER){MP.bi++;const was=MP.client;MP.client=null;try{was.end(true);}catch(e3){}if(MP.bi<NET_BROKERS.length*2)later(1,netConnect);}mpUi();});}
 function netDisconnect(quiet){const c=MP.client;MP.client=null;MP.peer=null;MP.subZone=null;if(c){try{c.publish(netBase()+'/bye',JSON.stringify({t:'bye',id:MP.id}));c.end(true);}catch(e){}}
   Object.keys(MP.others).forEach(id=>mpRemove(id,true));if(!quiet)toast('서버 연결을 끊었습니다');mpUi();}
-function mpSend(m){const c=MP.client;if(!c||!c.connected)return;m.id=MP.id;const t=m.t==='chat'||m.t==='ann'?netBase()+'/chat':netBase()+'/z/'+(W.zone||'none');try{c.publish(t,JSON.stringify(m),{qos:0});}catch(e){}}
+const AOI_C=24;  // AOI cell size (m): packets only reach players within the surrounding 3x3 cells
+function aoiCell(){return P?[Math.floor(P.pos.x/AOI_C)+50,Math.floor(P.pos.z/AOI_C)+50]:[50,50];}
+function aoiTopic(cx,cz){return netBase()+'/z/'+(W.zone||'none')+'/'+cx+'_'+cz;}
+function mpSend(m){const c=MP.client;if(!c||!c.connected)return;m.id=MP.id;const cl=aoiCell(),t=m.t==='chat'||m.t==='ann'?netBase()+'/chat':aoiTopic(cl[0],cl[1]);try{c.publish(t,JSON.stringify(m),{qos:0});}catch(e){}}
 function mpSendHb(){const c=MP.client;if(!c||!c.connected||!S)return;try{c.publish(netBase()+'/hb',JSON.stringify({t:'hb',id:MP.id,n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone}),{qos:0});}catch(e){}}
 function mpRoster(m){(MP.roster||(MP.roster={}))[m.id]={id:m.id,n:String(m.n||'').slice(0,12),c:m.c,a:m.a,lv:m.lv,z:m.z,t:rt};}
 function mpMyName(){return S.name||ACCOUNT||'모험가';}
 function mpSendState(){if(!P||!S)return;
+  const sig=S.cls+'|'+S.level+'|'+tierOf()+'|'+(guildKey()||'')+'|'+(S.pkOn?1:0)+'|'+(isRed()?1:0)+'|'+P.maxHp+'|'+mpMyName();
+  if(MP.fullT>0&&MP.sig===sig){mpSend({t:'s',z:W.zone,x:+P.pos.x.toFixed(1),y:+P.pos.y.toFixed(1),zz:+P.pos.z.toFixed(1),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),dead:P.dead?1:0});P._mpw=P.walk;return;}  // slim packet: position + HP only
+  MP.sig=sig;MP.fullT=3;
   mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0,rk:isRed()?1:0,g:guildKey()||'',pk:S.pkOn?1:0,ti:tierOf()});P._mpw=P.walk;}
 function mpRecv(m){const id=m.id;
+  if(m.t==='s'){const r=MP.others[id];if(!r||m.z!==W.zone)return;mpMove(r,m);r.hp=m.hp;r.dead=!!m.dead;return;}
   if(m.t==='st'){if(m.z!==W.zone||!CLASSES[m.c])return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
-    r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.red=!!m.rk;r.g=typeof m.g==='string'?m.g.slice(0,24):'';r.pkOn=!!m.pk;r.tag.classList.toggle('red',r.red);r.awk=m.a;r.zone=m.z;r.tgt.set(+m.x||0,+m.y||0,+m.zz||0);r.face=+m.f||0;r.moving=!!m.m;r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;r.seen=rt;
+    r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.red=!!m.rk;r.g=typeof m.g==='string'?m.g.slice(0,24):'';r.pkOn=!!m.pk;r.tag.classList.toggle('red',r.red);r.awk=m.a;r.zone=m.z;mpMove(r,m);r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;
     const ti=Math.max(0,Math.min(3,m.ti|0));if(r.ti!==ti){r.ti=ti;tierAura(r,m.c,ti);}
     const lbl=r.name.replace(/[<>&]/g,'')+' <small>Lv.'+r.lv+' '+(ti&&TIER_NAMES[m.c]?TIER_NAMES[m.c][ti-1]:CLASSES[m.c].name)+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
   else if(m.t==='chat'){const r=MP.others[id],txt=String(m.txt||'').slice(0,80);mpChatLine(String(m.n||'?').slice(0,12),txt,'all');if(r&&r.h.g.visible)floatText(r.pos,txt.slice(0,24),'info',3);}
@@ -4234,6 +4241,8 @@ function mpRecv(m){const id=m.id;
   else if(m.t==='gchat'){if(guildKey())mpChatLine('[길드] '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'g');}
   else if(m.t==='whisper'){mpChatLine('← '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'w');if(!CHAT.lastW){CHAT.lastW=1;}const to=$('#chatTo');if(to&&!to.value)to.value=String(m.n||'').slice(0,12);}
   else if(m.t==='bye'){mpRemove(id,true);const p=MP.pop[MP.srv];if(p)delete p[id];if(MP.roster)delete MP.roster[id];}}
+/* remote movement: glide toward the latest position at the speed that gets there just as the next packet is due */
+function mpMove(r,m){const nt=new V(+m.x||0,+m.y||0,+m.zz||0),gap=Math.min(2,Math.max(.12,rt-(r.lastRx||rt-.2)));r.lastRx=rt;r.spd=Math.max(1.5,r.pos.distanceTo(nt)/gap*1.05);r.tgt.copy(nt);r.face=+m.f||0;r.moving=!!m.m;r.seen=rt;}
 function mpAvatar(id,m){const h=heroModel(m.c);h.g.visible=false;scene.add(h.g);
   const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt,isRemote:true};h.g.traverse(o=>o.userData.ent=r);r.tag=makeTag(r,'npc mp',String(m.n||'').replace(/[<>&]/g,''),2.35);MP.others[id]=r;return r;}
 function mpRemove(id,silent){const r=MP.others[id];if(!r)return;scene.remove(r.h.g);r.tag.remove();delete MP.others[id];}
@@ -4309,13 +4318,17 @@ function mpChatLineOld(who,txt){let box=$('#mpChat');if(!box){box=document.creat
 function mpSay(txt){chatSend('all',txt);}
 function mpParty(kind,val){if(!MP.client||!P)return;mpSend({t:kind,n:mpMyName(),z:W.zone,x:P.pos.x,zz:P.pos.z,p:val,d:val});}
 function mpTick(dt){chatShow(gameOn&&!CS&&W.zone!=='title');pkUi();if(P)redFlash(P,isRed());const c=MP.client;if(!c)return;chatSubs();
-  if(c.connected&&MP.subZone!==W.zone){if(MP.subZone)c.unsubscribe(netBase()+'/z/'+MP.subZone);MP.subZone=W.zone;c.subscribe(netBase()+'/z/'+W.zone,{qos:0});Object.keys(MP.others).forEach(id=>mpRemove(id,true));mpSendHb();}
-  const moving=P&&(P.walk!==P._mpw);MP.sendT-=dt;if(MP.sendT<=0){MP.sendT=moving?.2:1;mpSendState();}
+  if(c.connected){const cl=aoiCell(),key=W.zone+'|'+cl[0]+'_'+cl[1];if(MP.subKey!==key){const want=[];for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)want.push(aoiTopic(cl[0]+i,cl[1]+j));
+      const old=MP.subTopics||[],add=want.filter(t=>!old.includes(t)),rem=old.filter(t=>!want.includes(t));if(rem.length)c.unsubscribe(rem);if(add.length)c.subscribe(add,{qos:0});MP.subTopics=want;MP.subKey=key;
+      if(MP.subZone!==W.zone){MP.subZone=W.zone;Object.keys(MP.others).forEach(id=>mpRemove(id,true));mpSendHb();MP.fullT=0;}}}
+  const moving=P&&(P.walk!==P._mpw);MP.sendT-=dt;MP.fullT=(MP.fullT||0)-dt;if(MP.sendT<=0||moving!==MP.wasMv){const n=MP.near||0;MP.sendT=moving?(n<20?.2:n<40?.34:n<70?.5:1):(n<40?1:2);MP.wasMv=moving;mpSendState();}
   MP.hbT-=dt;if(MP.hbT<=0){MP.hbT=5;mpSendHb();mpUi(true);}
-  for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>6){mpRemove(id,true);continue;}
-    const vis=r.zone===W.zone&&!CS&&W.zone!=='title';r.h.g.visible=vis;if(!vis){r.tag.style.display='none';continue;}
-    const d=r.pos.distanceTo(r.tgt);if(d>12)r.pos.copy(r.tgt);else r.pos.lerp(r.tgt,Math.min(1,dt*8));const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
-    animHumanoid(r,dt,mv&&!r.dead);r.h.b.rotation.x=r.dead?-1.45:0;if(r.dead)r.h.b.position.y=.25;placeTag(r.tag,r.pos,r.tagY);redFlash(r,r.red);}}
+  MP.cullT=(MP.cullT||0)-dt;if(MP.cullT<=0&&P){MP.cullT=.5;const L=Object.values(MP.others).filter(r=>r.zone===W.zone).map(r=>[r,d2(r.pos,P.pos)]).sort((a,b)=>a[1]-b[1]);
+    MP.near=L.filter(x=>x[1]<30).length;L.forEach(([r,d],i)=>{r.cull=i>=30;r.farTag=d>25&&L.length>15;});}
+  for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>(MP.near>=40?8:6)){mpRemove(id,true);continue;}
+    const vis=r.zone===W.zone&&!CS&&W.zone!=='title'&&!r.cull;r.h.g.visible=vis;if(!vis){r.tag.style.display='none';continue;}
+    const d=r.pos.distanceTo(r.tgt);if(d>14)r.pos.copy(r.tgt);else if(d>.001){const st=Math.min(d,(r.spd||6)*dt);r.pos.addScaledVector(r.tgt.clone().sub(r.pos).normalize(),st);}const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
+    animHumanoid(r,dt,mv&&!r.dead);r.h.b.rotation.x=r.dead?-1.45:0;if(r.dead)r.h.b.position.y=.25;if(r.farTag)r.tag.style.display='none';else placeTag(r.tag,r.pos,r.tagY);redFlash(r,r.red);}}
 function mpUi(){const b=$('#mpBadge');if(!b)return;const on=MP.client&&MP.client.connected;b.hidden=!MP.client;
   b.textContent=on?'👥 '+SERVERS[MP.srv][0].split('. ')[1]+' · '+Math.max(1,netCount())+'/'+NET_MAX+'명':'서버 연결 중…';b.onclick=openMP;}
 function openMP(){const on=MP.client&&MP.client.connected,ro=Object.values(MP.roster||{}).filter(r=>rt-r.t<16).sort((a,b)=>(b.z===W.zone)-(a.z===W.zone)||b.lv-a.lv);
@@ -4849,7 +4862,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-25';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-26';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

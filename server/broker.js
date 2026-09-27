@@ -24,7 +24,7 @@ aedes.on('clientDisconnect', c => { const s = srvOf(c.id); if (s !== null) perSe
 
 // 게임 토픽만, 작은 메시지만 허용 (다른 용도 악용 방지)
 // 실시간 토픽(위치·채팅·귓속말·길드)은 보관하지 않고, 거래소 등록(mk)·판매 대금(pay)·공지(notice)만 보관(retain)합니다
-const LIVE = /^rotd1\/\d{1,2}\/(hb|chat|bye|z\/[a-z]+|w\/[a-z0-9]{4,16}|g\/[a-z0-9]{1,24})$/;
+const LIVE = /^rotd1\/\d{1,2}\/(hb|chat|bye|z\/[a-z]+(\/\d{1,3}_\d{1,3})?|w\/[a-z0-9]{4,16}|g\/[a-z0-9]{1,24})$/;
 const KEPT = /^rotd1\/(\d{1,2}\/(mk\/[a-z0-9]{6,20}|pay\/[a-z0-9]{1,24}\/[a-z0-9]{6,20})|notice)$/;
 aedes.authorizePublish = (client, packet, done) => {
   const kept = KEPT.test(packet.topic);
