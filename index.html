@@ -450,7 +450,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1270,6 +1270,7 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
       g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;const mt=o.material;if(mt&&mt.map)mt.map.encoding=THREE.sRGBEncoding;
         if(mt&&mt.isMeshStandardMaterial&&!mt.metalnessMap){mt.metalness=0;mt.roughness=Math.max(mt.roughness,.7);}
         if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
+      if(e.player){const env=ENV();if(env)g.scene.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial){o.material.envMap=env;o.material.envMapIntensity=1;o.material.needsUpdate=true;}});}  // Meshy-viewer look: metal and gold need something to reflect
       if(e.autoRig==='dragon')rigDragonMesh(g.scene);
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
@@ -1365,7 +1366,10 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
     if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
   const dbn={};h.dragonRig=e.autoRig==='dragon';if(e.autoRig==='dragon')model.traverse(o=>{if(o.isBone){const n={D_neck:'neck',D_head:'head',D_tail1:'t1',D_tail2:'t2',D_tail3:'t3',D_wingL1:'wl1',D_wingL2:'wl2',D_wingR1:'wr1',D_wingR2:'wr2'}[o.name];if(n)dbn[n]=o;}});
+  // Meshy's library clips tilt the head ~35° forward; on chibi heroes that reads as a flat head, so keep it mostly upright
+  const hB=[];if(e.player||e.npc)model.traverse(o=>{if(o.isBone&&/^(head|neck|spine0?[12]?)$/i.test(o.name))hB.push([o,o.quaternion.clone(),/head/i.test(o.name)?.8:.5]);});
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
+    hB.forEach(([b,q,k])=>{if(k<.8&&st.one)return;if(b.quaternion.angleTo(q)<.8)b.quaternion.slerp(q,k);});
     if(dbn.wl1)animDragonBones(dbn,T,dt,st.mv,!!h.airborne,st.one,st.one?Math.min(1,st.t/st.dur):0);
     // walk/idle blend eases in and out so start/stop never snaps
     st.mk=(st.mk||0)+((st.mv?1:0)-(st.mk||0))*Math.min(1,dt*4);const mk=st.mk;
