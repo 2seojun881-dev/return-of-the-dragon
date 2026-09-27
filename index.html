@@ -1242,7 +1242,10 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
       if(e.skinned){/* rigged exports keep bones in cm under a 0.01 armature: measure the posed, skinned vertices instead */
         bb=new THREE.Box3();const v=new THREE.Vector3();g.scene.traverse(o=>{if(!o.isSkinnedMesh)return;const pa=o.geometry.attributes.position,st=Math.max(1,Math.floor(pa.count/4000));
           for(let i=0;i<pa.count;i+=st){v.fromBufferAttribute(pa,i);o.boneTransform(i,v);bb.expandByPoint(v.applyMatrix4(o.matrixWorld));}});}
-      const hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;e.sc=(e.height||2.2)/hh;
+      let hh=Math.max(.01,bb.max.y-bb.min.y);e.minY=bb.min.y;
+      if(e.player&&e.skinned){let he=null;g.scene.traverse(o=>{if(o.isBone&&/^head_?end$/i.test(o.name))he=o;});  // heroes: size by the top of the head, not by a raised weapon
+        if(he){const y=he.getWorldPosition(new V()).y-bb.min.y;if(y>hh*.4)hh=y/.96;}}
+      e.sc=(e.height||2.2)/hh;
       if(e.kind==='prop'&&e.replace){liftProp(g.scene);if(e.tint)g.scene.traverse(o=>{if(o.isMesh)o.material.color.multiply(new THREE.Color(e.tint));});
         [].concat(e.replace).forEach(r=>{const f=fitToKit(g.scene,bb,PBOX[r]);PROPS[r]=f.obj;PBOX[r]=f.box;CUSTOM.props[r]=e;});}
       else if(e.kind==='groundtex')CUSTOM.ground[e.ground]=e;
