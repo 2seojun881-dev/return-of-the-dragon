@@ -410,7 +410,8 @@
         "hit": "p_shaman.hit.glb.txt",
         "death": "p_shaman.death.glb.txt"
       },
-      "rigged": true
+      "rigged": true,
+      "glide": true
     },
     "p_warrior": {
       "file": "p_warrior.glb.txt",
