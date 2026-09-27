@@ -74,7 +74,9 @@ svg{display:block}
 #gold .dia{color:#9fd8ff}
 
 #qtrack{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));top:calc(112px + env(safe-area-inset-top,0px));width:min(250px,44vw);background:linear-gradient(90deg,rgba(18,13,15,.82),rgba(18,13,15,.2));border-left:3px solid var(--gold);padding:8px 10px;text-align:left;border-radius:0 8px 8px 0}
-#qtrack .qh{font-size:10px;letter-spacing:.12em;color:var(--gold)}
+#qtrack .qh{font-size:10px;letter-spacing:.12em;color:var(--gold);display:flex;justify-content:space-between;align-items:center;gap:8px}
+#qtog{font-size:13px;letter-spacing:0;line-height:1;padding:4px 9px;margin:-6px -8px -4px 0;border-radius:6px;color:#ffe08a;background:rgba(0,0,0,.45);border:1px solid rgba(216,168,74,.7)}
+#qtrack.min{width:auto;padding:6px 8px}#qtrack.min #qtitle,#qtrack.min #qgoals,#qtrack.min .qhint{display:none}#qtrack.min #qtog{margin-left:2px}
 #qtitle{font:700 14px 'Gowun Batang',serif;margin:1px 0 4px}
 #qgoals div{font-size:12px;color:#e8dcc4;display:flex;justify-content:space-between;gap:6px}
 #qgoals div.done{color:var(--ok)}
@@ -353,7 +355,10 @@ body.cine #hud>*{pointer-events:none}
 #csInfo li>b{color:var(--gold);font-weight:500}
 #csInfo li span b{color:#f1e8d6;font-weight:500}
 #csName[readonly]{opacity:.85;border-color:var(--gold)}
-.cs-name.login{display:flex;flex-direction:column;gap:6px}.cs-name.login input{font-size:16px;padding:10px}
+.cs-name.login{display:flex;flex-direction:column;gap:3px}.cs-name.login span{font-size:11px}.cs-name.login input{font-size:16px;padding:7px 9px}
+.pcard.login{width:min(360px,100%)}.pcard.login header{padding:8px 14px}.pcard.login h2{font-size:15px}.pcard.login #pbody{padding:10px 14px 12px}.pcard.login .sec{margin-bottom:8px}.pcard.login .note{font-size:11px;margin:6px 0 0;line-height:1.45}.pcard.login .row{padding:5px 0}
+.lgf{display:grid;gap:6px}
+@media (max-height:600px) and (min-width:560px){.pcard.login{width:min(520px,100%)}.lgf{grid-template-columns:1fr 1fr}.lgf #lgPw2Row{grid-column:2}.pcard.login #lgGo{margin-top:6px!important;padding:8px}}
 #csGo{padding:12px;font-size:15px;position:sticky;bottom:0;flex-shrink:0;box-shadow:0 -8px 16px rgba(10,8,10,.85)}
 .cs-panel>*{flex-shrink:0}
 .cs-tabs button.nov{border-color:#e8d8a8}
@@ -427,7 +432,7 @@ body.touch #joy{display:block}
   </div>
   <div id="gold" class="num"><b id="goldv">0 G</b><b class="dia" id="potv"></b></div>
   <button id="qtrack" aria-label="퀘스트 목표로 자동 이동">
-    <div class="qh" id="qch">메인 퀘스트</div>
+    <div class="qh"><span id="qch">메인 퀘스트</span><span id="qtog" role="button" aria-label="퀘스트 창 접기">▾</span></div>
     <div id="qtitle"></div>
     <div id="qgoals"></div>
     <div class="qhint">탭하면 목표로 자동 이동</div>
@@ -484,7 +489,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-13</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-14</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3353,7 +3358,7 @@ function closeDialog(){if(!DL)return;clearInterval(DL.typing);const r=DL.res;DL=
 dlgLayer.addEventListener('pointerdown',e=>{if(!DL)return;e.preventDefault();if(e.target.closest('.choices'))return;if(DL.typing){DL.full();return;}if(DL.lines[DL.i][2])return;DL.i++;if(DL.i>=DL.lines.length)closeDialog();else showLine();});
 
 let panelOpen=false,panelOnClose=null;
-function openPanel(title,html,onClose){$('#panel .pcard').classList.remove('wide');$('#ptl').textContent=title;$('#pbody').innerHTML=html||'';$('#panel').hidden=false;panelOpen=true;panelOnClose=onClose||null;}
+function openPanel(title,html,onClose){$('#panel .pcard').classList.remove('wide','login');$('#ptl').textContent=title;$('#pbody').innerHTML=html||'';$('#panel').hidden=false;panelOpen=true;panelOnClose=onClose||null;}
 function closePanel(){$('#panel').hidden=true;panelOpen=false;if(typeof invPrevStop==='function')invPrevStop();const f=panelOnClose;panelOnClose=null;f&&f();}
 $('#pclose').onclick=closePanel;
 $('#panel').addEventListener('pointerdown',e=>{if(e.target.id==='panel')closePanel();});
@@ -4061,7 +4066,12 @@ canvas.addEventListener('pointerdown',e=>{
   if(ent){P.target=ent;P.dest=null;if(!ent.isNpc){ringFx(ent.pos.x,ent.pos.z,1.5,0xff5a4a,.35);ent.tag.classList.add('show');ent.showT=6;}else ringFx(ent.pos.x,ent.pos.z,1.2,0xffd070,.4);}
   else{P.target=null;P.dest={x:hitP.x,z:hitP.z};clickFx(hitP.x,hitP.z);if(AUTO.on)AUTO.pause=2.5;}
 });
-canvas.addEventListener('wheel',e=>{cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.08,.6,1.5);},{passive:true});
+canvas.addEventListener('wheel',e=>{cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.08,.55,1.6);},{passive:true});
+const PINCH={d:0,z:1,dest:null,t:0};
+const tDist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+canvas.addEventListener('touchstart',e=>{if(e.targetTouches.length===2){PINCH.d=tDist(e.targetTouches);PINCH.z=cam.zoom;if(P&&performance.now()-PINCH.t<400){P.dest=PINCH.dest;}}else if(e.targetTouches.length===1){PINCH.t=performance.now();PINCH.dest=P?P.dest:null;}},{passive:true});
+canvas.addEventListener('touchmove',e=>{if(e.targetTouches.length===2&&PINCH.d>10){e.preventDefault();cam.zoom=clamp(PINCH.z*PINCH.d/Math.max(10,tDist(e.targetTouches)),.55,1.6);}},{passive:false});
+canvas.addEventListener('touchend',e=>{if(e.targetTouches.length<2)PINCH.d=0;},{passive:true});
 $('#b-auto').innerHTML=ICON.auto+'<span class="al">자동</span>';$('#b-auto').onclick=()=>{if(!paused())setAuto(!AUTO.on);};
 /* action buttons fire on touch-down (a second finger while the other thumb is on the joystick); holding attack keeps attacking */
 let ATK_HOLD=false;
@@ -4072,7 +4082,10 @@ btnDown('#b-s1',()=>useSkill('s1'));btnDown('#b-s2',()=>useSkill('s2'));btnDown(
 btnDown('#b-pot',usePotion);btnDown('#b-mpot',useMpPotion);
 $('#bagBtn').innerHTML=ICON.bag;$('#menuBtn').innerHTML=ICON.menu;
 $('#bagBtn').onclick=()=>{if(!paused())openBag();};$('#menuBtn').onclick=()=>{if(!paused())openMenu();};
-$('#qtrack').onclick=()=>{if(!paused())autoNav();};
+let QMIN=false;try{QMIN=localStorage.getItem('ignis.qmin')==='1';}catch(err){}
+const qMin=v=>{QMIN=v;$('#qtrack').classList.toggle('min',v);$('#qtog').textContent=v?'▸':'▾';$('#qtog').setAttribute('aria-label',v?'퀘스트 창 열기':'퀘스트 창 접기');try{localStorage.setItem('ignis.qmin',v?'1':'0');}catch(err){}};qMin(QMIN);
+$('#qtog').addEventListener('click',ev=>{ev.stopPropagation();qMin(!QMIN);});
+$('#qtrack').onclick=()=>{if(QMIN){qMin(false);return;}if(!paused())autoNav();};
 addEventListener('keydown',e=>{
   if(!gameOn)return;if(e.target.tagName==='INPUT')return;
   if(DL&&(e.key===' '||e.key==='Enter')){e.preventDefault();dlgLayer.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));return;}
@@ -4285,12 +4298,12 @@ function accSummary(n){const s=loadSave(n);if(!s)return '저장 데이터 없음
 function openLogin(ev,pre){
   const list=accList().filter(n=>loadSave(n));
   const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  openPanel('캐릭터 접속','<div class="sec login"><label class="cs-name login"><span>캐릭터 이름 (아이디)</span><input type="text" id="lgName" maxlength="8" placeholder="이름 (최대 8자)" autocomplete="username"></label>'+
+  openPanel('캐릭터 접속','<div class="sec login"><div class="lgf"><label class="cs-name login"><span>캐릭터 이름 (아이디)</span><input type="text" id="lgName" maxlength="8" placeholder="이름 (최대 8자)" autocomplete="username"></label>'+
     '<label class="cs-name login"><span>비밀번호</span><input type="password" id="lgPw" maxlength="32" placeholder="비밀번호 (4자 이상)" autocomplete="current-password"></label>'+
-    '<label class="cs-name login" id="lgPw2Row" hidden><span>비밀번호 확인</span><input type="password" id="lgPw2" maxlength="32" placeholder="비밀번호 다시 입력" autocomplete="new-password"></label>'+
-    '<button class="btn pri" id="lgGo" style="width:100%;margin-top:10px">접속</button><p class="note" id="lgMsg">가입한 이름과 비밀번호로 접속합니다. 처음 쓰는 이름이면 비밀번호를 정해 새 캐릭터를 만듭니다.</p></div>'+
+    '<label class="cs-name login" id="lgPw2Row" hidden><span>비밀번호 확인</span><input type="password" id="lgPw2" maxlength="32" placeholder="비밀번호 다시 입력" autocomplete="new-password"></label></div>'+
+    '<button class="btn pri" id="lgGo" style="width:100%;margin-top:10px">접속</button><p class="note" id="lgMsg">처음 쓰는 이름이면 새 캐릭터를 만듭니다.</p></div>'+
     (list.length?'<div class="sec"><h3>이 기기의 캐릭터</h3>'+list.map((n,i)=>'<div class="row"><div class="l"><b>'+esc(n)+(n===ADMIN_NAME?' <small style="color:#ffd070">운영자</small>':'')+'</b><small>'+esc(accSummary(n))+'</small></div><div style="display:flex;gap:4px"><button class="btn sm pri" data-lg="'+i+'">선택</button><button class="btn sm" data-ld="'+i+'">삭제</button></div></div>').join('')+'</div>':'')+
-    '<p class="note">캐릭터와 비밀번호는 이 기기의 브라우저에 저장됩니다. 다른 기기에서는 따로 만들어야 합니다.</p>');
+    '<p class="note">캐릭터는 이 기기의 브라우저에 저장됩니다.</p>');$('#panel .pcard').classList.add('login');
   const msg=(t,bad)=>{const m=$('#lgMsg');m.textContent=t;m.style.color=bad?'#ff8a7a':'';};
   let creating=false;
   const nameIn=$('#lgName'),pwIn=$('#lgPw'),pw2Row=$('#lgPw2Row');
@@ -4333,6 +4346,10 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
+(function(){const cur='2026.09.27-14';if(!/^https?:/.test(location.protocol))return;
+  fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
+    if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
+      if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
 netConnect();  // connect already on the title screen so the server list shows live player counts
 srvLabel();
 function renderCsel(){
