@@ -450,7 +450,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-5</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-6</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -564,6 +564,11 @@ const CLASSES={
       ult:{n:'신의 강림',d:'체력 완전 회복 + 30초 변신: 치유량 50%↑, 쿨타임 50%↓, 신성 파동, 쓰러지면 즉시 부활(1회)',i:'sun',cd:120,lv:85,mp:300}}},
 };
 const PROMO=['warrior','rogue','shaman'];
+/* Lv.99 각성 (Class Awakening): a promoted Lv.99 hero awakens at their guild master in 진급의 전당 */
+const AWK={warrior:{name:'다크 나이트',en:'Dark Knight',col:0x8a3aff,skill:'마이티 스윙',d:'기본 공격이 360° 어둠의 참격으로 바뀌어 주변 모든 적에게 60% 추가 피해'},
+  rogue:{name:'네더 아사신',en:'Nether Assassin',col:0x9a4aff,skill:'네더 그림자 질주',d:'움직일 때마다 네더 잔상이 따라붙고 치명타 확률 +10%, 치명 피해 +30%'},
+  shaman:{name:'그랜드 오라클',en:'Grand Oracle',col:0xfff0b0,skill:'신탁의 예지 · 신성 방패',d:'용의 브레스 2초 전에 안전지대를 보여 주고(예지), 브레스 순간 자동으로 신성 방패를 펼쳐 받는 피해 80% 감소 (MP 30)'}};
+const heroClsName=()=>S&&S.awk&&AWK[S.cls]?AWK[S.cls].name:CLASSES[S.cls].name;
 const SKEYS=['s1','s2','s3','ult'];
 const OLD_CLS={knight:'warrior',ranger:'rogue',sorcerer:'shaman',merchant:'novice'};  // merchant was removed: pick a class again at the shrine
 /* gear tiers per hunting ground (RequiredLevel / RequiredClass) */
@@ -1261,7 +1266,7 @@ function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.
 /* Meshy models: entries with "zones" load only when a zone that uses them is built (and its neighbours are
    prefetched in the background), so phones don't download every model at startup. */
 let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
-const ZONE_NEAR={hall:['citadel'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
+const ZONE_NEAR={eternal:['hall'],hall:['citadel','eternal'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
 /* Meshy's library clips bend chibi heroes' head ~35° off the neck (a sheared chin, a flat-looking skull from the side):
    pull head/neck (and, outside one-shot moves, the spine) most of the way back to the modelled pose, in the clip data itself */
 /* hero clips were generated on an earlier rig of the same character whose bones point differently: replaying their local
@@ -1369,7 +1374,7 @@ function loadCustom(){
   return fetch('models/custom/manifest.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{models:{}}).catch(()=>({models:{}})).then(m=>{MANI=m.models||{};
     return loadFor(e=>!e.zones||!e.zones.length||e.zones.some(z=>BOOT_ZONES.includes(z)));}).then(()=>{if(CUSTOM.n)console.log('Meshy custom models loaded:',CUSTOM.n);});}
 /* await before building zone z; neighbours are fetched quietly afterwards */
-function needZone(z){const p=loadFor(e=>e.zones&&e.zones.includes(z));p.then(()=>(ZONE_NEAR[z]||[]).forEach(n=>setTimeout(()=>loadFor(e=>e.zones&&e.zones.includes(n)),1500)));return p;}
+function needZone(z){if(z==='eternal')return Promise.all([needZone('citadel'),needZone('altar')]);const p=loadFor(e=>e.zones&&e.zones.includes(z));p.then(()=>(ZONE_NEAR[z]||[]).forEach(n=>setTimeout(()=>loadFor(e=>e.zones&&e.zones.includes(n)),1500)));return p;}
 /* a rig-like wrapper so custom models plug into the same animation code as KayKit rigs.
    Meshy auto-rig gives walk/run clips; everything else (idle, attack, hit, roar, death) is procedural. */
 function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.clone(e.gltf.scene):e.gltf.scene.clone();
@@ -1830,6 +1835,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   P.atk=(c.atk+weaponAtk()*(broken?.5:1))*(1+.09*(L-1))*(S.rune==='fire'?1.12:1)*(1+guildLv()*.01)*(1+.02*st.str)*(1+.002*G.str)*(buffOn('war')?1.15:1)*bl*(inBazaar()?1.15:1)*(P.godT>0?1.2:1)*(1+gp)*(1+.25*rage)+G.atk;
   P.def=c.def*(1+.1*(L-1))*(1+.03*st.def)*(1+armorDef()/60)*bl*(1+gp);P.range=c.range;P.aspd=c.aspd/(1+Math.min(.3,.01*st.agi)+G.aspd/100+.0015*G.dex);P.speed=c.speed*(P.stealthT>0?1.3:1);P.rad=c.rad;
   P.crit=(c.crit||.12)+G.crit/100+(P.furyT>0?1:0);P.critX=1.6+G.critd/100+(S.cls==='rogue'&&P.set3?.6:0);P.cdr=Math.min(.4,G.cdr/100);P.acc=G.acc;P.rageN=rage;
+  if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
   if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(typeof updSetFx==='function')updSetFx();}
 function makePlayer(){
   if(P){killObj(P.mesh);killObj(P.shield);if(P.tring)killObj(P.tring);killMerc();if(P.setFx)P.setFx.dispose();}
@@ -1898,7 +1904,7 @@ function updSpawners(dt,force){
     if(sp.list.length<need){sp.cd-=dt;if(sp.cd<=0||force){
       const fill=force||sp.list.length===0;
       while(sp.list.length<need){let x,z;if(sp.pts){const p=sp.pts[sp.list.length%sp.pts.length];x=p[0];z=p[1];}else{const a=rand(0,6.28),r=rand(0,sp.r);x=sp.x+Math.cos(a)*r;z=sp.z+Math.sin(a)*r;}
-        const e=spawnEnemy(sp.mob,x,z,sp);if(!force){burst(x,.5,z,0x9a8a7a,10,2,.5,.4,-1);if(e.parts.skinned){e.parts.playOnce('Spawn_Ground_Skeletons',1.4);e.stun=1.3;}}if(!fill)break;}
+        const e=spawnEnemy(sp.mob,x,z,sp);if(sp.onSpawn)sp.onSpawn(e);if(!force){burst(x,.5,z,0x9a8a7a,10,2,.5,.4,-1);if(e.parts.skinned){e.parts.playOnce('Spawn_Ground_Skeletons',1.4);e.stun=1.3;}}if(!fill)break;}
       sp.cd=sp.respawn;}}
   }
 }
@@ -1926,6 +1932,7 @@ const ZONES={
  showcase:{name:'',build:buildShowcase},
  inn:{name:'잿빛 잎새 마을 · 여관',build:buildInn,spawn:[4,1]},
  hall:{name:'천명 성채 · 진급의 전당',build:buildHall,spawn:[0,4.8]},
+ eternal:{name:'영원한 성채 · 각성의 시련',build:buildEternal,spawn:[0,24]},
  village:{name:'잿빛 잎새 마을',build:buildVillage,spawn:[-8,12]},
  plains:{name:'바람노래 평원',build:buildPlains,spawn:[0,22]},
  citadel:{name:'천명 성채',build:buildCitadel,spawn:[0,12]},
@@ -1938,6 +1945,7 @@ const ZONES={
 const ZONE_ORDER=['inn','village','plains','citadel'];
 const HUBZ=['beasts','grave','clock','asura','altar'];
 function nextZone(from,to){if(from===to)return null;
+  if(from==='eternal')return 'hall';if(to==='eternal')return from==='hall'?'eternal':nextZone(from,'hall');
   if(from==='hall')return 'citadel';if(to==='hall')return from==='citadel'?'hall':nextZone(from,'citadel');
   if(from==='citadel'){if(HUBZ.includes(to))return to==='altar'&&!W.portals.find(p=>p.to==='altar')?'asura':to;return 'plains';}
   if(HUBZ.includes(from)){if(to==='altar'&&from==='asura')return 'altar';return 'citadel';}
@@ -1952,7 +1960,7 @@ function clearZone(){
 }
 /* outdoor zones are laid out at 2x their original coordinates (4x the area): every placed object moves out, ground,
    roads, water and walls stretch, buildings grow 2x, trees/props/characters keep their size, spawners hold 3x mobs */
-const ZSCALE={village:2,plains:2,citadel:2,beasts:2,grave:2,clock:2,asura:2};
+const ZSCALE={eternal:2,village:2,plains:2,citadel:2,beasts:2,grave:2,clock:2,asura:2};
 const ZS=z=>ZSCALE[z]||1;
 function LV(x,y,z){const k=ZS(W.zone);return new V(x*k,y,z*k);}
 function expandZone(z){const k=ZS(z);if(k===1)return;
@@ -2121,6 +2129,17 @@ function buildPrologue(){
   dragon=makeDragon();dragon.g.position.set(0,20,-110);dragon.g.scale.setScalar(1.3);W.root.add(dragon.g);dragon.g.visible=false;
   W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.6)*.25;});});
 }
+/* 영원한 성채: the citadel after dark — gates sealed, citizens gone, an Eternal Ignis over the plaza;
+   the gothic door behind the Soul Altar opens onto the maze once it falls */
+function buildEternal(){buildCitadel();
+  W.npcs.forEach(n=>{n.tag&&n.tag.remove();W.root.remove(n.mesh);});W.npcs=[];W.portals.forEach(p=>{p.tagEl&&p.tagEl.remove();W.root.remove(p.g);});W.portals=[];W.shrine=null;
+  setEnv({sky:0x0a0612,fog:[30,120],ht:0x6a5a9a,hb:0x100818,hi:.4,sun:0xb08aff,si:.7,ash:true,ashCol:0xff6a2a,ashUp:true,ashSize:.18});
+  const sp=spawner('ignis',0,-4,0,1,99999,always);sp.onSpawn=e=>{e.hp=e.maxHp=Math.round(e.maxHp*3);e.atk=Math.round(e.atk*1.5);e.eternal=true;e.lv=120;e.aggro=true;e.d=Object.assign({},e.d,{name:'영원의 이그니스'});
+    if(e.tag)e.tag.innerHTML='영원의 이그니스 <small>Lv.120</small>';};
+  const beaten=()=>!W.enemies.some(q=>q.eternal&&!q.dead)&&W.enemies.some(q=>q.eternal);
+  portal(0,28.5,'hall',[-7.6,3.2],always,'','진급의 전당으로 돌아가기 ›');
+  portal(0,-27.6,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
+  later(1.2,()=>toast('영원한 성채 · 성문이 모두 닫혔습니다. 영원의 이그니스를 쓰러뜨리세요','bad'));}
 function buildHall(){
   setEnv({sky:0x0e0a08,fog:[30,70],ht:0xe8d0a8,hb:0x2a1c12,hi:1.15,sun:0xffe0b0,si:1.1,ash:false});
   W.bounds=[-9.2,9.2,-6.6,7.4];
@@ -2147,6 +2166,7 @@ function buildHall(){
   W.anim.push(t=>{god.y=1+Math.sin(t*1.4)*.25;halo.rotation.z=t;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
   W.shrine={x:0,z:-3};
   portal(0,7.6,'citadel',[-17,-12.2],()=>true,'','천명 성채로 나가기 ›',{door:true});
+  portal(-9.2,3.2,'eternal',[0,24],()=>!!S.awk,'Lv.99 각성자만 들어갈 수 있습니다','영원한 성채 · 각성의 시련 ›',{door:true,rot:Math.PI/2});
 }
 function buildInn(){
   setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.62,sun:0xffc890,si:.75,ash:false});
@@ -2687,6 +2707,7 @@ function hurtPlayer(amount,src){
   if(P.gs&&P.gs.uniq.aegis&&!(P.aegisT>0)&&rt>=(P.aegisCd||0)&&Math.random()<.03){P.aegisT=5;P.aegisCd=rt+60;floatText(P.pos,'이그니스의 가호','crit',3);ringFx(P.pos.x,P.pos.z,2,0xff5a1a,.6);}
   if(P.aegisT>0){floatText(P.pos,'용암 보호막','info',2);return;}
   if(src&&src.weakT>0)amount*=.8;
+  if(P.dshieldT>0)amount*=.2;  // 신성 방패
   let def=P.def*(P.shieldT>0?1.5:1);
   let d=amount*(100/(100+def*4))*rand(.9,1.1)*(1-.15*(P.rageN||0));d=Math.max(1,Math.round(d));
   if(S.cls==='warrior'&&P.set3&&Math.random()<.15)addRage();
@@ -2771,7 +2792,9 @@ function basicAttack(t){
   const db=w&&!w.destroyed&&w.db?w.db:0,proc=()=>db&&Math.random()<.12+.02*db;
   if(c==='novice'||c==='warrior'){playAnim('swing',.45);later(.2,()=>{if(P.dead)return;slashFx(P.pos,P.face,c==='warrior'?2.8:2.3,0xfff4d8);
       const f=fwd();for(const e of W.enemies){if(e.dead)continue;const dx=e.pos.x-P.pos.x,dz=e.pos.z-P.pos.z,d=Math.hypot(dx,dz);if(d>P.range+e.rad+.6)continue;const dot=(dx*f.x+dz*f.z)/(d||1);if(dot>.55||d<e.rad+.3)hitEnemy(e,1,{basic:true});}
-      if(c==='warrior'&&proc())dragonSplash(db);});}
+      if(c==='warrior'&&proc())dragonSplash(db);
+      if(c==='warrior'&&S.awk){slashFx(P.pos,P.face+Math.PI,3.2,0xa06aff);ringFx(P.pos.x,P.pos.z,3.4,0x8a3aff,.35);  // 마이티 스윙: the dark half-circle behind
+        for(const e of W.enemies){if(e.dead)continue;const dx=e.pos.x-P.pos.x,dz=e.pos.z-P.pos.z,d=Math.hypot(dx,dz);if(d<3.4+e.rad)hitEnemy(e,.6,{basic:true});}}});}
   else if(c==='rogue'){playAnim('swing',.35);later(.14,()=>{if(P.dead||!t||t.dead)return;slashFx(P.pos,P.face,2,0xd8b0ff);later(.1,()=>slashFx(P.pos,P.face+.5,1.8,0xb070ff));
       if(d2(t.pos,P.pos)<P.range+t.rad+.8){hitEnemy(t,1,{basic:true});if(proc()&&!t.dead)dragonMark(t);}});}
   else{playAnim('cast',.4);later(.18,()=>{if(P.dead||!t||t.dead)return;
@@ -2892,7 +2915,7 @@ const SKILLS={
  },
 };
 /* ---------- heroic 5-set aura: per-class VFX + SFX ---------- */
-function updSetFx(){if(!P||!S)return;const want=P.set5?S.cls:null;if(P.setFx&&P.setFx.cls===want)return;if(P.setFx){P.setFx.dispose();P.setFx=null;}if(want&&KIT)P.setFx=makeSetFx(want);if(want&&!P.setFxQuiet)toast('영웅 5세트 · ['+DSET[want].n+'] 효과 발동','gold');P.setFxQuiet=false;}
+function updSetFx(){if(!P||!S)return;const want=P.set5||(S.awk&&S.cls==='rogue')?S.cls:null;if(P.setFx&&P.setFx.cls===want)return;if(P.setFx){P.setFx.dispose();P.setFx=null;}if(want&&KIT)P.setFx=makeSetFx(want);if(want&&P.set5&&!P.setFxQuiet)toast('영웅 5세트 · ['+DSET[want].n+'] 효과 발동','gold');P.setFxQuiet=false;}
 function setFxSkill(k){if(P.setFx&&P.setFx.skill)P.setFx.skill(k);}
 function canvasTex(draw,w,h){const c=document.createElement('canvas');c.width=w||256;c.height=h||256;draw(c.getContext('2d'),c.width,c.height);return new THREE.CanvasTexture(c);}
 function ghostRig(file,col,scale,keep,op,add){const h=rigChar(file,{keep:keep||[],ghost:col,scale:scale||1,cfg:{idle:'Idle'}});h.model.traverse(o=>{if(o.isMesh){o.material.opacity=op==null?.35:op;if(add)o.material.blending=THREE.AdditiveBlending;o.material.emissiveIntensity=.55;}});return h;}
@@ -3073,8 +3096,18 @@ function ignisFly(e,on){const fm=CUSTOM.mobs.ignisFly;if(!fm||e.parts.dragonRig)
   if(on&&!e.flyH){e.flyH=customRig(fm);e.mesh.add(e.flyH.g);}
   if(e.flyH){e.flyH.g.visible=on;e.parts.model.visible=!on;}}
 function mouthPos(e){const f=new V(Math.sin(e.face),0,Math.cos(e.face));return new V(e.pos.x+f.x*4.2,e.mesh.position.y+3.2,e.pos.z+f.z*4.2);}
+/* 그랜드 오라클 · 신탁의 예지: 2 s before the breath, show where it will not reach (both flanks of its line and behind the dragon) */
+function oracleForesight(e,A){if(!P||P.dead||e.dead)return;const f=new V(Math.sin(e.face),0,Math.cos(e.face)),sd=new V(f.z,0,-f.x),off=A.W/2+3.2;
+  const spots=[[P.pos.x+sd.x*off,P.pos.z+sd.z*off],[P.pos.x-sd.x*off,P.pos.z-sd.z*off],[e.pos.x-f.x*7,e.pos.z-f.z*7]];
+  spots.forEach(([x,z])=>{const r=new THREE.Mesh(new THREE.RingGeometry(1.5,2.1,36),new THREE.MeshBasicMaterial({color:0x5aff9a,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+    r.rotation.x=-Math.PI/2;r.position.set(x,groundH(x,z)+.08,z);r.renderOrder=11;W.root.add(r);tween(2+A.breath,k=>{r.material.opacity=.85*(1-k*k);r.rotation.z=k*4;},()=>killObj(r));});
+  floatText(P.pos,'신탁의 예지','lvl',3);toast('신탁의 예지 · 2초 뒤 브레스! 초록 안전지대로 피하세요','gold');}
+/* 그랜드 오라클 · 신성 방패: the instant the breath starts, 80% damage reduction for its duration */
+function divineShield(t){if(!P||P.dead)return;if(P.mp<30){floatText(P.pos,'마나 부족','info',2);return;}P.mp-=30;P.dshieldT=t;
+  floatText(P.pos,'신성 방패','crit',3);ringFx(P.pos.x,P.pos.z,3,0xfff0b0,.7);burst(P.pos.x,1.4,P.pos.z,0xfff0b0,50,4,1,.5,1);refreshHud();}
 function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z);let d=want-e.face;d=Math.atan2(Math.sin(d),Math.cos(d));e.face+=d*Math.min(1,dt*rate);e.mesh.rotation.y=e.face;};
   e.spCd=A.up+A.charge+A.breath+A.down+A.cd;e.airborne=true;e.parts.airborne=true;
+  if(S.awk&&S.cls==='shaman')later(Math.max(0,A.up+A.charge-2),()=>oracleForesight(e,A));
   // 1) takeoff: ring dust + ground crack, rise to A.h
   ringFx(e.pos.x,e.pos.z,7,0xc8a080,.6);burst(e.pos.x,.4,e.pos.z,0x6a5a4a,50,8,1,.9);shake(.7);ignisFly(e,true);
   const crack=new THREE.Mesh(new THREE.CircleGeometry(5.5,24),new THREE.MeshBasicMaterial({color:0x140806,transparent:true,opacity:.75,depthWrite:false}));crack.rotation.x=-Math.PI/2;crack.position.set(e.pos.x,.05,e.pos.z);W.root.add(crack);
@@ -3086,7 +3119,7 @@ function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.ata
       e.mesh.position.y=A.h+Math.sin(rt*3)*.3;if(e.flyH)e.flyH.tick(rt);if(Math.random()<.5)burst(m.x+rand(-3,3),m.y+rand(-2,2),m.z+rand(-3,3),0xff7a2a,2,-3,.4,.35,0);},end:()=>{
       killObj(glow);
       // 3) fire breath: cone of fire from the mouth to the ground, slowly tracking; burn marks stay behind
-      let tick=0,fx=0;const tele2=teleRect(e.pos.x,e.pos.z,e.face,A.L,A.W);tele2.userData.set(1);
+      let tick=0,fx=0;const tele2=teleRect(e.pos.x,e.pos.z,e.face,A.L,A.W);tele2.userData.set(1);if(S.awk&&S.cls==='shaman'&&!e.dead)divineShield(A.breath+.4);
       e.cast={t:0,dur:A.breath,tele:tele2,full:true,upd:(dt,c)=>{faceP(dt,.6);tele2.rotation.y=e.face;e.mesh.position.y=A.h+Math.sin(rt*3)*.3;if(e.flyH)e.flyH.tick(rt);
         const m=mouthPos(e),f=new V(Math.sin(e.face),0,Math.cos(e.face)),sd=new V(f.z,0,-f.x);fx-=dt;
         if(fx<=0){fx=.035;for(let i=0;i<5;i++){const k=.25+Math.random()*.75,s=(Math.random()-.5)*A.W*k;const gx=e.pos.x+f.x*A.L*k+sd.x*s,gz=e.pos.z+f.z*A.L*k+sd.z*s;
@@ -3121,7 +3154,7 @@ function updPlayer(dt){
   if(P.stealthT>0){P.stealthT-=dt;if(P.stealthT<=0){breakStealth();toast('은신이 풀렸습니다.');}}
   if(P.godT>0){P.godT-=dt;if(P.aura){P.aura.rotation.y=rt;P.aura.children[0].material.opacity=.5+Math.sin(rt*4)*.2;}if(P.godT<=0){P.godT=0;if(P.aura)P.aura.visible=false;recalc();toast('강신이 끝났습니다.');}}
   if(P.mp<P.maxMp)P.mp=Math.min(P.maxMp,P.mp+P.maxMp*.025*dt);
-  if(P.shieldT>0)P.shieldT-=dt;if(P.shieldT>0||P.barrier>0){P.shield.visible=true;P.shield.material.color.setHex(P.barrier>0?0xfff4d8:0xffd070);P.shield.material.opacity=.14+Math.sin(rt*8)*.05;}else P.shield.visible=false;
+  if(P.shieldT>0)P.shieldT-=dt;if(P.dshieldT>0)P.dshieldT-=dt;if(P.shieldT>0||P.barrier>0||P.dshieldT>0){P.shield.visible=true;P.shield.material.color.setHex(P.dshieldT>0?0xfff6c8:P.barrier>0?0xfff4d8:0xffd070);P.shield.material.opacity=.14+Math.sin(rt*8)*.05;}else P.shield.visible=false;
   if(P.kb){P.pos.x+=P.kb.x*dt;P.pos.z+=P.kb.z*dt;P.kb.t-=dt;resolve(P.pos,P.rad);if(P.kb.t<=0)P.kb=null;}
   let moving=false;
   const jv=(!paused()&&!P.lying)?joyVec():null;
@@ -3312,7 +3345,7 @@ async function gotoZone(z,arrive){
    ========================================================= */
 function refreshHud(){
   if(!S||!P)return;const c=CLASSES[S.cls];
-  $('#pname .lv').textContent='Lv.'+S.level;$('#pname .cn').textContent=(S.name||c.name)+(S.name&&S.name!==c.name?' · '+c.name:'');$('#ptitle').textContent=S.title?'['+S.title+']':'';
+  $('#pname .lv').textContent='Lv.'+S.level;const cn=heroClsName();$('#pname .cn').textContent=(S.name||cn)+(S.name&&S.name!==cn?' · '+cn:'');$('#ptitle').textContent=S.title?'['+S.title+']':'';
   $('#hpbar i').style.transform='scaleX('+clamp(P.hp/P.maxHp,0,1)+')';$('#hpbar span').textContent=Math.ceil(P.hp)+' / '+P.maxHp;
   $('#expbar i').style.transform='scaleX('+clamp(S.exp/needExp(S.level),0,1)+')';
   $('#goldv').textContent=fmt(S.gold)+' G';$('#potv').textContent=S.guild?'길드 · '+S.guild.name:'';
@@ -3621,12 +3654,20 @@ function openGuide(){const lv=S.level;
 function openPromo(k,nid){const c=CLASSES[k],mine=S.cls===k,nov=S.cls==='novice',can=nov&&S.level>=15;
   let h='<div class="sec"><h3>'+c.name+' · '+c.role+'</h3><p class="note">'+c.blurb+'</p><div class="grid2"><div class="chip">주무기 / 방어구<b>'+c.gear+'</b></div><div class="chip">진급 보너스<b>'+c.bonus+'</b></div></div><p class="note">대표 특징: '+c.feature+'</p></div>';
   h+='<div class="sec"><h3>직업 스킬</h3>'+SKEYS.map(s=>{const q=c.sk[s];return '<div class="row"><div class="l"><b>Lv.'+q.lv+' · '+q.n+(q.passive?' <small>(패시브)</small>':'')+'</b><small>'+q.d+(q.mp?' · MP '+q.mp:'')+(q.gold?' + '+q.gold+'골드':'')+(q.cd?' · 재사용 '+q.cd+'초':'')+'</small></div></div>';}).join('')+'</div>';
+  const aw=AWK[k];if(aw)h+='<div class="sec"><h3>Lv.99 각성 · '+aw.name+' <small>('+aw.en+')</small></h3><div class="row"><div class="l"><b>'+aw.skill+'</b><small>'+aw.d+'</small></div></div><p class="note">각성 보너스: 공격력·최대 체력·최대 마력 +20% · 각성자 전용 [영원한 성채 · 각성의 시련] 입장</p>'+
+    (mine&&S.awk?'<p class="note" style="color:var(--gold)">이미 '+aw.name+'(으)로 각성했습니다.</p>':mine&&S.level>=99?'<button class="btn pri" id="awGo" style="width:100%">'+aw.name+'(으)로 각성하기</button>':mine?'<button class="btn" disabled style="width:100%">레벨 99 필요 (현재 Lv.'+S.level+')</button>':'')+'</div>';
   h+='<div class="sec">'+(mine?'<p class="note">당신은 이미 우리 길드의 '+c.name+'입니다. Lv.'+S.level+' · 스킬은 레벨이 오르면 자동으로 익힙니다.</p>':
     !nov?'<p class="note">이미 ['+CLASSES[S.cls].name+'](으)로 진급했습니다. 진급은 한 번만 할 수 있습니다.</p>':
     can?'<button class="btn pri" id="prGo" style="width:100%">'+c.name+'(으)로 진급하기</button><p class="note">진급하면 되돌릴 수 없습니다. 진급 선물: '+TIERS[1].w[k]+' · '+TIERS[1].a[k]+'</p>':
     '<button class="btn" disabled style="width:100%">레벨 15 필요 (현재 Lv.'+S.level+')</button>')+'</div>';
   openPanel('진급의 전당 · '+NPCS[nid].name,h);
+  const ab=$('#awGo');if(ab)ab.onclick=()=>{if(ab.dataset.ok){closePanel();awaken();return;}ab.dataset.ok='1';ab.textContent='정말 각성합니까? 한 번 더 누르면 각성합니다';ab.classList.add('warn');};
   const b=$('#prGo');if(b)b.onclick=()=>{if(b.dataset.ok){closePanel();promote(k);return;}b.dataset.ok='1';b.textContent='정말 '+c.name+'(으)로 진급합니까? 한 번 더 누르면 진급합니다';b.classList.add('warn');};}
+function awaken(){const aw=AWK[S.cls];if(!aw||S.awk||S.level<99)return;S.awk=true;recalc();P.hp=P.maxHp;P.mp=P.maxMp;
+  const pos=P.pos.clone(),col=aw.col;ringFx(pos.x,pos.z,6,col,1.2);ringFx(pos.x,pos.z,3,0xffffff,.6);burst(pos.x,1.4,pos.z,col,120,8,1.6,.6,-2);shake(.7);auRoar(1);
+  const pil=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,40,24,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));pil.position.set(pos.x,20,pos.z);W.root.add(pil);addFx(pil,2.2,q=>{pil.material.opacity=.55*(1-q);pil.scale.x=pil.scale.z=1+q*1.5;});
+  if(P.parts.skinned)P.parts.playOnce('Cheer',1.6);refreshHud();refreshSkills();save();
+  toast('각성 완료! ['+aw.name+']','big');later(1.4,()=>toast('['+aw.skill+'] 개방 · 진급의 전당 서쪽 문에서 [영원한 성채]에 도전할 수 있습니다','gold'));}
 function promote(k){if(S.cls!=='novice'||S.level<15)return;
   const pos=P.pos.clone(),face=P.face;S.cls=k;makePlayer();P.pos.copy(pos);P.face=face;P.mesh.rotation.y=face;
   refreshSkills();refreshHud();

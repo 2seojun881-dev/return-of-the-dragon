@@ -16,6 +16,12 @@ namespace Game.ClassSystem
         private readonly Dictionary<SkillData, float> cooldownEnd = new Dictionary<SkillData, float>();
         private List<SkillData> activeSkills = new List<SkillData>();
         public float CurrentMp { get; private set; }
+        public float CurrentHp { get; private set; }
+        public int Level => level;
+
+        // 신성 방패 (그랜드 오라클): 남은 시간 동안 받는 피해를 mitigation 비율만큼 줄입니다 (0.8 = 80% 감소)
+        private float shieldEnd, shieldMitigation;
+        public bool HasDivineShield => Time.time < shieldEnd;
 
         public ClassData ClassData => myClassData;
         public IReadOnlyList<SkillData> Skills => activeSkills;
@@ -31,10 +37,14 @@ namespace Game.ClassSystem
         {
             myClassData = data; level = newLevel;
             runtimeStats.Clear();
-            foreach (var stat in data.BaseStats)
-                runtimeStats[stat.Type] = data.GetStatAtLevel(stat.Type, level);
+            foreach (StatType t in System.Enum.GetValues(typeof(StatType)))   // 각성 직업은 부모 스탯을 물려받으므로 모든 종류를 조회
+            {
+                float v = data.GetStatAtLevel(t, level);
+                if (v != 0f) runtimeStats[t] = v;
+            }
             activeSkills = data.GetUnlockedSkills(level);
             CurrentMp = GetStat(StatType.MaxMp);
+            CurrentHp = GetStat(StatType.MaxHp);
             Debug.Log($"--- {data.ClassName} Lv.{level} · HP {GetStat(StatType.MaxHp)} · 스킬 {activeSkills.Count}개 ---");
         }
 
@@ -57,6 +67,28 @@ namespace Game.ClassSystem
             // 실제 데미지/치유 계산은 여기서 skill.Attribute 와 skill.GetValue(skillLevel) 로 연결합니다.
             return true;
         }
+
+        /// <summary>네트워크 서버가 계산한 수치를 그대로 반영할 때 (NetworkedClassManager)</summary>
+        public void SetStatFromNetwork(StatType type, float value) => runtimeStats[type] = value;
+        public void SetVitalsFromNetwork(float hp, float mp) { CurrentHp = hp; CurrentMp = mp; }
+
+        public void ActivateDivineShield(float duration, float mitigation)
+        {
+            shieldEnd = Mathf.Max(shieldEnd, Time.time + duration);
+            shieldMitigation = Mathf.Max(HasDivineShield ? shieldMitigation : 0f, mitigation);
+        }
+
+        /// <summary>BossDragonAI 가 SendMessage("TakeDamage") 로 호출합니다. 신성 방패가 있으면 감소.</summary>
+        public float TakeDamage(float amount)
+        {
+            if (HasDivineShield) amount *= 1f - shieldMitigation;
+            float def = GetStat(StatType.Defense);
+            float dealt = Mathf.Max(1f, amount * (100f / (100f + def * 4f)));
+            CurrentHp = Mathf.Max(0f, CurrentHp - dealt);
+            return dealt;
+        }
+
+        public void Heal(float amount) => CurrentHp = Mathf.Min(GetStat(StatType.MaxHp), CurrentHp + amount);
 
         public float CooldownLeft(SkillData skill) =>
             cooldownEnd.TryGetValue(skill, out var end) ? Mathf.Max(0f, end - Time.time) : 0f;

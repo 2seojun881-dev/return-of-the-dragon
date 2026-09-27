@@ -13,6 +13,20 @@ using UnityEngine;
 /// </summary>
 public class BossDragonAI : MonoBehaviour
 {
+    /// <summary>브레스 예고: (보스, 브레스까지 남은 초). 이륙 직후 한 번. 그랜드 오라클의 '신탁의 예지'와 서버의 신성 방패 판단에 씁니다.</summary>
+    public event System.Action<BossDragonAI, float> OnBreathForecast;
+    /// <summary>브레스 방출 시작 / 끝</summary>
+    public event System.Action<BossDragonAI> OnBreathStarted, OnBreathEnded;
+
+    [Tooltip("멀티플레이: 서버의 NetworkedBossSync 가 모든 플레이어 피해를 판정하므로 여기서는 피해를 주지 않음")]
+    public bool serverDrivenDamage = false;
+
+    public float BreathRange => breathRange;
+    public float BreathHalfAngle => breathHalfAngle;
+    public float BreathDuration => breathDuration;
+    public Vector3 BreathOrigin => originalGroundPosition;
+    public Vector3 BreathForward { get { var f = transform.forward; f.y = 0f; return f.normalized; } }
+
     [Header("🎯 Target & Origin")]
     [SerializeField] private Transform playerTarget;
     [SerializeField] private Transform mouthTransform;
@@ -87,6 +101,7 @@ public class BossDragonAI : MonoBehaviour
         if (groundCrackDecal != null) Destroy(Instantiate(groundCrackDecal, originalGroundPosition, Quaternion.identity), 6f);
         SetFlyingModel(true);
         IsAirborne = true;
+        OnBreathForecast?.Invoke(this, flyHeight / Mathf.Max(0.01f, takeoffSpeed) + chargeDuration);
         Vector3 targetAirPosition = originalGroundPosition + Vector3.up * flyHeight;
         while (Vector3.Distance(transform.position, targetAirPosition) > 0.1f)
         {
@@ -110,6 +125,7 @@ public class BossDragonAI : MonoBehaviour
 
         // 3단계: 화염 브레스 발사 (Fire Breath)
         if (animator != null) animator.SetTrigger(AnimBreath);
+        OnBreathStarted?.Invoke(this);
         if (breathParticleVfx != null) breathParticleVfx.Play();
         if (audioSource != null && breathSound != null) audioSource.PlayOneShot(breathSound);
         float breathTimer = 0f, tick = 0f, burnTimer = 0f;
@@ -131,6 +147,7 @@ public class BossDragonAI : MonoBehaviour
             yield return null;
         }
         if (breathParticleVfx != null) breathParticleVfx.Stop();
+        OnBreathEnded?.Invoke(this);
 
         // 4단계: 지면 착지 (Landing)
         if (animator != null) animator.SetTrigger(AnimLand);
@@ -168,6 +185,13 @@ public class BossDragonAI : MonoBehaviour
         mouthTransform.LookAt(playerTarget.position);
     }
 
+    /// <summary>임의 위치가 브레스 원뿔 안인지 (멀티플레이: 서버가 모든 플레이어에 대해 판정)</summary>
+    public bool IsInBreathCone(Vector3 worldPos)
+    {
+        Vector3 to = Flat(worldPos - originalGroundPosition);
+        return to.magnitude <= breathRange && Vector3.Angle(Flat(transform.forward), to) <= breathHalfAngle;
+    }
+
     private bool PlayerInBreathCone()
     {
         if (playerTarget == null) return false;
@@ -178,6 +202,7 @@ public class BossDragonAI : MonoBehaviour
 
     private void DamagePlayer(float amount)
     {
+        if (serverDrivenDamage || playerTarget == null) return;
         // 플레이어 쪽에 TakeDamage(float) 메서드가 있으면 받습니다 (의존성 없이 연결).
         playerTarget.SendMessage("TakeDamage", amount, SendMessageOptions.DontRequireReceiver);
     }
