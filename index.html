@@ -348,6 +348,7 @@ body.cine #hud>*{pointer-events:none}
   #skills{transform:scale(.86);transform-origin:right bottom}
   #qtrack{top:calc(104px + env(safe-area-inset-top,0px))}
   #bossbar{top:calc(128px + env(safe-area-inset-top,0px));width:calc(100% - 32px)}
+  body.bossOn #qtrack{visibility:hidden}  /* the boss bar takes the quest tracker's spot on phones */
   #guide{top:auto;bottom:calc(210px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-height:480px){
@@ -1874,11 +1875,21 @@ function buildTitle(){
     // ruined wall along the cliff edge
     for(let i=-4;i<=4;i++){if(i===0||i===1)continue;const g=prop('wall_straight',i*4.2,-7.2,{h:3.2-Math.abs(Math.sin(i*1.7))*1.9,y:-.3});g.rotation.z=(srand()-.5)*.12;}
     prop('rubble_large',1.5,-6,{fit:4});prop('rubble_large',-3.5,-4.5,{fit:2.6,rot:1});prop('rubble_large',10,-3,{fit:3,rot:2});
-    const c1=prop('column',-11,-1.5,{h:9});const c2=prop('column',12,-3,{h:5.5});c2.rotation.z=.18;const c3=prop('pillar_decorated',6,1,{h:2.4});c3.rotation.x=.3;
+    const c1=prop('column',-11,-1.5,{h:9});const c2=prop('pillar_decorated',12,-3,{h:6.5});c2.rotation.z=.14;const c3=prop('pillar_decorated',6,1,{h:2.4});c3.rotation.x=.3;
     prop('banner_red',-11,-.9,{h:4.2,y:3.6});prop('torch_mounted',12,-2.4,{h:1.4,y:3.4});
-    // mossy statue of the knight commander, looking over the land
-    const ped=prop('box_large',-4,-2.5,{h:2.5,tint:0x5a5850});
-    const st=rigChar('Knight',{keep:['2H_Sword','Knight_Cape'],tint:0x7f8c70,cfg:{idle:'2H_Melee_Idle'}});st.mixer.update(.7);st.g.position.set(-4,2.5,-2.5);st.g.scale.setScalar(1.9);st.g.rotation.y=Math.PI+.35;W.root.add(st.g);
+    // the party (Meshy heroes) at the cliff edge, backs to us, looking out at the volcano
+    W.titleHeroes=[];if(CUSTOM.players.warrior&&CUSTOM.players.warrior.rigged){
+      prop('rubble_large',1,-8.2,{fit:9});  // a mound at the broken wall they stand on
+      [['warrior',-1.4,-8.4,.12,1.9],['shaman',1.1,-9.2,-.05,2.5],['rogue',3.5,-8.3,-.28,1.9]].forEach(([k,x,z,r,y],i)=>{const h=heroModel(k);h.g.position.set(x,y,z);h.g.scale.setScalar(1.35);h.g.rotation.y=Math.PI+r;W.root.add(h.g);
+        if(h.setBase)h.setBase('Idle');if(h.mixer)h.mixer.update(i*.7);W.titleHeroes.push(h);});
+      const rim=new THREE.PointLight(0xff7a3a,2.6,40,2);rim.position.set(1,7,-18);W.root.add(rim);  // volcano glow on the party's shoulders
+      W.anim.push(t=>W.titleHeroes.forEach(h=>{if(h.mixer)h.mixer.update(1/60);if(h.tick)h.tick(t,false);}));
+    }else{const ped=prop('box_large',-4,-2.5,{h:2.5,tint:0x5a5850});
+      const st=rigChar('Knight',{keep:['2H_Sword','Knight_Cape'],tint:0x7f8c70,cfg:{idle:'2H_Melee_Idle'}});st.mixer.update(.7);st.g.position.set(-4,2.5,-2.5);st.g.scale.setScalar(1.9);st.g.rotation.y=Math.PI+.35;W.root.add(st.g);}
+    // dead trees and torches framing the shot
+    [[-15,-3,1.5],[17,-5,1.2],[-22,-8,1.8]].forEach(([x,z,s])=>{if(PROPS.tree_dead_large)prop('tree_dead_large',x,z,{h:6*s,rot:srand()*6});});
+    [[-7.5,-5.5],[8,-5.8]].forEach(([x,z])=>{if(!PROPS.post_lantern)return;prop('post_lantern',x,z,{h:3});const f=flameFx(0xffa040,0xfff0c0,.5);f.position.set(x,3.1,z);W.root.add(f);W.anim.push(t=>f.userData.tick&&f.userData.tick(t));
+      const l=new THREE.PointLight(0xff9a40,1.3,10,2);l.position.set(x,3.2,z);W.root.add(l);});
   }else{
     for(let i=-4;i<=4;i++){if(i===0||i===1)continue;mesh(new THREE.BoxGeometry(4,4-Math.abs(Math.sin(i*1.7))*2,1.4),M(0x4a4640),i*4.2,1.6,-7.2,W.root);}
     mesh(new THREE.CylinderGeometry(.8,.9,9,8),M(0x55524a),-11,4.5,-1.5,W.root);
@@ -1892,14 +1903,17 @@ function buildTitle(){
   const ft=fogTexture();W.fogs=[];
   [-12,-22,-32].forEach((y,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(900,500),new THREE.MeshBasicMaterial({map:ft,color:i?0x1a1016:0x2a1c22,transparent:true,opacity:.55-i*.1,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(0,y,-200);m.material.map=ft.clone();m.material.map.needsUpdate=true;m.material.map.repeat.set(3,2);W.root.add(m);W.fogs.push(m);});
   // Ignis hidden in the clouds
-  dragon=makeDragon();dragon.g.position.set(75,128,-360);dragon.g.scale.setScalar(3.4);dragon.g.rotation.y=-.3;W.root.add(dragon.g);dragon.g.visible=false;
-  W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.2)*.2;});});
+  dragon=makeDragon();dragon.g.position.set(75,128,-360);dragon.g.scale.setScalar(3.4);dragon.g.rotation.y=-.3;W.root.add(dragon.g);
+  dragon.orbit=!dragon.wings.length;dragon.g.visible=dragon.orbit;  // the Meshy Ignis is always in the sky, circling the volcano
+  W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.2)*.2;});
+    if(dragon.orbit){const a=t*.07,x=70+Math.cos(a)*150,z=-360+Math.sin(a)*70;dragon.g.position.set(x,72+Math.sin(t*.45)*7,z);
+      dragon.g.rotation.set(Math.sin(t*.45)*.08,Math.atan2(-Math.sin(a)*150,Math.cos(a)*70),-.25);}});
   W.nextBolt=rt+3;W.titleT0=rt;
 }
 function titleBolt(){
   const el=document.createElement('div');el.className='bolt';$('#tfx').appendChild(el);setTimeout(()=>el.remove(),600);
   const h0=hemi.intensity;tween(.5,k=>{hemi.intensity=h0+(1-k)*2.2*(k<.1||k>.25?1:.2);},()=>hemi.intensity=h0,e=>e);
-  if(dragon){dragon.g.visible=true;dragon.eyes.forEach(e=>e.material.color.setHex(0xff5a1a));later(.7,()=>{if(dragon)dragon.g.visible=false;});}
+  if(dragon&&!dragon.orbit){dragon.g.visible=true;dragon.eyes.forEach(e=>e.material.color.setHex(0xff5a1a));later(.7,()=>{if(dragon)dragon.g.visible=false;});}
   // jagged bolt
   const pts=[];let x=rand(-40,120),y=110,z=-280;for(let i=0;i<9;i++){pts.push(new V(x,y,z));x+=rand(-10,10);y-=rand(9,15);}
   const geo=new THREE.BufferGeometry().setFromPoints(pts);const ln=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xe8e0ff,fog:false,transparent:true}));W.root.add(ln);
@@ -2899,8 +2913,10 @@ function animHumanoid(ent,dt,moving){
   if(h.tick)h.tick(rt,moving);if(ent.wmesh&&ent.wmesh.userData.tick)ent.wmesh.userData.tick(rt);
 }
 function ignisFade(e,dt){const p=e.parts;
-    if(!p.fade){p.fade=1;e.mesh.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.userData.op0=o.material.opacity;o.material.transparent=true;}});}
-    const occ=!e.dead&&(d2(P.pos,e.pos)<8||P.pos.z<e.pos.z+2&&Math.abs(P.pos.x-e.pos.x)<10),f2=p.fade+((occ?.28:1)-p.fade)*Math.min(1,dt*6);
+    if(!p.fade){p.fade=1;e.mesh.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.userData.op0=o.material.opacity;o.material.transparent=true;
+      if(p.custom&&o.material.emissive){o.material.emissive.setHex(0x6a2a18);o.material.emissiveMap=o.material.map;o.material.emissiveIntensity=1;}}});}  // Meshy Ignis glows a little so it reads on the dark altar
+    // fade only while the dragon is really between the camera (south) and the player, and never to a ghost
+    const occ=!e.dead&&e.pos.z>P.pos.z+1&&e.pos.z-P.pos.z<14&&Math.abs(P.pos.x-e.pos.x)<(e.parts.custom?5:10),f2=p.fade+((occ?(e.parts.custom?.6:.28):1)-p.fade)*Math.min(1,dt*6);
     if(Math.abs(f2-p.fade)>.003){p.fade=f2;e.mesh.traverse(o=>{if(o.isMesh){o.material.opacity=o.userData.op0*f2;o.material.depthWrite=f2>.95;}});}
   p.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*(.15+Math.sin(rt*1.6)*.35));}
 function animEnemy(e,dt){
@@ -3505,7 +3521,7 @@ function loop(now){
   W.anim.forEach(f=>f(rt));
   // camera
   if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
-    const ab=W.enemies.find(q=>q.airborne&&!q.dead),zf=ab?1.6:1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*.6,1+ab.mesh.position.y*.9,P.pos.z+(ab.pos.z-P.pos.z)*.6):new V(P.pos.x,1,P.pos.z);
+    const ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34),zf=ab?(ab.airborne?1.6:1.35):1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
     const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
@@ -3529,7 +3545,7 @@ function loop(now){
   }
   if(composer)composer.render();else renderer.render(scene,camera);
 }
-function updBoss(){const b=W.enemies.find(e=>e.d.boss&&!e.dead&&(e.aggro||e.cast));const el=$('#bossbar');if(!b||CS){el.hidden=true;return;}el.hidden=false;el.querySelector('.bn').textContent=b.d.name+'  Lv.'+(b.lv||b.d.lv);el.querySelector('i').style.transform='scaleX('+clamp(b.hp/b.maxHp,0,1)+')';el.querySelector('span').textContent=fmt(b.hp)+' / '+fmt(b.maxHp);el.querySelector('i').style.transformOrigin='left';}
+function updBoss(){const b=W.enemies.find(e=>e.d.boss&&!e.dead&&(e.aggro||e.cast));const el=$('#bossbar');document.body.classList.toggle('bossOn',!!b&&!CS);if(!b||CS){el.hidden=true;return;}el.hidden=false;el.querySelector('.bn').textContent=b.d.name+'  Lv.'+(b.lv||b.d.lv);el.querySelector('i').style.transform='scaleX('+clamp(b.hp/b.maxHp,0,1)+')';el.querySelector('span').textContent=fmt(b.hp)+' / '+fmt(b.maxHp);el.querySelector('i').style.transformOrigin='left';}
 requestAnimationFrame(loop);
 
 
@@ -3643,7 +3659,7 @@ async function titleTouch(ev,fresh){
   setTimeout(()=>{const fl=document.createElement('div');fl.className='tflash';fx.appendChild(fl);},420);
   shake(1.3);W.leaving=true;
   if(W.clouds)W.clouds.forEach(c=>{const x0=c.position.x,dir=x0>=10?1:-1;tween(1.8,k=>{c.position.x=x0+dir*220*k;c.material.opacity=.92*(1-k*.6);},null,e=>1-Math.pow(1-e,3));});
-  if(dragon){dragon.g.visible=true;later(1.4,()=>{if(dragon)dragon.g.visible=false;});}
+  if(dragon&&!dragon.orbit){dragon.g.visible=true;later(1.4,()=>{if(dragon)dragon.g.visible=false;});}
   const p0=cam.pos.clone();tween(1.6,k=>{cam.pos.lerpVectors(p0,new V(-2,4,-4),k);},null,e=>e*e);
   await new Promise(r=>setTimeout(r,650));
   $('#title').hidden=true;
