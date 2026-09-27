@@ -936,12 +936,20 @@ let GRASS_G=null;
 function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_grass;GRASS_G=false;if(!src)return false;let mesh0=null;src.updateMatrixWorld(true);src.traverse(o=>{if(o.isMesh&&!mesh0)mesh0=o;});if(!mesh0)return false;
   const geo=mesh0.geometry.clone();geo.applyMatrix4(mesh0.matrixWorld);geo.computeBoundingBox();const b=geo.boundingBox,s=.55/Math.max(.01,b.max.y-b.min.y),c=b.getCenter(new V());
   geo.translate(-c.x,-b.min.y,-c.z);geo.scale(s,s,s);const mt=mesh0.material.clone();mt.side=THREE.DoubleSide;return GRASS_G={geo,mt,tris:(geo.index?geo.index.count:geo.attributes.position.count)/3};}
+/* hand-made Meshy decor: [name, x, z, size(m), collision radius, rotation] */
+function decor(list){list.forEach(([n,x,z,s,r,rot])=>{if(!PROPS[n])return;const g=prop(n,x,z,{fit:s,rot:rot==null?srand()*6.28:rot});if(r)addCircle(x,z,r);return g;});}
 function grass(cx,cz,w,d,n,col){
   const tuft=grassTuft();if(tuft){n=Math.max(20,Math.min(n,Math.floor(45000/tuft.tris)));}  // ~45k triangles per field at most
   const geo=tuft?tuft.geo:new THREE.ConeGeometry(.07,.5,3);if(!tuft)geo.translate(0,.25,0);
   const im=new THREE.InstancedMesh(geo,tuft?tuft.mt:M(col),n),m4=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new V(),up=new V(0,1,0);
   const k0=tuft?1.4:1;for(let i=0;i<n;i++){s.setScalar((.6+srand()*1.1)*k0);q.setFromAxisAngle(up,srand()*6);m4.compose(new V(cx+(srand()-.5)*w,0,cz+(srand()-.5)*d),q,s);im.setMatrixAt(i,m4);}
   if(tuft)im.receiveShadow=true;W.root.add(im);
+  if(PROPS.meshy_tuft){  // larger emerald tufts mixed into the field
+    let m0=null;PROPS.meshy_tuft.updateMatrixWorld(true);PROPS.meshy_tuft.traverse(o=>{if(o.isMesh&&!m0)m0=o;});
+    if(m0){const g2=m0.geometry.clone();g2.applyMatrix4(m0.matrixWorld);g2.computeBoundingBox();const b=g2.boundingBox,s2=1/Math.max(.01,b.max.y-b.min.y),c2=b.getCenter(new V());g2.translate(-c2.x,-b.min.y,-c2.z);g2.scale(s2,s2,s2);
+      const n2=Math.min(70,Math.max(8,Math.round(w*d/60))),im2=new THREE.InstancedMesh(g2,m0.material,n2);
+      for(let i=0;i<n2;i++){s.setScalar(.7+srand()*.6);q.setFromAxisAngle(up,srand()*6);m4.compose(new V(cx+(srand()-.5)*w,0,cz+(srand()-.5)*d),q,s);im2.setMatrixAt(i,m4);}
+      im2.receiveShadow=true;W.root.add(im2);}}
 }
 /* buildings are 1.5x their old footprint; each grows away from the zone centre so the side facing roads/plazas
    (and its door) stays where it was */
@@ -2129,6 +2137,8 @@ function buildVillage(){
   spawnEnemy('scarecrow',-9,-12);
   spawner('ashGoblin',19,-14,3.5,3,6,()=>goalActive('kill','ashGoblin'));
   spawner('wolfBoss',0,-22,0,1,999,()=>goalActive('kill','wolfBoss'));
+  decor([['meshy_sakura',14,-3,6.5,.8],['meshy_dog',3.2,6.2,1.2,.4,-.6],['meshy_supplies',4.5,14.5,2.4,.9,0],['meshy_supplies',-14,-10,2.4,.9,1.2],
+    ['meshy_bush',-23,-2,2.2,.8],['meshy_bush',22,-15,2.2,.8],['meshy_bush',-6,24,2.2,.8],['meshy_bush',14,24,2,.8],['meshy_bush',-22,-28,2.4,.8]]);
   portal(0,-33,'plains',[0,23],()=>S.q>qIdx('v4'),'아직 마을을 떠날 수 없습니다. 마을의 위기를 먼저 해결하세요.','바람노래 평원 ›');
   portal(-9,16.4,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
 }
@@ -2172,6 +2182,8 @@ function buildPlains(){
   spawner('tent',0,-56,0,()=>Math.max(0,2-(stepCnt('destroy','tent')||0)),9999,()=>goalActive('destroy','tent'),[[-9,-56],[9,-56]]);
   spawner('turka',0,-56,0,1,999,()=>goalActive('kill','turka'));
   spawner('ox',-10,-74,4,3,8,always);spawner('ox',10,-83,4,3,8,always);
+  decor([['meshy_stump',-12,-10,1.8,.8],['meshy_stump',12,-32,1.6,.7],['meshy_stump',-11,-70,1.8,.8],['meshy_supplies',3.2,21,2.4,.9,0],
+    ['meshy_bush',-20,-5,2.2,.8],['meshy_bush',20,-24,2.2,.8],['meshy_bush',-21,-38,2,.8],['meshy_bush',19,5,2,.8]]);
   portal(0,26.5,'village',[0,-27],()=>true,'','잿빛 잎새 마을 ›');
   portal(0,-101.5,'citadel',[-22,24],()=>S.q>qIdx('p5'),'성문이 굳게 닫혀 있습니다. 수비대장 헥터의 허락이 필요합니다.','천명 성채 ›');
 }
@@ -2232,6 +2244,7 @@ function buildCitadel(){
   spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;
   for(let i=0;i<6;i++)spawnWanderer(rand(-12,12),rand(-8,10));
   const ok=()=>true;
+  decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-17.5,-18,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
   portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 야수 서식지 Lv.1~15 ›');
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
   portal(0,28.5,'clock',[0,-32],ok,'','남문 · 태엽 미로 Lv.40~70 ›');
@@ -2256,6 +2269,9 @@ function buildBeasts(){
   spawner('beastBoar',22,15,6,5,7,always,null,[2,6]);spawner('beastBoar',18,-17,6,5,7,always,null,[4,8]);
   spawner('beastWolf',-6,-20,6,4,8,always,null,[8,11]);spawner('beastWolf',-20,14,6,4,8,always,null,[10,13]);spawner('beastWolf',-26,-6,5,4,8,always,null,[12,15]);
   spawner('beastsBoss',-12,25,0,1,180,always);
+  decor([['meshy_worldtree',-4,-35,22,3.4,.4],['meshy_stump',5,-8,1.8,.8],['meshy_stump',-15,-25,2,.8],['meshy_stump',26,-28,1.8,.8],
+    ['meshy_bush',-30,8,2.4,.8],['meshy_bush',14,-32,2.4,.8],['meshy_bush',-4,12,2,.8],['meshy_bush',28,12,2.2,.8]]);
+  if(PROPS.meshy_worldtree){const l=new THREE.PointLight(0xc8ffb0,1.1,26,2);l.position.set(-4,9,-35);W.root.add(l);}
   portal(37,0,'citadel',[-25,0],always,'','천명 성채 서문 ›');
 }
 function buildGrave(){
@@ -2272,6 +2288,9 @@ function buildGrave(){
   spawner('graveGhost',18,-16,6,4,9,always,null,[28,34]);spawner('graveGhost',22,16,6,4,9,always,null,[34,40]);
   spawner('graveBoss',31,0,0,1,180,always);
   spawner('graveLord',-4,-28,0,1,300,always);  // 묘지 가장 안쪽: 진홍 군주 (5분마다)
+  decor([['meshy_stump',-24,-24,1.8,.8],['meshy_stump',8,24,1.8,.8]]);
+  if(PROPS.meshy_glowshroom)[[-20,-6],[-6,-22],[10,-10],[26,-4],[16,26],[-26,24],[0,12],[-10,30]].forEach(([x,z],i)=>{const g=prop('meshy_glowshroom',x,z,{h:1.4+srand()*1.2,rot:srand()*6});addCircle(x,z,.5);
+    if(i%2===0){const l=new THREE.PointLight(0x4ac8ff,1.2,8,2);l.position.set(x,1.4,z);W.root.add(l);}});
   portal(-37,0,'citadel',[25,0],always,'','천명 성채 동문 ›');
 }
 function buildClock(){
@@ -2675,9 +2694,11 @@ function dragonSplash(db){const f=fwd(),x=P.pos.x+f.x*2.5,z=P.pos.z+f.z*2.5;
   floatText(P.pos,'용혈 · 붉은 용','crit',3);burst(x,1.2,z,0xff4a1a,40,7,.7,.6,0);shake(.3);
   for(const e of W.enemies){if(e.dead)continue;const dx=e.pos.x-P.pos.x,dz=e.pos.z-P.pos.z,d=Math.hypot(dx,dz);if(d<5.5+e.rad&&(dx*f.x+dz*f.z)/(d||1)>.4)hitEnemy(e,2+.1*(db-1));}}
 function dragonMark(e){e.root=3;e.mark=3;floatText(e.pos,'용의 표식','info',e.tagY);ringFx(e.pos.x,e.pos.z,1.6,0xff3a0a,.6);}
-function pressAttack(){
+function pressAttack(quiet){
   if(!P||P.dead||paused())return;
-  const t=autoTarget(14);if(!t){toast('주변에 공격할 대상이 없습니다.');return;}
+  if(joyVec()){  // moving with the joystick: hit what is in reach right now, keep moving
+    const t=autoTarget(P.range+4);if(t&&d2(t.pos,P.pos)<=P.range+t.rad+1.2){P.jAtk=t;P.jAtkT=.6;}else if(!quiet)floatText(P.pos,'사거리 밖','info',2.4);return;}
+  const t=autoTarget(14);if(!t){if(!quiet)toast('주변에 공격할 대상이 없습니다.');return;}
   P.target=t;P.dest=null;
 }
 function skOk(k){const s=CLASSES[S.cls].sk[k];return !!s&&S.level>=s.lv&&(!s.tut||S.tut);}
@@ -2988,7 +3009,10 @@ function updPlayer(dt){
   if(P.lock>0){P.lock-=dt;}
   else if(jv){  // camera looks north: screen up = -z, screen right = +x
     if(AUTO.on)setAuto(false);P.target=null;P.dest=null;P.hunt=null;P.detour=null;
-    const s=P.speed*dt*(.35+.65*jv.m);P.pos.x+=jv.x*s;P.pos.z+=jv.z*s;P.face=Math.atan2(jv.x,jv.z);resolve(P.pos,P.rad);P.walk+=s*2.3;moving=true;}
+    if(ATK_HOLD&&!P.jAtk)pressAttack(true);
+    if(P.jAtk){const t=P.jAtk;P.jAtkT-=dt;if(t.dead||t.gone||d2(t.pos,P.pos)>P.range+t.rad+1.5||(P.jAtkT<=0&&!ATK_HOLD))P.jAtk=null;
+      else if(P.atkCd<=0){basicAttack(t);P.jAtkT=.6;}}
+    const s=P.speed*dt*(.35+.65*jv.m);P.pos.x+=jv.x*s;P.pos.z+=jv.z*s;P.face=P.jAtk?Math.atan2(P.jAtk.pos.x-P.pos.x,P.jAtk.pos.z-P.pos.z):Math.atan2(jv.x,jv.z);/* strafe while attacking */resolve(P.pos,P.rad);P.walk+=s*2.3;moving=true;}
   else{
     let T=P.target;if(T&&(T.dead||T.gone)){P.target=T=null;}
     if(!T&&P.hunt){const e=nearestEnemy(12,P.hunt);if(e){P.target=T=e;P.dest=null;}}
@@ -3612,7 +3636,13 @@ canvas.addEventListener('pointerdown',e=>{
 });
 canvas.addEventListener('wheel',e=>{cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.08,.6,1.5);},{passive:true});
 $('#b-auto').innerHTML=ICON.auto+'<span class="al">자동</span>';$('#b-auto').onclick=()=>{if(!paused())setAuto(!AUTO.on);};
-$('#b-atk').onclick=pressAttack;$('#b-s1').onclick=()=>useSkill('s1');$('#b-s2').onclick=()=>useSkill('s2');$('#b-s3').onclick=()=>useSkill('s3');$('#b-ult').onclick=()=>useSkill('ult');$('#b-pot').onclick=usePotion;$('#b-mpot').onclick=useMpPotion;
+/* action buttons fire on touch-down (a second finger while the other thumb is on the joystick); holding attack keeps attacking */
+let ATK_HOLD=false;
+const btnDown=(sel,fn)=>{const b=$(sel);b.style.touchAction='none';b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();fn();});b.addEventListener('click',ev=>{if(ev.detail===0)fn();});};  // keyboard/accessibility click only
+btnDown('#b-atk',()=>{ATK_HOLD=true;pressAttack();});
+['pointerup','pointercancel','pointerleave'].forEach(t=>$('#b-atk').addEventListener(t,()=>{ATK_HOLD=false;}));
+btnDown('#b-s1',()=>useSkill('s1'));btnDown('#b-s2',()=>useSkill('s2'));btnDown('#b-s3',()=>useSkill('s3'));btnDown('#b-ult',()=>useSkill('ult'));
+btnDown('#b-pot',usePotion);btnDown('#b-mpot',useMpPotion);
 $('#bagBtn').innerHTML=ICON.bag;$('#menuBtn').innerHTML=ICON.menu;
 $('#bagBtn').onclick=()=>{if(!paused())openBag();};$('#menuBtn').onclick=()=>{if(!paused())openMenu();};
 $('#qtrack').onclick=()=>{if(!paused())autoNav();};

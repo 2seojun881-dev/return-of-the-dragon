@@ -450,88 +450,6 @@
       "prompt": "wooden barrel with iron hoops",
       "meshy_task": "01a0de8e-d5ae-74e6-a39c-a7555e5da337"
     },
-    "w_rock": {
-      "file": "w_rock.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "rock_single_A",
-        "rock_single_B",
-        "rock_single_C"
-      ],
-      "zones": [
-        "asura",
-        "beasts",
-        "plains",
-        "title",
-        "village"
-      ],
-      "prompt": "large mossy grey boulder",
-      "meshy_task": "01a0de8f-e84f-7766-abd8-9675d2eca7cf"
-    },
-    "w_tree_dead": {
-      "file": "w_tree_dead.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "tree_dead_large",
-        "tree_dead_medium",
-        "tree_dead_small"
-      ],
-      "zones": [
-        "asura",
-        "grave",
-        "plains"
-      ],
-      "prompt": "dead leafless twisted tree with gnarled black branches",
-      "meshy_task": "01a0de93-d0f7-7725-8e6f-9c9e2a096588"
-    },
-    "w_rock_flat": {
-      "file": "w_rock_flat.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "rock_single_D",
-        "rock_single_E"
-      ],
-      "zones": [
-        "asura",
-        "beasts",
-        "plains",
-        "title"
-      ],
-      "prompt": "cluster of flat broken grey stones",
-      "meshy_task": "01a0de93-e323-7463-95df-4afb3875b131"
-    },
-    "w_tree_leafy": {
-      "file": "w_tree_leafy.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "tree_single_A",
-        "tree_single_B",
-        "trees_A_medium"
-      ],
-      "zones": [
-        "beasts",
-        "citadel",
-        "plains",
-        "village"
-      ],
-      "prompt": "single round leafy oak tree with thick trunk and lush green canopy",
-      "meshy_task": "01a0de93-f84d-76c6-97bd-0b91e9202c10"
-    },
-    "w_tree_pine": {
-      "file": "w_tree_pine.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "trees_B_large",
-        "trees_B_medium"
-      ],
-      "zones": [
-        "beasts",
-        "plains",
-        "village"
-      ],
-      "prompt": "cluster of three tall dark green pine trees on a small root base",
-      "meshy_task": "01a0de94-0d51-7149-b47b-dea3a4d5c7de"
-    },
     "w_mountain": {
       "file": "w_mountain.glb.txt",
       "kind": "prop",
@@ -653,13 +571,6 @@
       ],
       "prompt": "large animal ribcage skeleton lying on the ground",
       "meshy_task": "01a0de96-1e16-720a-9de0-2384ad99c0d5"
-    },
-    "g_grass": {
-      "file": "g_grass.glb.txt",
-      "kind": "groundtex",
-      "ground": "grass",
-      "prompt": "thin flat square slab of ground covered with short green grass and small clover, top surface fully covered",
-      "meshy_task": "01a0de95-f7b7-7753-b831-00971b419508"
     },
     "w_bones": {
       "file": "w_bones.glb.txt",
@@ -820,19 +731,6 @@
       ],
       "prompt": "small stone roadside shrine with lit candles",
       "meshy_task": "01a0de97-df5f-74ad-a32b-34e6a01189f1"
-    },
-    "w_fence": {
-      "file": "w_fence.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "fence_wood_straight"
-      ],
-      "zones": [
-        "plains",
-        "village"
-      ],
-      "prompt": "straight wooden palisade fence segment of sharpened logs",
-      "meshy_task": "01a0de98-7ec6-7129-83b3-8fa613a1f98e"
     },
     "g_ash": {
       "file": "g_ash.glb.txt",
@@ -1758,6 +1656,229 @@
         "run": "m_InfernalRunebladeWarlord.run.glb.txt"
       },
       "rigged": true
+    },
+    "u_spruce": {
+      "file": "u_spruce.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "trees_B_large",
+        "trees_B_medium"
+      ],
+      "zones": [
+        "beasts",
+        "plains",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "Tree_Spruce_94fc88"
+    },
+    "u_birch_silver": {
+      "file": "u_birch_silver.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tree_single_A",
+        "trees_A_medium"
+      ],
+      "zones": [
+        "beasts",
+        "citadel",
+        "plains",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "SilverBirchMajesty_a763ad"
+    },
+    "u_birch_sunlit": {
+      "file": "u_birch_sunlit.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tree_single_B"
+      ],
+      "zones": [
+        "beasts",
+        "citadel",
+        "plains",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "SunlitBirchTree_07e991"
+    },
+    "u_poplar_dead": {
+      "file": "u_poplar_dead.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "tree_dead_large",
+        "tree_dead_medium",
+        "tree_dead_small"
+      ],
+      "zones": [
+        "asura",
+        "grave",
+        "plains"
+      ],
+      "uniform": true,
+      "userModel": "apetrifiedpoplartreewithbranches_1cd8d7"
+    },
+    "u_boulder": {
+      "file": "u_boulder.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "rock_single_A",
+        "rock_single_B",
+        "rock_single_C"
+      ],
+      "zones": [
+        "asura",
+        "beasts",
+        "plains",
+        "title",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "CrackedGraniteBoulder_01994b"
+    },
+    "u_rockstack": {
+      "file": "u_rockstack.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "rock_single_D",
+        "rock_single_E"
+      ],
+      "zones": [
+        "asura",
+        "beasts",
+        "plains",
+        "title"
+      ],
+      "uniform": true,
+      "userModel": "CrackedGrayRockStack_c800c7"
+    },
+    "u_fence": {
+      "file": "u_fence.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "fence_wood_straight"
+      ],
+      "zones": [
+        "plains",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "WeatheredFence_689d8a"
+    },
+    "u_tuft": {
+      "file": "u_tuft.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_tuft"
+      ],
+      "zones": [
+        "village",
+        "plains",
+        "beasts",
+        "citadel",
+        "title"
+      ],
+      "uniform": true,
+      "userModel": "EmeraldGrassTuft_a56539"
+    },
+    "u_bush": {
+      "file": "u_bush.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_bush"
+      ],
+      "zones": [
+        "village",
+        "plains",
+        "beasts",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "StreetMode_bb7263"
+    },
+    "u_supplies": {
+      "file": "u_supplies.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_supplies"
+      ],
+      "zones": [
+        "village",
+        "plains",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "OldWorldSupplies_bf29e1"
+    },
+    "u_stump": {
+      "file": "u_stump.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_stump"
+      ],
+      "zones": [
+        "plains",
+        "beasts",
+        "grave"
+      ],
+      "uniform": true,
+      "userModel": "TimewornStump_474893"
+    },
+    "u_sakura": {
+      "file": "u_sakura.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_sakura"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "WhisperingSakura_17a7a4"
+    },
+    "u_worldtree": {
+      "file": "u_worldtree.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_worldtree"
+      ],
+      "zones": [
+        "beasts"
+      ],
+      "uniform": true,
+      "userModel": "WorldTree_f5afc2"
+    },
+    "u_glowshroom": {
+      "file": "u_glowshroom.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_glowshroom"
+      ],
+      "zones": [
+        "grave"
+      ],
+      "uniform": true,
+      "userModel": "BlueAlienPlant02_952b8a"
+    },
+    "u_dog": {
+      "file": "u_dog.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_dog"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "WhittledGoldenRetriever_33581c"
+    },
+    "u_sod": {
+      "file": "u_sod.glb.txt",
+      "kind": "groundtex",
+      "ground": "grass",
+      "userModel": "SodBlock"
     }
   }
 }
