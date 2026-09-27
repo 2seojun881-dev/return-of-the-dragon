@@ -1,0 +1,11 @@
+{
+  "name": "용의 귀환",
+  "short_name": "용의 귀환",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0c0a0d",
+  "theme_color": "#0c0a0d",
+  "lang": "ko"
+}

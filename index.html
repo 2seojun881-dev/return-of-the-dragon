@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>용의 귀환</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0a0d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
@@ -356,6 +361,10 @@ body.cine #hud>*{pointer-events:none}
   #qtrack{top:calc(96px + env(safe-area-inset-top,0px))}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+#rotate{position:fixed;inset:0;z-index:9999;background:#0c0a0d;color:#f1e8d6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;font-family:'Gowun Batang',serif}
+#rotate[hidden]{display:none}#rotate b{font-size:20px}#rotate small{font-size:13px;color:#b8a888}
+#rotate .rot-ico{width:46px;height:78px;border:3px solid #d8a860;border-radius:9px;animation:rotHint 2.2s ease-in-out infinite}
+@keyframes rotHint{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
 </style>
 </head>
 <body>
@@ -417,6 +426,7 @@ body.cine #hud>*{pointer-events:none}
 <button id="skip" hidden>건너뛰기 ›</button>
 <div id="dead" hidden>쓰러졌습니다<br><small style="font-size:14px">잠시 후 부활합니다</small></div>
 <div id="fade"></div>
+<div id="rotate" hidden><div class="rot-ico"></div><b>화면을 가로로 돌려 주세요</b><small>용의 귀환은 가로 전체화면으로 즐기는 게임입니다</small></div>
 
 <div id="title" hidden>
   <div class="t-top">
@@ -805,6 +815,16 @@ function applyGfx(){
 }
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h?55:40;camera.updateProjectionMatrix();if(composer){composer.setSize(w,h);if(bloomPass)bloomPass.resolution.set(w/2,h/2);}}
 addEventListener('resize',resize);
+/* phones/tablets: play in landscape full screen. Fullscreen + orientation lock need a user gesture (Android Chrome etc.);
+   where locking isn't possible (iPhone Safari) a "rotate your phone" screen covers the game in portrait. */
+const TOUCH=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
+function isFull(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
+function goLandscapeFull(){if(!TOUCH)return;const d=document.documentElement,rq=d.requestFullscreen||d.webkitRequestFullscreen;
+  const lock=()=>{try{const p=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(p&&p.catch)p.catch(()=>{});}catch(err){}};
+  if(!isFull()&&rq){try{const p=rq.call(d,{navigationUI:'hide'});if(p&&p.then)p.then(lock,lock);else lock();}catch(err){lock();}}else lock();}
+function updRotate(){$('#rotate').hidden=!(TOUCH&&innerHeight>innerWidth);}
+addEventListener('pointerdown',goLandscapeFull,{capture:true});addEventListener('touchend',goLandscapeFull,{capture:true});
+addEventListener('resize',updRotate);addEventListener('orientationchange',()=>setTimeout(()=>{updRotate();resize();},250));updRotate();
 
 const MC={};
 function M(c,o){const k=c+'|'+(o?JSON.stringify(o):'');return MC[k]||(MC[k]=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85,metalness:.05,flatShading:true},o||{})));}
