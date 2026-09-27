@@ -202,7 +202,7 @@ svg{display:block}
 .r0{border-color:#8a8074}.r1{border-color:#4a9aff;box-shadow:0 0 8px rgba(74,154,255,.35)}.r2{border-color:#ffc83a;box-shadow:0 0 10px rgba(255,200,58,.45)}.r3{border-color:#ff3a2a;box-shadow:0 0 12px rgba(255,58,42,.6);animation:heroic 1.6s ease-in-out infinite}
 @keyframes heroic{50%{box-shadow:0 0 18px rgba(255,80,40,.95)}}
 .eslot.sel,.islot.sel{outline:2px solid #fff4d0;outline-offset:1px}.islot.no{opacity:.55}.islot.empty{border-style:dashed;border-color:#3a2e26;background:rgba(0,0,0,.2)}
-.islot i{position:absolute;font-style:normal;font-size:9px;font-weight:700;text-shadow:0 1px 2px #000}.islot .en,.eslot .en{right:3px;top:1px;color:#ffd070}.islot .lk{left:2px;top:0}.islot .st{left:2px;bottom:1px;color:#ff8a7a}.islot .q{right:3px;bottom:1px;color:#fff}
+.islot i{position:absolute;font-style:normal;font-size:9px;font-weight:700;text-shadow:0 1px 2px #000}.islot .en,.eslot .en{right:2px;top:2px;color:#ffe08a;background:#140c06e6;border:1px solid #d8a84a;border-radius:3px;padding:0 3px;line-height:13px;min-width:14px;text-align:center;font-size:10px;box-shadow:0 0 4px #000}.islot .lk{left:2px;top:0}.islot .st{left:2px;bottom:1px;color:#ff8a7a}.islot .q{right:3px;bottom:1px;color:#fff}
 .prev{position:relative;text-align:center}.prev canvas{width:100%;max-width:220px;aspect-ratio:220/300;background:radial-gradient(circle at 50% 70%,rgba(255,180,90,.18),transparent 65%);border-radius:8px}
 .pvname{font:700 13px 'Gowun Batang',serif;color:#f5e2b4;margin-top:-6px}
 /* phones in landscape: the whole character + bag fits on one screen (equipment | stats | bag side by side) */
@@ -294,7 +294,8 @@ body.cine #hud>*{pointer-events:none}
 #chapter span{display:block;font-size:13px;color:var(--dim);margin-top:4px}
 #skip{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(14vh + 8px);z-index:25;padding:6px 14px;border:1px solid rgba(255,255,255,.3);border-radius:16px;background:rgba(0,0,0,.5);font-size:13px;color:#ddd}
 #fade{position:fixed;inset:0;background:#000;z-index:18;pointer-events:none;opacity:1}
-#dead{position:fixed;inset:0;z-index:12;display:grid;place-items:center;background:radial-gradient(transparent,rgba(60,0,0,.7));font:700 30px 'Gowun Batang',serif;color:#ffb3a8;text-shadow:0 2px 10px #000;pointer-events:none}
+#dead{position:fixed;inset:0;z-index:12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:radial-gradient(transparent,rgba(60,0,0,.7));font:700 30px 'Gowun Batang',serif;color:#ffb3a8;text-shadow:0 2px 10px #000;pointer-events:none}
+#dead .deadBtns{display:flex;gap:8px;margin:8px 0;pointer-events:auto}#dead .deadBtns .btn{font-size:15px;padding:9px 16px}
 
 /* title & select */
 #title{position:fixed;inset:0;z-index:40;cursor:pointer;background:radial-gradient(ellipse 120% 70% at 50% 110%,rgba(80,14,4,.55),transparent 60%),linear-gradient(rgba(6,3,4,.55),transparent 28%,transparent 70%,rgba(6,3,4,.75))}
@@ -483,7 +484,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-12</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-13</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -587,7 +588,7 @@ const CLASSES={
       s2:{n:'은신',d:'6초간 은신: 적이 추적을 멈추고 이동 속도 30%↑, 다음 공격 300% 치명타',i:'stealth',cd:16,lv:35,mp:45},
       s3:{n:'칼날 폭풍',d:'주변을 여섯 번 베어 연속 피해',i:'storm',cd:11,lv:55,mp:70},
       ult:{n:'암살',d:'단일 대상 800% 피해, 체력 50% 이하면 두 배',i:'skull',cd:26,lv:80,mp:150}}},
- shaman:{name:'신(치유 신관)',role:'원거리 · 치유/신성 (힐러)',hp:220,mp:220,atk:16,def:8,range:9,aspd:1,speed:6.5,rad:.45,wtype:'staff',emblem:'bell',color:0xfff0c0,gear:'성물 방울·신봉 / 신관 로브',
+ shaman:{name:'힐러',role:'원거리 · 치유/신성 (힐러)',hp:220,mp:220,atk:16,def:8,range:9,aspd:1,speed:6.5,rad:.45,wtype:'staff',emblem:'bell',color:0xfff0c0,gear:'성물 방울·신봉 / 신관 로브',
   bonus:'치유량 +30% · 최대 마력 +120%',feature:'강한 자가 치유와 보호막, 빛의 성역으로 버티며 신성 마법으로 싸운다 (언데드·원혼에 강함)',
   blurb:'신의 빛을 다루는 치유 신관. 상처를 메우고 보호막을 두르며, 성역 안에 들어온 적을 신성한 빛으로 태운다.',
   sk:{atk:{n:'신성탄',d:'신성한 빛을 쏜다. 적중하면 체력을 조금 회복한다',i:'orb'},
@@ -598,10 +599,15 @@ const CLASSES={
 };
 const PROMO=['warrior','rogue','shaman'];
 /* Lv.99 각성 (Class Awakening): a promoted Lv.99 hero awakens at their guild master in 진급의 전당 */
+/* 진급 단계: 1차 Lv.15 · 2차 Lv.50 + 각성의 돌 · 3차 Lv.99 + 드래곤하트 (all at 다빈 / 태완 / 서준) */
+const TIER_NAMES={warrior:['전사','검객','검성'],rogue:['도적','암살자','암흑의 군주'],shaman:['힐러','사제','성직자']};
+const PROMO_NPC={warrior:'dabin',rogue:'taewan',shaman:'seojun'};
+function tierOf(s){s=s||S;if(!s||s.cls==='novice')return 0;if(s.tier==null)s.tier=s.awk?3:1;return s.tier;}
 const AWK={warrior:{name:'다크 나이트',en:'Dark Knight',col:0x8a3aff,skill:'마이티 스윙',d:'기본 공격이 360° 어둠의 참격으로 바뀌어 주변 모든 적에게 60% 추가 피해'},
   rogue:{name:'네더 아사신',en:'Nether Assassin',col:0x9a4aff,skill:'네더 그림자 질주',d:'움직일 때마다 네더 잔상이 따라붙고 치명타 확률 +10%, 치명 피해 +30%'},
-  shaman:{name:'그랜드 오라클',en:'Grand Oracle',col:0xfff0b0,skill:'신탁의 예지 · 신성 방패',d:'용의 브레스 2초 전에 안전지대를 보여 주고(예지), 브레스 순간 자동으로 신성 방패를 펼쳐 받는 피해 80% 감소 (MP 30)'}};
-const heroClsName=()=>S&&S.awk&&AWK[S.cls]?AWK[S.cls].name:CLASSES[S.cls].name;
+  shaman:{name:'그랜드 오라클',en:'Grand Oracle',col:0xfff0b0,skill:'신탁의 예지 · 신성 방패 · 부활',d:'용의 브레스 2초 전에 안전지대를 보여 주고(예지), 브레스 순간 자동으로 신성 방패를 펼쳐 받는 피해 80% 감소 (MP 30). 쓰러진 동료를 눌러 부활 (체력·마력 30%)'}};
+AWK.warrior.name='검성';AWK.rogue.name='암흑의 군주';AWK.shaman.name='성직자';AWK.warrior.en='Sword Saint';AWK.rogue.en='Dark Lord';AWK.shaman.en='High Priest';
+const heroClsName=()=>{if(!S)return '';const t=tierOf();return t&&TIER_NAMES[S.cls]?TIER_NAMES[S.cls][t-1]:CLASSES[S.cls].name;};
 const SKEYS=['s1','s2','s3','ult'];
 const OLD_CLS={knight:'warrior',ranger:'rogue',sorcerer:'shaman',merchant:'novice'};  // merchant was removed: pick a class again at the shrine
 /* gear tiers per hunting ground (RequiredLevel / RequiredClass) */
@@ -1873,6 +1879,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   P.def=c.def*(1+.1*(L-1))*(1+.03*st.def)*(1+armorDef()/60)*bl*(1+gp);P.range=c.range;P.aspd=c.aspd/(1+Math.min(.3,.01*st.agi)+G.aspd/100+.0015*G.dex);P.speed=c.speed*(P.stealthT>0?1.3:1);P.rad=c.rad;
   P.crit=(c.crit||.12)+G.crit/100+(P.furyT>0?1:0);P.critX=1.6+G.critd/100+(S.cls==='rogue'&&P.set3?.6:0);P.cdr=Math.min(.4,G.cdr/100);P.acc=G.acc;P.rageN=rage;
   if(isRed())P.def*=.7;  // 붉은 이름: 방어력 -30%
+  if(tierOf()===2){P.maxHp=Math.round(P.maxHp*1.1);P.maxMp=Math.round(P.maxMp*1.1);P.atk*=1.1;}
   if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
   if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(typeof updSetFx==='function')updSetFx();}
 function makePlayer(){
@@ -1885,7 +1892,7 @@ function makePlayer(){
   const fg=new THREE.Mesh(new THREE.CircleGeometry(1.15,32),new THREE.MeshBasicMaterial({map:glowTex(),color:0xffd8a0,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending}));
   fg.rotation.x=-Math.PI/2;fg.position.y=.05;fg.renderOrder=2;h.g.add(fg);  // soft pool of light at the player's feet
   const tr=new THREE.Mesh(new THREE.RingGeometry(.9,1.15,32),new THREE.MeshBasicMaterial({color:0xff4a3a,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide}));tr.rotation.x=-Math.PI/2;tr.visible=false;scene.add(tr);P.tring=tr;
-  setWeaponModel();recalc();P.hp=P.maxHp;P.mp=P.maxMp;
+  setWeaponModel();recalc();P.hp=P.maxHp;P.mp=P.maxMp;tierAura();
 }
 function setWeaponModel(){
   if(P.parts.skinned){P.wmesh=null;P.parts.setWeapon(S.weapon.destroyed?null:S.weapon.enh,S.weapon.db||0);return;}
@@ -1951,7 +1958,7 @@ function updSpawners(dt,force){
 function portal(x,z,to,arrive,unlocked,lockMsg,label,opt){opt=opt||{};
   const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);
   const ring=new THREE.Mesh(new THREE.TorusGeometry(1.6,.14,8,32),new THREE.MeshBasicMaterial({color:0x6ac8ff}));ring.position.y=1.8;g.add(ring);
-  if(opt.door){ring.visible=false;}else if(KIT&&PROPS.arch_gate){ring.visible=false;const ar=prop('arch_gate',0,0,{w:4.4,par:g});if(ar)ar.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;}
+  if(opt.door){ring.visible=false;}else if(KIT&&PROPS.arch_gate){ring.visible=false;const ar=prop('arch_gate',0,0,{w:4.4*Math.max(1,ZS(W.zone)*1.3),par:g});if(ar)ar.rotation.y=Math.abs(x)>Math.abs(z)?Math.PI/2:0;}
   const disc=new THREE.Mesh(new THREE.CircleGeometry(1.5,32),new THREE.MeshBasicMaterial({color:0x3a8ad8,transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));disc.position.y=1.8;g.add(disc);
   const base=new THREE.Mesh(new THREE.RingGeometry(1.2,1.8,32),new THREE.MeshBasicMaterial({color:0x6ac8ff,transparent:true,opacity:.5,depthWrite:false,side:THREE.DoubleSide}));base.rotation.x=-Math.PI/2;base.position.y=.06;g.add(base);
   const p={x,z,to,arrive,unlocked,lockMsg,g,ring,disc,lastMsg:0,label};
@@ -2025,7 +2032,7 @@ function expandZone(z){const k=ZS(z);if(k===1)return;
 function buildZone(z){clearZone();_s=12345;W.zone=z;ZONES[z].build();expandZone(z);if(z!=='prologue')updSpawners(0,true);}
 
 
-const SHOW_CLS=['warrior','novice','rogue','shaman'],SHOW_MID=1.5,SHOW_GAP=3.1,SHOW_START=SHOW_CLS.indexOf('novice'),SHOW_N=SHOW_CLS.length;
+const SHOW_CLS=['novice'],SHOW_MID=0,SHOW_GAP=3.1,SHOW_START=SHOW_CLS.indexOf('novice'),SHOW_N=SHOW_CLS.length;
 function buildShowcase(){
   setEnv({sky:0x08060b,fog:[12,70],ht:0x5a6a92,hb:0x120c0c,hi:.32,sun:0xffb888,si:.55,ash:true,ashCol:0xff8a3a,ashUp:true,ashSize:.14});
   W.bounds=[-50,50,-50,50];
@@ -2339,7 +2346,7 @@ function buildPlains(){
 const CMD_X=18;  // 기사단 사령부 x (north-east); the eldric cutscene is framed around it
 function buildCitadel(){
   setEnv({sky:0x404c66,fog:[40,150],ht:0xb4c4e4,hb:0x33333f,hi:.5,sun:0xffe2bc,si:.95,ash:false});
-  W.bounds=[-28,28,-27,27];
+  W.bounds=[-28.6,28.6,-28.6,28.6];  // reach the gate triggers just inside the walls
   ground(0,0,420,420,0x5a5f6b,.06);
   ground(0,0,60,60,0x646975,.05,1);
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
@@ -2355,7 +2362,8 @@ function buildCitadel(){
   const mp=new THREE.Mesh(new THREE.PlaneGeometry(KIT?3:3.8,KIT?1.6:2.3),new THREE.MeshStandardMaterial({map:mapTexture(),roughness:1}));mp.rotation.x=-Math.PI/2;mp.position.y=KIT&&tbl.children[0]&&tbl.children[0].userData.size?tbl.children[0].userData.size.y+.02:1.12;tbl.add(mp);addBox(CX,-19,2.2,1.4);
   banner(-8,-15,0x2a4a8a);banner(8,-15,0x2a4a8a);
   // 객주소 (south-west, between the main south gate and the west gate)
-  bigBuilding(-20,19,9,6,5,0x8a4a2a,0xc8b8a0,'building_tavern_red');barrel(-14.5,17.5);barrel(-13.8,18.3);crate(-24.5,14);
+  {const inn=bigBuilding(-20,19,9,6,5,0x8a4a2a,0xc8b8a0,'building_tavern_red');if(inn&&inn.isObject3D)inn.rotation.y=Math.PI/2;}  // door faces east
+  barrel(-15.2,24.2);barrel(-16,24.8);crate(-24.5,14);
   // 영혼의 제단 (north, raised): a symmetric stone terrace with a long stair on the main axis, blue + gold light
   {const TH=1.6,tg=new THREE.Group();tg.position.set(0,0,-23);tg.userData.area=true;W.root.add(tg);
     const gt=groundTex('stone'),stoneM=(c,rx,ry)=>{const m=new THREE.MeshStandardMaterial({color:c,roughness:.95,metalness:0});if(gt){const t=gt.clone();t.needsUpdate=true;t.repeat.set(rx,ry);m.map=t;}return m;};
@@ -2399,17 +2407,17 @@ function buildCitadel(){
   const fc=(x,z)=>Math.atan2(-x,-z);
   if(PROPS.meshy_throne){prop('meshy_throne',CMD_X,-23.6,{h:3.6});addCircle(CMD_X,-23.6,1.2);}
   spawnNpc('eldric',CMD_X,-20.7,0);spawnNpc('aide',CMD_X+2.6,-20.4,-.3);
-  spawnNpc('aril',-15,13.5,fc(-15,13.5));spawnNpc('mari',-9.5,16,fc(-9.5,16));spawnNpc('varkan',-8,23,fc(-8,23));
+  spawnNpc('aril',-14.1,19,Math.PI/2);spawnNpc('mari',-9.5,16,fc(-9.5,16));spawnNpc('varkan',-8,23,fc(-8,23));
   spawnNpc('rowen',0,-22.6,0);
-  spawnNpc('burkan',15,12.5,fc(15,12.5));spawnNpc('elara',22,-5.5,fc(22,-5.5));
-  spawnNpc('sylvia',-19.5,-8,fc(-19.5,-8));
+  spawnNpc('burkan',17.7,19,-Math.PI/2);spawnNpc('elara',22,-5.5,fc(22,-5.5));
+  spawnNpc('sylvia',-24,-5.1,0);
   // 진급의 전당: the guild masters (다빈 · 태완 · 서준) wait inside the church in the north-west quarter
   const SX=-17,SZ=-19;
   if(PROPS.building_church_blue){const ch=prop('building_church_blue',SX,SZ,{fit:20,rot:0});if(ch)ch.userData.grown=true;}
   const hb=addBox(SX,SZ,2.6,4.8);hb.scaleSize=true;
   portal(SX,SZ+5.4,'hall',[0,4.8],()=>true,'','진급의 전당 ›',{door:true});W.shrine={x:SX,z:SZ+6.2};
   if(PROPS.banner_red)[[-3.2,'banner_red'],[3.2,'banner_blue']].forEach(([x,n])=>prop(n,SX+x*1.1,SZ+5.4,{h:4.2}));
-  spawnNpc('dongjun',-15.5,-4.5,Math.PI/2);
+  spawnNpc('dongjun',-10.5,-5.1,0);
   spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;spawnNpc('guard',3,25,Math.PI).d=NPCS.guard;
   const ok=()=>true;
   // statues (user Meshy models) flanking the main road from the south gate to the plaza
@@ -2705,6 +2713,8 @@ function killEnemy(e){
   if(e.goldR){const g=Math.round(rand(e.goldR[0],e.goldR[1])*goldMul());S.gold+=g;floatText(e.pos,'+'+fmt(g)+' G','info',1.2);}
   if(d.junk&&Math.random()<.6){S.junk[d.junk]=(S.junk[d.junk]||0)+1;}
   if(e.type==='ignis')ignisLoot(e);
+  if(e.type==='clockBoss'||(e.type==='asuraBoss'&&Math.random()<.3)){S.stoneAwk=(S.stoneAwk||0)+1;toast('[각성의 돌] 획득! · Lv.50에 2차 진급 재료','gold');}
+  if(e.type==='ignis'&&Math.random()<.35){S.dheart=(S.dheart||0)+1;toast('이그니스의 [드래곤하트] 획득! · Lv.99 3차 진급 재료','gold');}
   if(d.drop)for(const k in d.drop){if(Math.random()<d.drop[k]*dropMul()){S.stones[k]++;toast(STONE[k]+' 획득');}}
   if(ZONE_TIERS[W.zone]&&e.type!=='ignis'&&Math.random()<(d.boss?.5:.035)*dropMul())dropGear(e);
   if(d.tag==='raider'&&goalActive('item','pack')&&Math.random()<.5){progress('item','pack');toast('[빼앗긴 짐] 회수','gold');}
@@ -2768,14 +2778,19 @@ function playerDie(){
   P.dead=true;P.target=null;P.dest=null;P.hunt=null;$('#dead').hidden=false;
   if(P.parts.skinned)P.parts.playOnce('Death_A',0,true);else tween(.5,k=>{P.parts.b.rotation.x=-k*1.45;P.parts.b.position.y=k*.25;});
   W.enemies.forEach(e=>{if(e.aggro){e.aggro=false;e.returning=true;e.cast&&e.cast.tele&&killObj(e.cast.tele);e.cast=null;if(e.extraTele){e.extraTele.forEach(killObj);e.extraTele=null;}}});
-  later(3,()=>{
-    $('#dead').hidden=true;P.dead=false;P.parts.b.rotation.x=0;P.parts.b.position.y=0;if(P.parts.skinned)P.parts.resetPose();P.hp=P.maxHp;
-    if(S.home&&W.zone!=='citadel'){P.hp=P.maxHp;P.mp=P.maxMp;$('#dead').hidden=true;gotoZone('citadel',INN_POS);toast('객주소에서 깨어났습니다');return;}
-    const sp=S.home&&W.zone==='citadel'?INN_POS:ZONES[W.zone].spawn;P.pos.set(sp[0]*ZS(W.zone),0,sp[1]*ZS(W.zone));resolve(P.pos,P.rad);P.mp=P.maxMp;
-    W.enemies.forEach(e=>{if(e.d.boss&&!e.dead){e.hp=e.maxHp;e.pos.copy(e.home);}});
-    ringFx(P.pos.x,P.pos.z,2,0xfff0a0,.8);toast('부활했습니다');refreshHud();
-  });
+  P.deadT=60;deadUi();
 }
+/* death: 60 s where you fell — 마을로 가기 (plaza fountain), 부활의 돌 (full HP/MP here), or a 성직자's 부활 (30%) */
+function canRez(){return S.cls==='shaman'&&tierOf()>=3;}
+function rezTry(r){if(!canRez()){toast('부활은 3차 성직자만 쓸 수 있습니다');return;}if(P.dead)return;const d=d2(P.pos,r.pos);if(d>10){P.dest={x:r.pos.x,z:r.pos.z};toast('더 가까이 가서 부활을 쓰세요 (10m)');return;}
+  if(P.mp<100){toast('마나가 부족합니다 (MP 100)');return;}P.mp-=100;faceTo(r.pos.x,r.pos.z);playAnim('cast2',.8);mpSend({t:'rez',to:r.id,n:mpMyName()});
+  ringFx(r.pos.x,r.pos.z,2.5,0xfff0a0,.9);burst(r.pos.x,1.5,r.pos.z,0xfff4c8,50,4,1.2,.5,-3);floatText(r.pos,'부활','heal',2.5);refreshHud();}
+function deadUi(){const d=$('#dead');d.innerHTML='쓰러졌습니다<small id="deadCd" style="font-size:15px;margin:6px 0">60초 뒤 마을로 돌아갑니다</small><div class="deadBtns"><button class="btn pri" id="dVil">마을로 가기</button><button class="btn" id="dRez"'+((S.rezStone||0)>0?'':' disabled')+'>부활의 돌 사용 ('+(S.rezStone||0)+'개)</button></div><small style="font-size:12px;color:#ffd8c8">성직자가 부활을 쓰면 체력·마력 30%로 일어납니다</small>';d.hidden=false;
+  $('#dVil').onclick=deadToVillage;$('#dRez').onclick=()=>{if(!(S.rezStone>0))return;S.rezStone--;save();reviveHere(1,'부활의 돌');};}
+function reviveHere(frac,by){if(!P||!P.dead)return;$('#dead').hidden=true;P.dead=false;P.deadT=0;P.parts.b.rotation.x=0;P.parts.b.position.y=0;if(P.parts.skinned)P.parts.resetPose();
+  P.hp=Math.max(1,Math.round(P.maxHp*frac));P.mp=Math.round(P.maxMp*frac);P.invulnT=Math.max(P.invulnT||0,2);ringFx(P.pos.x,P.pos.z,2.5,0xfff0a0,.8);burst(P.pos.x,1.2,P.pos.z,0xfff4c8,40,4,1,.5,-2);
+  toast(by+'(으)로 부활했습니다'+(frac<1?' · 체력·마력 '+Math.round(frac*100)+'%':''),'gold');refreshHud();}
+function deadToVillage(){if(!P||!P.dead)return;reviveHere(1,'마을 귀환');if(W.zone==='citadel'){P.pos.set(0,0,5*ZS('citadel'));resolve(P.pos,P.rad);}else gotoZone('citadel',[0,5]);}
 function gainExp(n){
   n=Math.round(n*(1+guildLv()*.015));S.exp+=n;karmaExp(n);if(P&&n>0)floatText(P.pos,'EXP +'+n,'info',2.6);
   while(S.level<99&&S.exp>=needExp(S.level)){S.exp-=needExp(S.level);S.level++;levelUp();}
@@ -2877,8 +2892,8 @@ function pressAttack(quiet){
   const t=autoTarget(14);if(!t){if(!quiet)toast('주변에 공격할 대상이 없습니다.');return;}
   P.target=t;P.dest=null;
 }
-function skOk(k){const s=CLASSES[S.cls].sk[k];return !!s&&S.level>=s.lv&&(!s.tut||S.tut);}
-function skNeed(k){const s=CLASSES[S.cls].sk[k];if(!s)return S.cls==='novice'?'Lv.15 진급':'-';if(s.tut&&!S.tut)return '잠김';return 'Lv.'+s.lv;}
+function skOk(k){const s=CLASSES[S.cls].sk[k];return !!s&&(S.level>=s.lv||(k==='ult'&&tierOf()>=2))&&(!s.tut||S.tut);}
+function skNeed(k){const s=CLASSES[S.cls].sk[k];if(!s)return S.cls==='novice'?'Lv.15 진급':'-';if(k==='ult'&&S.level<s.lv)return '2차 진급';if(s.tut&&!S.tut)return '잠김';return 'Lv.'+s.lv;}
 function useSkill(k){
   if(!P||P.dead||paused())return;const sk=CLASSES[S.cls].sk[k];
   if(!sk){toast(S.cls==='novice'?'레벨 15에 진급하면 직업 스킬을 배웁니다. (천명 성채 · 진급의 전당)':'스킬이 없습니다.');return;}
@@ -3181,7 +3196,7 @@ function updDash(e,dt){const d=e.dash,s=Math.min(d.left,22*dt);const bx=e.pos.x,
    ========================================================= */
 function updPlayer(dt){
   if(P.flashT>0){P.flashT-=dt;P.parts.b.traverse(o=>{if(o.isMesh){if(!o.userData.m0)o.userData.m0=o.material;o.material=P.flashT>0?(o.isSkinnedMesh?FLASH_S:FLASH):o.userData.m0;}});}
-  if(P.dead){if(P.parts.skinned)P.parts.mixer.update(dt);return;}
+  if(P.dead){if(P.parts.skinned)P.parts.mixer.update(dt);if(P.deadT>0){P.deadT-=dt;const cd=$('#deadCd');if(cd)cd.textContent=Math.ceil(Math.max(0,P.deadT))+'초 뒤 마을(분수대)로 돌아갑니다';if(P.deadT<=0)deadToVillage();}return;}
   P.atkCd-=dt;P.potCd-=dt;P.mpCd=(P.mpCd||0)-dt;for(const k in P.cd)if(P.cd[k]>0)P.cd[k]-=dt;
   if(P.barrierT>0){P.barrierT-=dt;if(P.barrierT<=0)P.barrier=0;}
   if(P.hotT>0){P.hotT-=dt;P.hotAcc=(P.hotAcc||0)+dt;if(P.hotAcc>=1){P.hotAcc-=1;healP(P.maxHp*.03,true);burst(P.pos.x,.4,P.pos.z,0xfff0a0,6,1,.8,.3,3);}}
@@ -3485,8 +3500,8 @@ function setInfo(cls){const d=DSET[cls];if(!d)return '';const n=(P.gs||gearStats
 function slotHtml(s){const g=getEq(s);return '<button class="eslot'+(g?' r'+(g.rar||0):'')+(INV.sel&&g&&INV.sel===g.id?' sel':'')+'" data-es="'+s+'">'+(g?itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':''):'<span>'+SLOT_KO[s]+'</span>')+'</button>';}
 function renderInv(){const box=$('#inv');if(!box)return;const G=P.gs||gearStats(),c=CLASSES[S.cls];
   const eqL=['head','weapon','body','hands','feet'],eqR=['neck','ring1','ring2','belt','cape'];
-  const cons=[['potion','체력 물약',S.potions,ICON.potion],['mpot','마나 물약',S.mpots,ICON.potion],['scroll','보호의 주문서',S.scrolls,ICON.shield]].filter(x=>x[2]>0);
-  const mats=[...Object.keys(STONE).map(k=>['st_'+k,STONE[k],S.stones[k],ICON.orb]),['shard','장비의 파편',S.shards,ICON.hammer],['scale','용의 비늘',S.scale,ICON.coins],['cryst','용의 결정',S.cryst,ICON.seal],...Object.keys(S.junk).map(j=>['j_'+j,j,S.junk[j],ICON.bag])].filter(x=>x[2]>0);
+  const cons=[['potion','체력 물약',S.potions,ICON.potion],['mpot','마나 물약',S.mpots,ICON.potion],['scroll','보호의 주문서',S.scrolls,ICON.shield],['rez','부활의 돌',S.rezStone||0,ICON.heal]].filter(x=>x[2]>0);
+  const mats=[...Object.keys(STONE).map(k=>['st_'+k,STONE[k],S.stones[k],ICON.orb]),['shard','장비의 파편',S.shards,ICON.hammer],['scale','용의 비늘',S.scale,ICON.coins],['cryst','용의 결정',S.cryst,ICON.seal],['awkst','각성의 돌',S.stoneAwk||0,ICON.orb],['dheart','드래곤하트',S.dheart||0,ICON.heal],...Object.keys(S.junk).map(j=>['j_'+j,j,S.junk[j],ICON.bag])].filter(x=>x[2]>0);
   const tab=INV.tab;let cells='';
   if(tab==='all'||tab==='equip')S.bag.forEach(g=>{cells+='<button class="islot r'+(g.rar||0)+(INV.sel===g.id?' sel':'')+(canEquip(g)?' no':'')+'" data-it="'+g.id+'">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+(g.lock?'<i class="lk">🔒</i>':'')+(g.set?'<i class="st">세트</i>':'')+'</button>';});
   if(tab==='all'||tab==='cons')cons.forEach(x=>cells+='<button class="islot r0 cn" data-cn="'+x[0]+'" title="'+x[1]+'">'+x[3]+'<i class="q">'+fmt(x[2])+'</i></button>');
@@ -3631,23 +3646,43 @@ function priceHist(it){let h=0;for(const ch of it.id+today())h=(h*31+ch.charCode
 function owned(id){return id==='scroll'?S.scrolls:id==='potion'?S.potions:S.stones[id];}
 function addOwned(id,n){if(id==='scroll')S.scrolls+=n;else if(id==='potion')S.potions+=n;else S.stones[id]+=n;}
 let mTab='buy';
-function openMarket(){openPanel('경매인 실비아 · 통합 거래소','');renderMarket();}
-function renderMarket(){
-  let h='<div class="tabs"><button data-t="buy" class="'+(mTab==='buy'?'on':'')+'">구매</button><button data-t="sell" class="'+(mTab==='sell'?'on':'')+'">판매 등록</button></div>';
-  h+='<p class="note num">보유 골드 '+fmt(S.gold)+' · 그래프는 최근 7일 평균 거래가입니다.'+(mTab==='sell'?' 등록 시 등록가의 1%를 수수료로 선차감하고, 판매 완료 시 5%를 제외한 대금이 우편으로 지급됩니다.':'')+'</p>';
-  MARKET.forEach((it,i)=>{const hist=priceHist(it),p=hist[6];
-    if(mTab==='buy'){h+='<div class="row"><canvas class="pspark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">현재가 '+fmt(p)+' G · 보유 '+owned(it.id)+'</small></div><div style="display:flex;gap:4px"><button class="btn sm" data-b="'+i+'" data-n="1"'+(S.gold<p?' disabled':'')+'>1개</button>'+(p<10000?'<button class="btn sm" data-b="'+i+'" data-n="10"'+(S.gold<p*10?' disabled':'')+'>10개</button>':'')+'</div></div>';}
-    else{if(it.id==='potion')return;h+='<div class="row"><canvas class="pspark" data-s="'+i+'" width="180" height="60"></canvas><div class="l" style="flex:1"><b>'+it.n+'</b><small class="num">등록가 '+fmt(p)+' G · 수수료 '+fmt(p*.01)+' G · 보유 '+owned(it.id)+'</small></div><button class="btn sm pri" data-sl="'+i+'"'+(owned(it.id)<1||S.gold<p*.01?' disabled':'')+'>등록</button></div>';}});
+/* ---------- 거래소 (player market): characters list their own items; others buy. Listings live on the server
+   (retained message per listing); the price goes to the seller's mailbox and is paid out on their next login (5% fee). ---------- */
+const MK={list:{},tab:'buy',fee:.05};
+const MK_STACK=[['low','하급 강화석',()=>S.stones.low,n=>S.stones.low+=n],['mid','중급 강화석',()=>S.stones.mid,n=>S.stones.mid+=n],['high','상급 강화석',()=>S.stones.high,n=>S.stones.high+=n],['top','최고급 강화석',()=>S.stones.top||0,n=>S.stones.top=(S.stones.top||0)+n],
+  ['scroll','보호의 주문서',()=>S.scrolls,n=>S.scrolls+=n],['potion','체력 물약',()=>S.potions,n=>S.potions+=n],['mpot','마나 물약',()=>S.mpots,n=>S.mpots+=n],['rez','부활의 돌',()=>S.rezStone||0,n=>S.rezStone=(S.rezStone||0)+n],
+  ['awkst','각성의 돌',()=>S.stoneAwk||0,n=>S.stoneAwk=(S.stoneAwk||0)+n],['dheart','드래곤하트',()=>S.dheart||0,n=>S.dheart=(S.dheart||0)+n],['scale','용의 비늘',()=>S.scale,n=>S.scale+=n],['cryst','용의 결정',()=>S.cryst,n=>S.cryst+=n]];
+function acctKey(){return Array.from(mpMyName()).map(ch=>ch.charCodeAt(0).toString(36)).join('').slice(0,24);}
+function mkTopic(lid){return netBase()+'/mk/'+lid;}
+function mkLabel(it){if(!it)return '?';if(it.kind==='gear'){const g=it.g||{};return (g.enh?'+'+g.enh+' ':'')+String(g.name||'장비');}const s=MK_STACK.find(x=>x[0]===it.id);return (s?s[1]:'?')+' ×'+(it.n|0);}
+function mkRecv(tp,buf){const lid=tp[3];if(tp[2]==='mk'){if(!buf.length){delete MK.list[lid];}else{try{const m=JSON.parse(buf.toString());if(m&&m.lid===lid&&m.item&&m.price>0)MK.list[lid]=m;}catch(e){}}if(mkOpenNow())renderMarket();return;}
+  if(tp[2]==='pay'&&tp[3]===acctKey()&&buf.length){try{const m=JSON.parse(buf.toString()),pay=Math.floor((+m.price||0)*(1-MK.fee));if(pay>0&&S){S.gold+=pay;save();refreshHud();toast('거래소 · ['+String(m.name||'').slice(0,30)+'] 판매 대금 '+fmt(pay)+' G 입금 (수수료 5%)','gold');mpChatLine(null,'['+String(m.buyer||'?').slice(0,12)+'] 님이 ['+String(m.name||'').slice(0,30)+'] 구매 · '+fmt(pay)+' G','s');}}catch(e){}
+    try{MP.client.publish(tp.join('/'),'',{retain:true,qos:1});}catch(e){}}}
+function mkOpenNow(){return !$('#panel').hidden&&$('#ptl').textContent.startsWith('거래소');}
+function openMarket(){if(!MP.client||!MP.client.connected){openPanel('거래소','<p class="note">서버에 연결되어 있어야 거래소를 쓸 수 있습니다.</p>');return;}openPanel('거래소 · 경매인 실비아','');renderMarket();}
+function renderMarket(){const L=Object.values(MK.list).sort((a,b)=>b.t-a.t),me=acctKey(),tab=MK.tab;
+  let h='<div class="tabs">'+[['buy','구매'],['sell','판매 등록'],['mine','내 등록']].map(t=>'<button data-mt="'+t[0]+'" class="'+(tab===t[0]?'on':'')+'">'+t[1]+'</button>').join('')+'</div><p class="note num">보유 골드 '+fmt(S.gold)+' G · 같은 서버의 플레이어가 올린 물건입니다. 판매 대금은 수수료 5%를 떼고 판매자가 접속할 때 입금됩니다.</p>';
+  if(tab==='buy'){const rows=L.filter(m=>m.sk!==me);h+=rows.length?rows.slice(0,60).map(m=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center">'+(m.item.kind==='gear'?'<div class="islot r'+((m.item.g||{}).rar||0)+'" style="flex:none">'+itemIcon(m.item.g)+((m.item.g||{}).enh?'<i class="en">+'+m.item.g.enh+'</i>':'')+'</div>':'')+'<div><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>판매자 '+String(m.n||'?').slice(0,12).replace(/[<>&]/g,'')+(m.item.kind==='gear'?' · Lv.'+((m.item.g||{}).lv|0)+' · '+clsName((m.item.g||{}).cls):'')+'</small></div></div><button class="btn sm pri" data-buy="'+m.lid+'"'+(S.gold<m.price?' disabled':'')+'>'+fmt(m.price)+' G</button></div>').join(''):'<p class="note">등록된 물건이 없습니다. 첫 판매자가 되어 보세요!</p>';}
+  else if(tab==='mine'){const rows=L.filter(m=>m.sk===me);h+=rows.length?rows.map(m=>'<div class="row"><div class="l"><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>'+fmt(m.price)+' G · 판매 중</small></div><button class="btn sm" data-cancel="'+m.lid+'">등록 취소</button></div>').join(''):'<p class="note">판매 중인 물건이 없습니다.</p>';}
+  else{h+='<div class="row"><div class="l"><b>판매 가격</b><small>골드</small></div><input id="mkPrice" type="number" min="1" max="999999999" value="10000" style="width:130px;padding:6px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#ffe8b0"></div>';
+    h+='<h3 style="margin:8px 0 4px">장비</h3>'+(S.bag.filter(g=>!g.lock).map(g=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center"><div class="islot r'+(g.rar||0)+'" style="flex:none">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+'</div><div><b>'+g.name+'</b><small>Lv.'+g.lv+' · '+clsName(g.cls)+'</small></div></div><button class="btn sm pri" data-sellg="'+g.id+'">등록</button></div>').join('')||'<p class="note">가방에 장비가 없습니다 (잠긴 장비는 제외).</p>');
+    h+='<h3 style="margin:8px 0 4px">재료 · 소비</h3>'+MK_STACK.filter(s=>s[2]()>0).map(s=>'<div class="row"><div class="l"><b>'+s[1]+'</b><small>보유 '+s[2]()+'</small></div><input type="number" min="1" max="'+s[2]()+'" value="1" data-qty="'+s[0]+'" style="width:60px;padding:5px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#fff"><button class="btn sm pri" data-sells="'+s[0]+'">등록</button></div>').join('');}
   $('#pbody').innerHTML=h;
-  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{mTab=b.dataset.t;renderMarket();});
-  document.querySelectorAll("canvas.pspark").forEach(cv=>{const it=MARKET[+cv.dataset.s],a=priceHist(it),g=cv.getContext('2d'),W2=cv.width,H=cv.height;const mn=Math.min(...a),mx=Math.max(...a),r=mx-mn||1;
-    const pts=a.map((v,i)=>[6+i/6*(W2-12),H-8-(v-mn)/r*(H-16)]);g.clearRect(0,0,W2,H);g.strokeStyle='rgba(220,182,94,.15)';g.lineWidth=1;[.33,.66].forEach(f=>{g.beginPath();g.moveTo(0,H*f);g.lineTo(W2,H*f);g.stroke();});
-    g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.lineTo(pts[6][0],H);g.lineTo(pts[0][0],H);g.closePath();g.fillStyle='rgba(220,182,94,.18)';g.fill();
-    g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.strokeStyle='#dcb65e';g.lineWidth=3;g.stroke();g.fillStyle='#fff';g.beginPath();g.arc(pts[6][0],pts[6][1],5,0,7);g.fill();});
-  document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const it=MARKET[+b.dataset.b],n=+b.dataset.n,p=priceHist(it)[6]*n;if(S.gold<p)return;S.gold-=p;addOwned(it.id,n);toast(it.n+' ×'+n+' 구매 (-'+fmt(p)+' G)');save();refreshHud();renderMarket();});
-  document.querySelectorAll('[data-sl]').forEach(b=>b.onclick=()=>{const it=MARKET[+b.dataset.sl],p=priceHist(it)[6],fee=Math.round(p*.01);if(owned(it.id)<1||S.gold<fee)return;S.gold-=fee;addOwned(it.id,-1);toast(it.n+' 판매 등록 (수수료 -'+fmt(fee)+' G)');save();refreshHud();renderMarket();
-    later(6,()=>{const pay=Math.round(p*.95);S.gold+=pay;toast('우편 도착 · ['+it.n+'] 판매 대금 '+fmt(pay)+' G (수수료 5% 제외)','gold');save();refreshHud();});});
-}
+  document.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{MK.tab=b.dataset.mt;renderMarket();});
+  const price=()=>Math.max(1,Math.min(999999999,Math.floor(+($('#mkPrice')||{}).value||0)));
+  document.querySelectorAll('[data-sellg]').forEach(b=>b.onclick=()=>{const g=S.bag.find(x=>x.id===b.dataset.sellg);if(!g)return;const p=price();S.bag=S.bag.filter(x=>x!==g);mkList({kind:'gear',g},p);});
+  document.querySelectorAll('[data-sells]').forEach(b=>b.onclick=()=>{const s=MK_STACK.find(x=>x[0]===b.dataset.sells),q=Math.max(1,Math.min(s[2](),Math.floor(+document.querySelector('[data-qty="'+s[0]+'"]').value||1)));if(!(q>0))return;s[3](-q);mkList({kind:'stack',id:s[0],n:q},price());});
+  document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>mkBuy(b.dataset.buy));
+  document.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>mkCancel(b.dataset.cancel));}
+function mkGive(it){if(it.kind==='gear'){it.g.id=newId();addGear(it.g,true);}else{const s=MK_STACK.find(x=>x[0]===it.id);if(s)s[3](it.n|0);}}
+function mkList(item,price){const lid=(Date.now().toString(36)+Math.random().toString(36).slice(2,8)).slice(0,16),m={lid,id:MP.id,sk:acctKey(),n:mpMyName(),item,price,t:Date.now()};
+  try{MP.client.publish(mkTopic(lid),JSON.stringify(m),{retain:true,qos:1});}catch(e){mkGive(item);toast('등록 실패','bad');return;}
+  MK.list[lid]=m;save();refreshHud();toast('거래소 등록 · ['+mkLabel(item)+'] '+fmt(price)+' G','gold');MK.tab='mine';renderMarket();}
+function mkBuy(lid){const m=MK.list[lid];if(!m)return toast('이미 판매된 물건입니다');if(S.gold<m.price)return toast('골드가 부족합니다');
+  const c=MP.client;delete MK.list[lid];try{c.publish(mkTopic(lid),'',{retain:true,qos:1});c.publish(netBase()+'/pay/'+m.sk+'/'+lid,JSON.stringify({id:MP.id,price:m.price,buyer:mpMyName(),name:mkLabel(m.item)}),{retain:true,qos:1});}catch(e){toast('구매 실패','bad');return;}
+  S.gold-=m.price;mkGive(m.item);save();refreshHud();auCoin(1);toast('구매 완료 · ['+mkLabel(m.item)+']','gold');renderMarket();}
+function mkCancel(lid){const m=MK.list[lid];if(!m||m.sk!==acctKey())return;delete MK.list[lid];try{MP.client.publish(mkTopic(lid),'',{retain:true,qos:1});}catch(e){}mkGive(m.item);save();toast('등록을 취소했습니다 · 물건을 돌려받았습니다');renderMarket();}
+
 function openGuild(){openPanel('길드 관리인 바르칸 · 길드','');renderGuild();}
 function renderGuild(){
   let h='';
@@ -3706,20 +3741,37 @@ function openGuide(){const lv=S.level;
 function openPromo(k,nid){const c=CLASSES[k],mine=S.cls===k,nov=S.cls==='novice',can=nov&&S.level>=15;
   let h='<div class="sec"><h3>'+c.name+' · '+c.role+'</h3><p class="note">'+c.blurb+'</p><div class="grid2"><div class="chip">주무기 / 방어구<b>'+c.gear+'</b></div><div class="chip">진급 보너스<b>'+c.bonus+'</b></div></div><p class="note">대표 특징: '+c.feature+'</p></div>';
   h+='<div class="sec"><h3>직업 스킬</h3>'+SKEYS.map(s=>{const q=c.sk[s];return '<div class="row"><div class="l"><b>Lv.'+q.lv+' · '+q.n+(q.passive?' <small>(패시브)</small>':'')+'</b><small>'+q.d+(q.mp?' · MP '+q.mp:'')+(q.gold?' + '+q.gold+'골드':'')+(q.cd?' · 재사용 '+q.cd+'초':'')+'</small></div></div>';}).join('')+'</div>';
-  const aw=AWK[k];if(aw)h+='<div class="sec"><h3>Lv.99 각성 · '+aw.name+' <small>('+aw.en+')</small></h3><div class="row"><div class="l"><b>'+aw.skill+'</b><small>'+aw.d+'</small></div></div><p class="note">각성 보너스: 공격력·최대 체력·최대 마력 +20% · 각성자 전용 [영원한 성채 · 각성의 시련] 입장</p>'+
-    (mine&&S.awk?'<p class="note" style="color:var(--gold)">이미 '+aw.name+'(으)로 각성했습니다.</p>':mine&&S.level>=99?'<button class="btn pri" id="awGo" style="width:100%">'+aw.name+'(으)로 각성하기</button>':mine?'<button class="btn" disabled style="width:100%">레벨 99 필요 (현재 Lv.'+S.level+')</button>':'')+'</div>';
+  const TN=TIER_NAMES[k],t=mine?tierOf():0;if(TN)h+='<div class="sec"><h3>2차 진급 · '+TN[1]+' <small>Lv.50 · 각성의 돌 1개</small></h3><p class="note">레벨 50 구간 보스(태엽 미로 · 황금 태엽 세라프)가 떨어뜨리는 [각성의 돌]과 레벨 50이 필요합니다. 2차 진급하면 레벨 80 스킬 ['+(CLASSES[k].sk.ult?CLASSES[k].sk.ult.n:'')+']을 바로 배웁니다. 공격력·체력·마력 +10%.</p>'+
+    (mine&&t>=2?'<p class="note" style="color:var(--gold)">이미 '+TN[1]+'(으)로 진급했습니다.</p>':mine&&t===1?'<button class="btn'+(S.level>=50&&(S.stoneAwk||0)>0?' pri':'')+'" id="pr2" style="width:100%"'+(S.level>=50&&(S.stoneAwk||0)>0?'':' disabled')+'>'+TN[1]+'(으)로 2차 진급 (Lv.'+S.level+'/50 · 각성의 돌 '+(S.stoneAwk||0)+'/1)</button>':'')+'</div>';
+  const aw=AWK[k];if(aw)h+='<div class="sec"><h3>3차 진급 · '+aw.name+' <small>Lv.99 · 드래곤하트 1개</small></h3><p class="note">이그니스를 쓰러뜨리면 일정 확률로 얻는 [드래곤하트]를 바칩니다.</p><div class="row"><div class="l"><b>'+aw.skill+'</b><small>'+aw.d+'</small></div></div><p class="note">각성 보너스: 공격력·최대 체력·최대 마력 +20% · 각성자 전용 [영원한 성채 · 각성의 시련] 입장</p>'+
+    (mine&&t>=3?'<p class="note" style="color:var(--gold)">이미 '+aw.name+'(으)로 진급했습니다.</p>':mine&&t===2?'<button class="btn'+(S.level>=99&&(S.dheart||0)>0?' pri':'')+'" id="awGo" style="width:100%"'+(S.level>=99&&(S.dheart||0)>0?'':' disabled')+'>'+aw.name+'(으)로 3차 진급 (Lv.'+S.level+'/99 · 드래곤하트 '+(S.dheart||0)+'/1)</button>':mine?'<p class="note">2차 진급 후 도전할 수 있습니다.</p>':'')+'</div>';
   h+='<div class="sec">'+(mine?'<p class="note">당신은 이미 우리 길드의 '+c.name+'입니다. Lv.'+S.level+' · 스킬은 레벨이 오르면 자동으로 익힙니다.</p>':
     !nov?'<p class="note">이미 ['+CLASSES[S.cls].name+'](으)로 진급했습니다. 진급은 한 번만 할 수 있습니다.</p>':
     can?'<button class="btn pri" id="prGo" style="width:100%">'+c.name+'(으)로 진급하기</button><p class="note">진급하면 되돌릴 수 없습니다. 진급 선물: '+TIERS[1].w[k]+' · '+TIERS[1].a[k]+'</p>':
     '<button class="btn" disabled style="width:100%">레벨 15 필요 (현재 Lv.'+S.level+')</button>')+'</div>';
   openPanel('진급의 전당 · '+NPCS[nid].name,h);
-  const ab=$('#awGo');if(ab)ab.onclick=()=>{if(ab.dataset.ok){closePanel();awaken();return;}ab.dataset.ok='1';ab.textContent='정말 각성합니까? 한 번 더 누르면 각성합니다';ab.classList.add('warn');};
+  const ab=$('#awGo');if(ab)ab.onclick=()=>{if(ab.dataset.ok){closePanel();awaken();return;}ab.dataset.ok='1';ab.textContent='정말 3차 진급합니까? 한 번 더 누르면 진급합니다';ab.classList.add('warn');};
+  const b2=$('#pr2');if(b2)b2.onclick=()=>{if(b2.dataset.ok){closePanel();promote2();return;}b2.dataset.ok='1';b2.textContent='정말 2차 진급합니까? 한 번 더 누르면 진급합니다';b2.classList.add('warn');};
   const b=$('#prGo');if(b)b.onclick=()=>{if(b.dataset.ok){closePanel();promote(k);return;}b.dataset.ok='1';b.textContent='정말 '+c.name+'(으)로 진급합니까? 한 번 더 누르면 진급합니다';b.classList.add('warn');};}
-function awaken(){const aw=AWK[S.cls];if(!aw||S.awk||S.level<99)return;S.awk=true;recalc();P.hp=P.maxHp;P.mp=P.maxMp;
+function awaken(){const aw=AWK[S.cls];if(!aw||S.awk||S.level<99||tierOf()!==2||!(S.dheart>0))return;S.dheart--;S.awk=true;S.tier=3;recalc();tierAura();announce(mpMyName()+'님이 3차 '+TIER_NAMES[S.cls][2]+'(으)로 진급하였습니다');P.hp=P.maxHp;P.mp=P.maxMp;
   const pos=P.pos.clone(),col=aw.col;ringFx(pos.x,pos.z,6,col,1.2);ringFx(pos.x,pos.z,3,0xffffff,.6);burst(pos.x,1.4,pos.z,col,120,8,1.6,.6,-2);shake(.7);auRoar(1);
   const pil=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,40,24,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));pil.position.set(pos.x,20,pos.z);W.root.add(pil);addFx(pil,2.2,q=>{pil.material.opacity=.55*(1-q);pil.scale.x=pil.scale.z=1+q*1.5;});
   if(P.parts.skinned)P.parts.playOnce('Cheer',1.6);refreshHud();refreshSkills();save();
-  toast('각성 완료! ['+aw.name+']','big');later(1.4,()=>toast('['+aw.skill+'] 개방 · 진급의 전당 서쪽 문에서 [영원한 성채]에 도전할 수 있습니다','gold'));}
+  toast('3차 진급! ['+aw.name+']','big');later(1.4,()=>toast('['+aw.skill+'] 개방 · 진급의 전당 서쪽 문에서 [영원한 성채]에 도전할 수 있습니다','gold'));}
+/* promotion look: 2nd tier = class-coloured rune ring at the feet, 3rd tier = double ring + a faint light column */
+const TIER_COL={warrior:0xff5a3a,rogue:0xa05aff,shaman:0xffe08a};
+function tierAura(ent,cls,ti){ent=ent||P;if(!ent||!ent.mesh)return;cls=cls||S.cls;ti=ti==null?tierOf():ti;
+  if(ent._aura){ent.mesh.remove(ent._aura);ent._aura.traverse(o=>{if(o.geometry)o.geometry.dispose();});ent._aura=null;}if(ti<2||!TIER_COL[cls])return;
+  const g=new THREE.Group(),col=TIER_COL[cls],mk=(r0,r1,op)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r0,r1,6+ti*6,1),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));m.rotation.x=-Math.PI/2;m.position.y=.06;g.add(m);return m;};
+  const a=mk(.95,1.12,.7);let b=null,c=null;if(ti>=3){b=mk(1.3,1.38,.55);c=new THREE.Mesh(new THREE.CylinderGeometry(.9,1.1,3.2,20,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.1,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));c.position.y=1.6;g.add(c);}
+  a.onBeforeRender=()=>{a.rotation.z=rt*.8;if(b)b.rotation.z=-rt*.5;if(c)c.material.opacity=.07+Math.sin(rt*2)*.04;};
+  const s=1/Math.max(.01,ent.mesh.scale.x);g.scale.setScalar(s);ent.mesh.add(g);ent._aura=g;}
+function promote2(){const k=S.cls;if(tierOf()!==1||S.level<50||!(S.stoneAwk>0))return;S.stoneAwk--;S.tier=2;recalc();P.hp=P.maxHp;P.mp=P.maxMp;tierAura();
+  const pos=P.pos.clone(),col=CLASSES[k].color||0xffd070;ringFx(pos.x,pos.z,5,col,1);burst(pos.x,1.4,pos.z,col,90,7,1.4,.6,-2);shake(.5);if(P.parts.skinned)P.parts.playOnce('Cheer',1.4);
+  refreshHud();refreshSkills();save();toast('2차 진급! ['+TIER_NAMES[k][1]+']','big');later(1.3,()=>toast('레벨 80 스킬 ['+(CLASSES[k].sk.ult?CLASSES[k].sk.ult.n:'')+'] 습득 · 공격력·체력·마력 +10%','gold'));
+  announce(mpMyName()+'님이 2차 '+TIER_NAMES[k][1]+'(으)로 진급하였습니다');}
+/* server-wide notice (chat log + toast for everyone online) */
+function announce(txt){mpChatLine('📢',txt,'s');toast(txt,'gold');mpSend({t:'ann',txt:String(txt).slice(0,80)});}
 function promote(k){if(S.cls!=='novice'||S.level<15)return;
   const pos=P.pos.clone(),face=P.face;S.cls=k;makePlayer();P.pos.copy(pos);P.face=face;P.mesh.rotation.y=face;
   refreshSkills();refreshHud();
@@ -3727,14 +3779,17 @@ function promote(k){if(S.cls!=='novice'||S.level<15)return;
   const col=CLASSES[k].color;ringFx(pos.x,pos.z,4,col,.9);ringFx(pos.x,pos.z,2.2,0xffffff,.5);burst(pos.x,1.2,pos.z,col,70,6,1.2,.5,-2);shake(.4);
   const pil=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,24,20,1,true),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));pil.position.set(pos.x,12,pos.z);W.root.add(pil);addFx(pil,1.6,q=>{pil.material.opacity=.5*(1-q);pil.scale.x=pil.scale.z=1+q;});
   if(P.parts.skinned)P.parts.playOnce('Cheer',1.4);
+  S.tier=1;tierAura();announce(mpMyName()+'님이 1차 '+TIER_NAMES[k][0]+'(으)로 진급하였습니다');
   toast('진급 완료! ['+CLASSES[k].name+']','big');later(1.2,()=>toast('진급 선물 ['+w.name+'] · ['+a.name+'] — 가방에서 장착하세요','gold'));
   progress('promote','any');save();}
 function openShop(){const mc=false,hp=Math.round((20+S.level*3)*(mc?.9:1)),mp=Math.round((25+S.level*3)*(mc?.9:1));const jt=Math.round(Object.keys(S.junk).reduce((a,k)=>a+(S.junk[k]||0)*(JUNKV[k]||10),0)*(mc?1.1:1));
   openPanel('잡화점 · 잡화상 동준','<div class="row"><div class="l"><b>체력 물약</b><small>최대 체력 40% 회복 · 보유 '+S.potions+'</small></div><div style="display:flex;gap:4px"><button class="btn sm" data-bh="1">'+fmt(hp)+' G</button><button class="btn sm pri" data-bh="10">×10</button></div></div>'+
    '<div class="row"><div class="l"><b>마나 물약</b><small>최대 마력 45% 회복 · 보유 '+S.mpots+'</small></div><div style="display:flex;gap:4px"><button class="btn sm" data-bm="1">'+fmt(mp)+' G</button><button class="btn sm pri" data-bm="10">×10</button></div></div>'+
+   '<div class="row"><div class="l"><b>부활의 돌</b><small>쓰러진 자리에서 체력·마력을 모두 채우고 일어납니다 · 보유 '+(S.rezStone||0)+'</small></div><button class="btn sm pri" id="shRez"'+(S.gold<30000?' disabled':'')+'>30,000 G</button></div>'+
    '<div class="row"><div class="l"><b>잡템 일괄 판매</b><small>'+fmt(jt)+' G</small></div><button class="btn sm" id="shSell"'+(jt?'':' disabled')+'>판매</button></div><p class="note">보유 골드 '+fmt(S.gold)+' G'+(mc?' · 상인 길드 거래 혜택: 물약 10% 할인, 잡템 10% 더 받기':'')+'</p>');
   document.querySelectorAll('[data-bh]').forEach(b=>b.onclick=()=>{const n=+b.dataset.bh,c=hp*n;if(S.gold<c)return toast('골드가 부족합니다');S.gold-=c;S.potions+=n;save();refreshHud();refreshSkills();openShop();});
   document.querySelectorAll('[data-bm]').forEach(b=>b.onclick=()=>{const n=+b.dataset.bm,c=mp*n;if(S.gold<c)return toast('골드가 부족합니다');S.gold-=c;S.mpots+=n;save();refreshHud();refreshSkills();openShop();});
+  $('#shRez').onclick=()=>{if(S.gold<30000)return toast('골드가 부족합니다');S.gold-=30000;S.rezStone=(S.rezStone||0)+1;save();refreshHud();openShop();};
   $('#shSell').onclick=()=>{S.gold+=jt;S.junk={};save();refreshHud();openShop();};}
 function openBless(){const done=S.blessDate===today();
   if(done){dialog([['seojun','오늘의 축복은 이미 그대와 함께한다. 내일 다시 오라.']]);return;}
@@ -3762,30 +3817,33 @@ async function netConnect(){if(MP.client||MP.connecting)return;MP.connecting=tru
   const base=netBase(),c=mqtt.connect(netBroker(),{clientId:'rotd_'+String(MP.srv+1).padStart(2,'0')+'_'+MP.id,clean:true,keepalive:30,reconnectPeriod:5000,connectTimeout:8000,
     will:{topic:base+'/bye',payload:JSON.stringify({t:'bye',id:MP.id}),qos:0,retain:false}});
   MP.client=c;MP.peer=c;MP.connecting=false;MP.subZone=null;
-  c.on('connect',()=>{MP.fails=0;MP.subGuild=null;MP.subW=false;c.subscribe(['rotd1/+/hb',base+'/chat',base+'/bye'],{qos:0});MP.subZone=null;mpSendHb();
+  c.on('connect',()=>{MP.fails=0;MP.subGuild=null;MP.subW=false;MP.subPay=null;c.subscribe(['rotd1/+/hb',base+'/chat',base+'/bye'],{qos:0});c.subscribe([base+'/mk/+','rotd1/notice'],{qos:1});MP.subZone=null;mpSendHb();
     if(!MP.hello){MP.hello=true;later(3,()=>{if(!MP.client)return;const n=netCount();if(n>NET_MAX){toast('서버가 가득 찼습니다 ('+NET_MAX+'명) · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}else{toast(SERVERS[MP.srv][0]+' 서버 · 현재 '+Math.max(1,n)+'명 접속 중','gold');mpChatLine(null,SERVERS[MP.srv][0]+' 서버에 접속했습니다 · '+Math.max(1,n)+'명','s');}});}
     mpUi();});
-  c.on('message',(topic,buf)=>{let m;try{m=JSON.parse(buf.toString());}catch(e2){return;}if(!m||typeof m!=='object'||typeof m.id!=='string'||m.id===MP.id)return;
+  c.on('message',(topic,buf)=>{const tp0=topic.split('/');if(topic==='rotd1/notice'){try{MP.notice=buf.length?JSON.parse(buf.toString()):null;}catch(e3){}return;}if(tp0[2]==='mk'||tp0[2]==='pay'){mkRecv(tp0,buf);return;}let m;try{m=JSON.parse(buf.toString());}catch(e2){return;}if(!m||typeof m!=='object'||typeof m.id!=='string'||m.id===MP.id)return;
     const tp=topic.split('/');if(tp[2]==='hb'){const s=(+tp[1])-1;(MP.pop[s]||(MP.pop[s]={}))[m.id]=rt;if(s===MP.srv)mpRoster(m);return;}
     if(tp[1]!==base.split('/')[1])return;if(tp[2]==='w'&&tp[3]!==MP.id)return;mpRecv(m);});
   c.on('error',err=>{if(/full|Not authorized|Server unavailable/i.test(String(err&&err.message))){toast('서버가 가득 찼습니다 · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}});
   c.on('offline',()=>{MP.fails=(MP.fails||0)+1;if(MP.fails>=2&&!window.NET_BROKER){MP.bi++;const was=MP.client;MP.client=null;try{was.end(true);}catch(e3){}if(MP.bi<NET_BROKERS.length*2)later(1,netConnect);}mpUi();});}
 function netDisconnect(quiet){const c=MP.client;MP.client=null;MP.peer=null;MP.subZone=null;if(c){try{c.publish(netBase()+'/bye',JSON.stringify({t:'bye',id:MP.id}));c.end(true);}catch(e){}}
   Object.keys(MP.others).forEach(id=>mpRemove(id,true));if(!quiet)toast('서버 연결을 끊었습니다');mpUi();}
-function mpSend(m){const c=MP.client;if(!c||!c.connected)return;m.id=MP.id;const t=m.t==='chat'?netBase()+'/chat':netBase()+'/z/'+(W.zone||'none');try{c.publish(t,JSON.stringify(m),{qos:0});}catch(e){}}
+function mpSend(m){const c=MP.client;if(!c||!c.connected)return;m.id=MP.id;const t=m.t==='chat'||m.t==='ann'?netBase()+'/chat':netBase()+'/z/'+(W.zone||'none');try{c.publish(t,JSON.stringify(m),{qos:0});}catch(e){}}
 function mpSendHb(){const c=MP.client;if(!c||!c.connected||!S)return;try{c.publish(netBase()+'/hb',JSON.stringify({t:'hb',id:MP.id,n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone}),{qos:0});}catch(e){}}
 function mpRoster(m){(MP.roster||(MP.roster={}))[m.id]={id:m.id,n:String(m.n||'').slice(0,12),c:m.c,a:m.a,lv:m.lv,z:m.z,t:rt};}
 function mpMyName(){return S.name||ACCOUNT||'모험가';}
 function mpSendState(){if(!P||!S)return;
-  mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0,rk:isRed()?1:0,g:guildKey()||'',pk:S.pkOn?1:0});P._mpw=P.walk;}
+  mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0,rk:isRed()?1:0,g:guildKey()||'',pk:S.pkOn?1:0,ti:tierOf()});P._mpw=P.walk;}
 function mpRecv(m){const id=m.id;
   if(m.t==='st'){if(m.z!==W.zone||!CLASSES[m.c])return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
     r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.red=!!m.rk;r.g=typeof m.g==='string'?m.g.slice(0,24):'';r.pkOn=!!m.pk;r.tag.classList.toggle('red',r.red);r.awk=m.a;r.zone=m.z;r.tgt.set(+m.x||0,+m.y||0,+m.zz||0);r.face=+m.f||0;r.moving=!!m.m;r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;r.seen=rt;
-    const lbl=r.name.replace(/[<>&]/g,'')+' <small>Lv.'+r.lv+' '+(m.a&&AWK[m.c]?AWK[m.c].name:CLASSES[m.c].name)+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
+    const ti=Math.max(0,Math.min(3,m.ti|0));if(r.ti!==ti){r.ti=ti;tierAura(r,m.c,ti);}
+    const lbl=r.name.replace(/[<>&]/g,'')+' <small>Lv.'+r.lv+' '+(ti&&TIER_NAMES[m.c]?TIER_NAMES[m.c][ti-1]:CLASSES[m.c].name)+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
   else if(m.t==='chat'){const r=MP.others[id],txt=String(m.txt||'').slice(0,80);mpChatLine(String(m.n||'?').slice(0,12),txt,'all');if(r&&r.h.g.visible)floatText(r.pos,txt.slice(0,24),'info',3);}
   else if(m.t==='fx'){const r=MP.others[id];if(r&&r.h.skinned&&r.h.g.visible)r.h.playOnce(m.k==='skill'?'Spellcast_Shoot':'1H_Melee_Attack_Slice_Diagonal',.5);}
   else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*Math.min(1,Math.max(0,+m.p||0)));P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+String(m.n||'').slice(0,12)+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
   else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,Math.min(6,+m.d||0));floatText(P.pos,'신성 방패 ('+String(m.n||'').slice(0,12)+')','crit',3);}}
+  else if(m.t==='ann'){const txt=String(m.txt||'').slice(0,80);mpChatLine('📢',txt,'s');toast(txt,'gold');}
+  else if(m.t==='rez'){if(m.to===MP.id&&P&&P.dead)reviveHere(.3,'['+String(m.n||'?').slice(0,12)+'] 님의 부활');}
   else if(m.t==='pvp'){pvpHit(m);}
   else if(m.t==='pk'){pvpKilled(m);}
   else if(m.t==='pinv'){partyReply(m);}
@@ -3795,7 +3853,7 @@ function mpRecv(m){const id=m.id;
   else if(m.t==='whisper'){mpChatLine('← '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'w');if(!CHAT.lastW){CHAT.lastW=1;}const to=$('#chatTo');if(to&&!to.value)to.value=String(m.n||'').slice(0,12);}
   else if(m.t==='bye'){mpRemove(id,true);const p=MP.pop[MP.srv];if(p)delete p[id];if(MP.roster)delete MP.roster[id];}}
 function mpAvatar(id,m){const h=heroModel(m.c);h.g.visible=false;scene.add(h.g);
-  const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt};r.tag=makeTag(r,'npc mp',String(m.n||'').replace(/[<>&]/g,''),2.35);MP.others[id]=r;return r;}
+  const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt,isRemote:true};h.g.traverse(o=>o.userData.ent=r);r.tag=makeTag(r,'npc mp',String(m.n||'').replace(/[<>&]/g,''),2.35);MP.others[id]=r;return r;}
 function mpRemove(id,silent){const r=MP.others[id];if(!r)return;scene.remove(r.h.g);r.tag.remove();delete MP.others[id];}
 /* ---------- PvP: hunting grounds for Lv.50+ (태엽 미로 · 아수라 협곡). Guild mates and party members cannot be hit.
    Each player turns PK on/off. 3 player kills (karma 300) = red name: flashing red, defence -30%, cleared by earning EXP. ---------- */
@@ -3852,7 +3910,7 @@ function chatSend(ch,txt,to){txt=(txt||'').trim().slice(0,80);if(!txt)return;con
   const nm=(to||'').trim();if(!nm){mpChatLine(null,'귓속말 받을 캐릭터 이름을 입력하세요','s');return;}
   const hit=Object.entries(MP.roster||{}).find(([id,r])=>r.n===nm&&rt-r.t<16);if(!hit){mpChatLine(null,'['+nm+'] 님은 지금 이 서버에 접속해 있지 않습니다','s');return;}
   try{c.publish(netBase()+'/w/'+hit[0],JSON.stringify({t:'whisper',id:MP.id,n:mpMyName(),txt}));}catch(e2){}mpChatLine('→ '+nm,txt,'w');}
-function chatSubs(){const c=MP.client;if(!c||!c.connected)return;const g=guildKey();if(MP.subGuild!==g){if(MP.subGuild)c.unsubscribe(netBase()+'/g/'+MP.subGuild);if(g)c.subscribe(netBase()+'/g/'+g);MP.subGuild=g;}
+function chatSubs(){const c=MP.client;if(!c||!c.connected)return;if(S&&MP.subPay!==acctKey()){if(MP.subPay)c.unsubscribe(netBase()+'/pay/'+MP.subPay+'/+');MP.subPay=acctKey();c.subscribe(netBase()+'/pay/'+MP.subPay+'/+',{qos:1});}const g=guildKey();if(MP.subGuild!==g){if(MP.subGuild)c.unsubscribe(netBase()+'/g/'+MP.subGuild);if(g)c.subscribe(netBase()+'/g/'+g);MP.subGuild=g;}
   if(!MP.subW){c.subscribe(netBase()+'/w/'+MP.id);MP.subW=true;}}
 function mpChatLine(who,txt,ch){const box=$('#chatLog')||(chatUi(),$('#chatLog'));
   const d=document.createElement('div');d.className='ch-'+(ch||'all');d.innerHTML=(who?'<b>'+String(who).replace(/[<>&]/g,'')+'</b> ':'')+String(txt).replace(/[<>&]/g,'');box.appendChild(d);while(box.children.length>30)box.firstChild.remove();
@@ -3869,7 +3927,7 @@ function mpTick(dt){chatShow(gameOn&&!CS&&W.zone!=='title');pkUi();if(P)redFlash
   for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>6){mpRemove(id,true);continue;}
     const vis=r.zone===W.zone&&!CS&&W.zone!=='title';r.h.g.visible=vis;if(!vis){r.tag.style.display='none';continue;}
     const d=r.pos.distanceTo(r.tgt);if(d>12)r.pos.copy(r.tgt);else r.pos.lerp(r.tgt,Math.min(1,dt*8));const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
-    animHumanoid(r,dt,mv&&!r.dead);placeTag(r.tag,r.pos,r.tagY);redFlash(r,r.red);}}
+    animHumanoid(r,dt,mv&&!r.dead);r.h.b.rotation.x=r.dead?-1.45:0;if(r.dead)r.h.b.position.y=.25;placeTag(r.tag,r.pos,r.tagY);redFlash(r,r.red);}}
 function mpUi(){const b=$('#mpBadge');if(!b)return;const on=MP.client&&MP.client.connected;b.hidden=!MP.client;
   b.textContent=on?'👥 '+SERVERS[MP.srv][0].split('. ')[1]+' · '+Math.max(1,netCount())+'/'+NET_MAX+'명':'서버 연결 중…';b.onclick=openMP;}
 function openMP(){const on=MP.client&&MP.client.connected,ro=Object.values(MP.roster||{}).filter(r=>rt-r.t<16).sort((a,b)=>(b.z===W.zone)-(a.z===W.zone)||b.lv-a.lv);
@@ -3898,13 +3956,13 @@ function openMenu(){
    (CUSTOM.n?'<div class="sec"><h3>Meshy AI 모델</h3><p class="note">커스텀 모델 '+CUSTOM.n+'개 적용 중: '+[...Object.keys(CUSTOM.props),...Object.keys(CUSTOM.mobs),...Object.keys(CUSTOM.npcs)].join(', ')+'</p></div>':'')+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
-   (S.admin?'<div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
+   (S.admin?'<div class="sec"><h3>운영자 · 공지사항</h3><button class="btn sm pri" id="adNotice">공지 작성 · 관리</button></div><div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
   $('#mOut').onclick=()=>{save();location.reload();};
-  document.querySelectorAll('[data-adcls]').forEach(b=>b.onclick=()=>adminClass(b.dataset.adcls));
+  document.querySelectorAll('[data-adcls]').forEach(b=>b.onclick=()=>adminClass(b.dataset.adcls));const an=$('#adNotice');if(an)an.onclick=openNotice;
   if(S.admin){const k=S.cls==='novice'?'warrior':S.cls,give=(g,q)=>{g.lv=Math.min(g.lv,S.level);addGear(g,q);};
     $('#adSet').onclick=()=>{ARMOR_PARTS.forEach(p=>{const g=makeDragonGear('a',k,3);g.part=p;g.name=DSET[k].n+' '+(p==='body'?'갑주':PART_SUF[p]);g.def=Math.round(TIERS[7].def*PART_DEF[p]*RAR[3].m);give(g,true);});toast('['+DSET[k].n+'] 영웅 세트 5부위 지급 · 가방에서 장착하세요','gold');save();};
     $('#adW').onclick=()=>{give(makeDragonGear('w',k,3));save();};
@@ -3991,9 +4049,10 @@ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),gplane=new THREE.Plane(n
 canvas.addEventListener('pointerdown',e=>{
   if(!S||!P||P.dead||paused()||!gameOn)return;
   ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,camera);
-  const objs=[];W.enemies.forEach(en=>{if(!en.dead)objs.push(en.mesh);});W.npcs.forEach(n=>objs.push(n.mesh));
+  const objs=[];W.enemies.forEach(en=>{if(!en.dead)objs.push(en.mesh);});W.npcs.forEach(n=>objs.push(n.mesh));Object.values(MP.others).forEach(r=>{if(r.h.g.visible)objs.push(r.h.g);});
   const hits=ray.intersectObjects(objs,true);let ent=null;
   for(const h of hits){let o=h.object;while(o&&!o.userData.ent)o=o.parent;if(o){ent=o.userData.ent;break;}}
+  if(ent&&ent.isRemote){if(ent.dead)rezTry(ent);return;}
   if(!ray.ray.intersectPlane(gplane,hitP))return;
   if(W.hts.length)for(let k=0;k<2;k++){gplane.constant=-groundH(hitP.x,hitP.z);ray.ray.intersectPlane(gplane,hitP);}gplane.constant=0;
   if(!ent){let bd=1.6;for(const en of W.enemies){if(en.dead)continue;const d=Math.hypot(en.pos.x-hitP.x,en.pos.z-hitP.z)-en.rad*.5;if(d<bd){bd=d;ent=en;}}
@@ -4256,12 +4315,20 @@ function openLogin(ev,pre){
 }
 $('#tNew').onclick=e=>{e.stopPropagation();titleTouch(e,true);};
 $('#tSound').onclick=e=>{e.stopPropagation();const on=!AU.on;auSetOn(on);if(on){auInit();auStartMusic();}};
-$('#tNotice').onclick=e=>{e.stopPropagation();openPanel('공지사항','<div class="sec"><h3>업데이트</h3><div class="row"><div class="l"><b>전체 그래픽 KayKit 교체</b><small>마을·평원·성채, NPC, 해골 군단 몬스터가 새 3D 모델과 애니메이션으로 바뀌었습니다.</small></div></div><div class="row"><div class="l"><b>신규 몬스터</b><small>타락한 해골 주술사 · 잠든 해골병 · 타락한 해골 돌격병</small></div></div><div class="row"><div class="l"><b>타이틀 화면 리뉴얼</b><small>새 BGM과 터치 연출이 추가되었습니다. 우측 상단 스피커 버튼으로 소리를 켜고 끌 수 있습니다.</small></div></div></div><div class="sec"><h3>안내</h3><p class="note">제2장 검은 안개 숲은 다음 업데이트에서 열립니다.</p></div>');};
+$('#tNotice').onclick=e=>{e.stopPropagation();openNotice();};
 $('#tAccount').onclick=e=>{e.stopPropagation();openPanel('계정 연동','<div class="sec"><h3>현재 계정</h3><div class="row"><div class="l"><b>게스트</b><small>진행 상황은 이 기기의 이 브라우저에만 저장됩니다. 브라우저 데이터를 지우면 사라집니다.</small></div></div></div><div class="sec"><h3>연동</h3><div class="row"><div class="l"><b>Google 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div><div class="row"><div class="l"><b>Apple 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div></div>');};
 const SERVERS=[['01. 이그니스'],['02. 천명'],['03. 잿빛 잎새'],['04. 황혼의 잿더미']];
 /* live status from the presence channel: 원활 < 60 ≤ 혼잡 < 100 = 가득 (unknown until the first heartbeat arrives) */
 function srvState(i){const on=MP.client&&MP.client.connected,n=netCount(i)+(on&&i===MP.srv?0:0);if(!on)return ['확인 중','#9a9a9a',n];return n>=NET_MAX?['가득',"#d9544a",n]:n>=60?['혼잡','#e0c040',n]:['원활','#6fdc6a',n];}
 function srvLabel(){let i=0;try{i=+(localStorage.getItem('ignis.srv')||0);}catch(e){}const sv=SERVERS[i]||SERVERS[0],st=srvState(i);$('#tSrvName').textContent=sv[0];$('#tServer i').style.background=st[1];$('#tServer i').style.boxShadow='0 0 6px '+st[1];}
+function openNotice(){const n=MP.notice,adm=S&&S.admin;
+  let h='<div class="sec">'+(n&&n.txt?'<h3>'+String(n.title||'공지').replace(/[<>&]/g,'')+'</h3><p style="white-space:pre-wrap;line-height:1.6">'+String(n.txt).replace(/[<>&]/g,'')+'</p><p class="note">'+new Date(n.t||0).toLocaleString('ko-KR')+'</p>':'<p class="note">등록된 공지사항이 없습니다.</p>')+'</div>';
+  if(adm)h+='<div class="sec"><h3>공지 작성 (운영자)</h3><input id="ntTitle" maxlength="40" placeholder="제목" style="width:100%;padding:8px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#fff;margin-bottom:6px"><textarea id="ntTxt" maxlength="1500" rows="6" placeholder="내용" style="width:100%;padding:8px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#fff"></textarea><div class="bbar"><button class="btn pri" id="ntPost">게시</button><button class="btn" id="ntDel">공지 삭제</button></div></div>';
+  else h+='<p class="note">공지사항은 운영자만 작성할 수 있습니다.</p>';
+  openPanel('공지사항',h);
+  const pb=$('#ntPost');if(pb)pb.onclick=()=>{const txt=$('#ntTxt').value.trim();if(!txt)return toast('내용을 입력하세요');const m={title:$('#ntTitle').value.trim().slice(0,40)||'공지',txt:txt.slice(0,1500),t:Date.now(),by:mpMyName()};
+    try{MP.client.publish('rotd1/notice',JSON.stringify(m),{retain:true,qos:1});MP.notice=m;toast('공지를 게시했습니다','gold');openNotice();}catch(err){toast('서버에 연결되지 않았습니다','bad');}};
+  const db=$('#ntDel');if(db)db.onclick=()=>{try{MP.client.publish('rotd1/notice','',{retain:true,qos:1});MP.notice=null;toast('공지를 삭제했습니다');openNotice();}catch(err){}};}
 function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map((sv,i)=>{const st=srvState(i);return '<div class="row"><div class="l"><b>'+sv[0]+'</b><small style="color:'+st[1]+'">● '+st[0]+(st[0]==='확인 중'?'':' · '+st[2]+'/'+NET_MAX+'명')+'</small></div><button class="btn sm pri" data-sv="'+i+'"'+(st[0]==='가득'?' disabled':'')+'>선택</button></div>';}).join('')+'</div><p class="note">같은 서버를 고른 플레이어끼리 한 세계에서 만납니다 (서버당 최대 '+NET_MAX+'명).</p>');
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
@@ -4274,7 +4341,7 @@ function renderCsel(){
   document.querySelectorAll('#csTabs button').forEach(b=>b.onclick=()=>{SEL=+b.dataset.i;renderCsel();});
   const nov=k==='novice';
   $('#csInfo').innerHTML='<h3>'+c.name+(nov?'':' <small class="promo">Lv.15 진급 직업</small>')+'</h3><div class="role">'+c.role+' · '+c.gear+'</div><p>'+c.blurb+'</p>'+
-    (nov?'<p class="note">진급 가능 직업: 전사 · 도적 · 신(치유 신관). 좌우로 넘겨 미리 볼 수 있습니다.</p>':'<div class="stat">'+c.bonus+'</div>')+
+    (nov?'<p class="note">모든 모험가는 초보자로 시작합니다. 진급: Lv.15 1차 (전사 · 도적 · 힐러) → Lv.50 2차 (검객 · 암살자 · 사제, 각성의 돌) → Lv.99 3차 (검성 · 암흑의 군주 · 성직자, 드래곤하트)</p>':'<div class="stat">'+c.bonus+'</div>')+
     '<ul>'+['atk'].concat(SKEYS).filter(s=>c.sk[s]).map(s=>'<li><b>'+(s==='atk'?'기본':'Lv.'+c.sk[s].lv)+'</b><span><b>'+c.sk[s].n+'</b> — '+c.sk[s].d+'</span></li>').join('')+'</ul>';
   $('#csGo').textContent=nov?'초보자로 모험 시작':'초보자로 시작 (Lv.15에 '+c.name.replace(/\(.*\)/,'')+' 진급 가능)';
 }
