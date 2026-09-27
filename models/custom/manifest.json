@@ -472,55 +472,37 @@
       "meshy_task": "01a0de93-e5e0-72fb-b000-d2033d4db343"
     },
     "n_kallen": {
-      "file": "n_kallen.glb.txt",
+      "file": "n2_VikingWarrior.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "kallen",
-      "prompt": "veteran guard captain in steel plate armor with a dark red cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de94-4c5f-73be-b473-b46df5e4f463",
       "zones": [
         "village"
       ],
-      "anims": {
-        "walk": "n_kallen.walk.glb.txt",
-        "run": "n_kallen.run.glb.txt",
-        "idle": "n_kallen.idle.glb.txt"
-      },
-      "rigged": true
+      "height": 2.3,
+      "static": true,
+      "userModel": "VikingWarrior"
     },
     "n_runba": {
-      "file": "n_runba.glb.txt",
+      "file": "n2_IronboundDwarfWarlord.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "runba",
-      "prompt": "burly village blacksmith with grey beard, leather apron and bare arms, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de94-36ca-7792-9cd8-8fec5aff6c27",
       "zones": [
         "village"
       ],
-      "anims": {
-        "walk": "n_runba.walk.glb.txt",
-        "run": "n_runba.run.glb.txt",
-        "idle": "n_runba.idle.glb.txt"
-      },
-      "rigged": true
+      "height": 1.95,
+      "static": true,
+      "userModel": "IronboundDwarfWarlord"
     },
     "n_aldus": {
-      "file": "n_aldus.glb.txt",
+      "file": "n2_AncientArchmage.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "aldus",
-      "prompt": "elderly village chief with long white beard in purple robes holding a wooden staff, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de94-7451-7245-af08-ef7017945a09",
       "zones": [
         "village"
       ],
-      "anims": {
-        "walk": "n_aldus.walk.glb.txt",
-        "run": "n_aldus.run.glb.txt",
-        "idle": "n_aldus.idle.glb.txt"
-      },
-      "rigged": true
+      "height": 2.3,
+      "static": true,
+      "userModel": "AncientArchmage"
     },
     "g_dirt": {
       "file": "g_dirt.glb.txt",
@@ -601,11 +583,10 @@
       "meshy_task": "01a0de96-44b4-76e8-bcba-b2a72223e181"
     },
     "g_stone": {
-      "file": "g_stone.glb.txt",
+      "file": "g_cobble.glb.txt",
       "kind": "groundtex",
       "ground": "stone",
-      "prompt": "thin flat square slab of grey cobblestone pavement, top surface fully covered",
-      "meshy_task": "01a0de97-2cc2-72d4-90e7-a19aef1c1513"
+      "userModel": "CobblestonePathway"
     },
     "w_gravemarker": {
       "file": "w_gravemarker.glb.txt",
@@ -641,21 +622,15 @@
       "meshy_task": "01a0de97-7a2b-71b3-83e3-638a771a2de5"
     },
     "n_villager": {
-      "file": "n_villager.glb.txt",
+      "file": "n2_ElvenTownfolkWyrdwoodCreations.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "villager",
-      "prompt": "humble medieval peasant villager in a simple brown tunic, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de97-94ec-7134-b817-2369d1118bef",
-      "anims": {
-        "walk": "n_villager.walk.glb.txt",
-        "run": "n_villager.run.glb.txt",
-        "idle": "n_villager.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "village"
-      ]
+      ],
+      "height": 2.1,
+      "static": true,
+      "userModel": "ElvenTownfolkWyrdwoodCreations"
     },
     "w_grave": {
       "file": "w_grave.glb.txt",
@@ -671,23 +646,17 @@
       "meshy_task": "01a0de97-8d49-77d3-81bf-a0903b54cb03"
     },
     "n_guard": {
-      "file": "n_guard.glb.txt",
+      "file": "n2_VikingWarrior.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "guard",
-      "prompt": "medieval town guard in chainmail and steel helmet with a blue tabard, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de97-807c-7627-b58d-f1dc44f4e750",
-      "anims": {
-        "walk": "n_guard.walk.glb.txt",
-        "run": "n_guard.run.glb.txt",
-        "idle": "n_guard.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel",
         "plains",
         "village"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "VikingWarrior"
     },
     "w_post_skull": {
       "file": "w_post_skull.glb.txt",
@@ -703,21 +672,15 @@
       "meshy_task": "01a0de97-b310-74fa-8515-d0d8edd5ac7c"
     },
     "n_logan": {
-      "file": "n_logan.glb.txt",
+      "file": "n2_VikingWarrior.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "logan",
-      "prompt": "young dispatched soldier in blue-grey padded armor and steel helmet, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de97-c748-77e6-b57e-049cb6dda8dc",
-      "anims": {
-        "walk": "n_logan.walk.glb.txt",
-        "run": "n_logan.run.glb.txt",
-        "idle": "n_logan.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "plains"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "VikingWarrior"
     },
     "w_shrine": {
       "file": "w_shrine.glb.txt",
@@ -825,21 +788,15 @@
       "meshy_task": "01a0de99-deef-74c3-86e4-eba60b9f6aa6"
     },
     "n_thomas": {
-      "file": "n_thomas.glb.txt",
+      "file": "n2_ElvenTownfolkWyrdwoodCreations.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "thomas",
-      "prompt": "injured traveling merchant with a bandaged arm, brown vest and satchel, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de99-f44e-7580-9d30-1dff6e57c333",
-      "anims": {
-        "walk": "n_thomas.walk.glb.txt",
-        "run": "n_thomas.run.glb.txt",
-        "idle": "n_thomas.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "plains"
-      ]
+      ],
+      "height": 2.1,
+      "static": true,
+      "userModel": "ElvenTownfolkWyrdwoodCreations"
     },
     "w_torch_wall": {
       "file": "w_torch_wall.glb.txt",
@@ -857,21 +814,15 @@
       "meshy_task": "01a0de9a-4c28-757f-a3c9-fe91a7760b42"
     },
     "n_hector": {
-      "file": "n_hector.glb.txt",
+      "file": "n2_IronboundDwarfWarlord.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "hector",
-      "prompt": "gate commander knight in polished silver armor with a blue cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9a-3e00-76cb-8937-a32f6e009606",
-      "anims": {
-        "walk": "n_hector.walk.glb.txt",
-        "run": "n_hector.run.glb.txt",
-        "idle": "n_hector.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "plains"
-      ]
+      ],
+      "height": 1.95,
+      "static": true,
+      "userModel": "IronboundDwarfWarlord"
     },
     "w_rubble": {
       "file": "w_rubble.glb.txt",
@@ -888,21 +839,15 @@
       "meshy_task": "01a0de9a-71bc-74d4-bac7-7501eefbd470"
     },
     "n_eldric": {
-      "file": "n_eldric.glb.txt",
+      "file": "n2_VikingWarrior.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "eldric",
-      "prompt": "stern knight commander in ornate silver plate armor with a royal blue cape, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9a-756c-76b7-9129-a457baddea83",
-      "anims": {
-        "walk": "n_eldric.walk.glb.txt",
-        "run": "n_eldric.run.glb.txt",
-        "idle": "n_eldric.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "VikingWarrior"
     },
     "w_banner_red": {
       "file": "w_banner_red.glb.txt",
@@ -936,21 +881,15 @@
       "meshy_task": "01a0de9a-9160-75c5-89af-0780f53bbca9"
     },
     "n_aide": {
-      "file": "n_aide.glb.txt",
+      "file": "n2_VikingWarrior.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "aide",
-      "prompt": "young military aide in a blue officer uniform holding a scroll, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9b-f45f-71c6-b1ca-7a7198bd9df2",
-      "anims": {
-        "walk": "n_aide.walk.glb.txt",
-        "run": "n_aide.run.glb.txt",
-        "idle": "n_aide.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "VikingWarrior"
     },
     "w_ruin": {
       "file": "w_ruin.glb.txt",
@@ -978,38 +917,26 @@
       "meshy_task": "01a0de9b-e1bb-722a-a100-51cd94c420e1"
     },
     "n_sylvia": {
-      "file": "n_sylvia.glb.txt",
+      "file": "n2_ElvenTownfolkWyrdwoodCreations.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "sylvia",
-      "prompt": "elegant female auctioneer in a green velvet dress holding a small gavel, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9c-d45d-7635-9e1d-17268e3b6858",
-      "anims": {
-        "walk": "n_sylvia.walk.glb.txt",
-        "run": "n_sylvia.run.glb.txt",
-        "idle": "n_sylvia.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.1,
+      "static": true,
+      "userModel": "ElvenTownfolkWyrdwoodCreations"
     },
     "n_elara": {
-      "file": "n_elara.glb.txt",
+      "file": "n2_EmberboundAlchemist.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "elara",
-      "prompt": "female mage in deep blue robes with glowing rune tattoos, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9c-d7fe-7204-9f81-7b4abe4db505",
-      "anims": {
-        "walk": "n_elara.walk.glb.txt",
-        "run": "n_elara.run.glb.txt",
-        "idle": "n_elara.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.2,
+      "static": true,
+      "userModel": "EmberboundAlchemist"
     },
     "w_windmill": {
       "file": "w_windmill.glb.txt",
@@ -1049,21 +976,15 @@
       "meshy_task": "01a0de9d-758a-7331-8a84-72c71825ceb2"
     },
     "n_varkan": {
-      "file": "n_varkan.glb.txt",
+      "file": "n2_AncientArchmage.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "varkan",
-      "prompt": "stern guild manager in dark leather coat with a ledger book, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9d-ce48-749f-a9b3-4494f56134ed",
-      "anims": {
-        "walk": "n_varkan.walk.glb.txt",
-        "run": "n_varkan.run.glb.txt",
-        "idle": "n_varkan.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "AncientArchmage"
     },
     "w_tent": {
       "file": "w_tent.glb.txt",
@@ -1155,21 +1076,15 @@
       "meshy_task": "01a0de9e-e128-75b7-bc8e-e647339b16a6"
     },
     "n_mari": {
-      "file": "n_mari.glb.txt",
+      "file": "n2_EmberboundAlchemist.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "mari",
-      "prompt": "cheerful female tavern keeper with an apron and a tray, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9e-e225-75dc-9e7e-dbe4f36d1693",
-      "anims": {
-        "walk": "n_mari.walk.glb.txt",
-        "run": "n_mari.run.glb.txt",
-        "idle": "n_mari.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.2,
+      "static": true,
+      "userModel": "EmberboundAlchemist"
     },
     "w_weaponrack": {
       "file": "w_weaponrack.glb.txt",
@@ -1187,21 +1102,15 @@
       "meshy_task": "01a0de9f-1e02-7298-b9fd-a2f87c509373"
     },
     "n_aril": {
-      "file": "n_aril.glb.txt",
+      "file": "n2_LittleForestShaman.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "aril",
-      "prompt": "friendly innkeeper in a simple vest holding a key ring, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9f-4be2-7212-94c1-511ea64fb7b3",
-      "anims": {
-        "walk": "n_aril.walk.glb.txt",
-        "run": "n_aril.run.glb.txt",
-        "idle": "n_aril.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 1.7,
+      "static": true,
+      "userModel": "LittleForestShaman"
     },
     "w_target": {
       "file": "w_target.glb.txt",
@@ -1229,21 +1138,15 @@
       "meshy_task": "01a0de9f-6b72-74eb-88da-8cc3b28ff9fc"
     },
     "n_rowen": {
-      "file": "n_rowen.glb.txt",
+      "file": "n2_AncientArchmage.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "rowen",
-      "prompt": "high priest in white and gold vestments with a tall mitre hat, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de9f-a8ff-700b-9aac-b228e028ac08",
-      "anims": {
-        "walk": "n_rowen.walk.glb.txt",
-        "run": "n_rowen.run.glb.txt",
-        "idle": "n_rowen.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 2.3,
+      "static": true,
+      "userModel": "AncientArchmage"
     },
     "w_arrow_bucket": {
       "file": "w_arrow_bucket.glb.txt",
@@ -1323,21 +1226,15 @@
       "meshy_task": "01a0dea0-aea4-73a9-b63e-2b277e29d84b"
     },
     "n_burkan": {
-      "file": "n_burkan.glb.txt",
+      "file": "n2_IronboundDwarfWarlord.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "burkan",
-      "prompt": "master dwarf-like blacksmith with braided black beard, heavy leather apron and forge hammer, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0dea0-cdc2-7503-8ccf-9d902e1aa096",
-      "anims": {
-        "walk": "n_burkan.walk.glb.txt",
-        "run": "n_burkan.run.glb.txt",
-        "idle": "n_burkan.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 1.95,
+      "static": true,
+      "userModel": "IronboundDwarfWarlord"
     },
     "w_gear": {
       "file": "w_gear.glb.txt",
@@ -1453,21 +1350,15 @@
       "meshy_task": "01a0dea2-199c-774b-b96c-1c414638360f"
     },
     "n_dongjun": {
-      "file": "n_dongjun.glb.txt",
+      "file": "n2_LittleForestShaman.glb.txt",
       "kind": "npc",
-      "height": 2.25,
       "npc": "dongjun",
-      "prompt": "general store shopkeeper in a brown merchant coat with a coin pouch, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0dea3-2f44-7566-b0fe-e25a793b5ef3",
-      "anims": {
-        "walk": "n_dongjun.walk.glb.txt",
-        "run": "n_dongjun.run.glb.txt",
-        "idle": "n_dongjun.idle.glb.txt"
-      },
-      "rigged": true,
       "zones": [
         "citadel"
-      ]
+      ],
+      "height": 1.7,
+      "static": true,
+      "userModel": "LittleForestShaman"
     },
     "n_seojun": {
       "file": "n_seojun.glb.txt",
@@ -1964,6 +1855,54 @@
       ],
       "uniform": true,
       "userModel": "VirginMaryStatue"
+    },
+    "u_st_angel": {
+      "file": "u_st_angel.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_st_angel"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "AngelusDemonicus"
+    },
+    "u_st_goddess": {
+      "file": "u_st_goddess.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_st_goddess"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "LaurelCrownedGoddess"
+    },
+    "u_st_archer": {
+      "file": "u_st_archer.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_st_archer"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "RadiantArcheroftheSun"
+    },
+    "u_st_tide": {
+      "file": "u_st_tide.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_st_tide"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "Tidebreaker"
     }
   }
 }

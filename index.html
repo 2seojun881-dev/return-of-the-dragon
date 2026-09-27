@@ -472,7 +472,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-9</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-10</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -944,7 +944,7 @@ function groundTex(kind){if(!kind||!CUSTOM.ground[kind])return null;if(GTEX[kind
   // keep only the tile's light/dark pattern (normalised to 0.5 on average) so each zone keeps its own ground colour
   const px=new Uint8Array(512*512*4);renderer.readRenderTargetPixels(rtg,0,0,512,512,px);rtg.dispose();let sum=0;
   for(let i=0;i<px.length;i+=4)sum+=px[i]*.3+px[i+1]*.59+px[i+2]*.11;const avg=Math.max(1,sum/(512*512));
-  const ct=kind==='ash'?.4:.65;  // pattern strength
+  const ct=kind==='ash'?.4:kind==='stone'?.42:.65;  // pattern strength
   for(let i=0;i<px.length;i+=4){const l=(px[i]*.3+px[i+1]*.59+px[i+2]*.11)/avg,v=Math.max(0,Math.min(255,Math.round((.5+(l-1)*.5*ct)*255)));px[i]=px[i+1]=px[i+2]=v;px[i+3]=255;}
   const t=new THREE.DataTexture(px,512,512,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=4;t.needsUpdate=true;return GTEX[kind]=t;}
 function edgeFade(mat){mat.transparent=true;mat.depthWrite=false;mat.customProgramCacheKey=()=>'edgefade';
@@ -1327,6 +1327,7 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
         if(mt&&mt.isMeshStandardMaterial&&!mt.metalnessMap){mt.metalness=0;mt.roughness=Math.max(mt.roughness,.7);}
         if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
       if(e.player||e.kind==='prop'){const env=ENV();if(env)g.scene.traverse(o=>{const mt=o.material;if(o.isMesh&&mt&&mt.isMeshStandardMaterial&&(e.player||mt.metalnessMap)){mt.envMap=env;mt.envMapIntensity=e.player?1:1.6;if(!e.player)mt.roughness=Math.min(mt.roughness,.75);mt.needsUpdate=true;}});}  // Meshy-viewer look: metal and gold need something to reflect
+      if(e.kind==='npc'&&e.static)liftProp(g.scene);  // photo-real Meshy NPCs come out dark in the scene lighting
       if(e.autoRig==='dragon')rigDragonMesh(g.scene);
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
@@ -2324,8 +2325,8 @@ const CMD_X=18;  // 기사단 사령부 x (north-east); the eldric cutscene is f
 function buildCitadel(){
   setEnv({sky:0x404c66,fog:[40,150],ht:0xb4c4e4,hb:0x33333f,hi:.5,sun:0xffe2bc,si:.95,ash:false});
   W.bounds=[-28,28,-27,27];
-  ground(0,0,420,420,0x3c4634,.1);
-  ground(0,0,60,60,0x5e636e,.08,1);
+  ground(0,0,420,420,0x5a5f6b,.06);
+  ground(0,0,60,60,0x646975,.05,1);
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
   const WC=0xa4a8b2;
   stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,30,-29,8,WC);  // the dragon-altar door stands on the Soul Altar terrace, not in a wall gap
@@ -2398,6 +2399,8 @@ function buildCitadel(){
   spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;spawnNpc('guard',3,25,Math.PI).d=NPCS.guard;
   for(let i=0;i<6;i++)spawnWanderer(rand(-12,12),rand(-8,10));
   const ok=()=>true;
+  // statues (user Meshy models) flanking the main road from the south gate to the plaza
+  [['meshy_st_angel',-5.6,13,Math.PI/2],['meshy_st_goddess',5.6,13,-Math.PI/2],['meshy_st_archer',-5.6,22,Math.PI/2],['meshy_st_tide',5.6,22,-Math.PI/2]].forEach(([n,x,z,r])=>{if(PROPS[n]){prop(n,x,z,{h:5,rot:r});addCircle(x,z,.9);}});
   decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-26,-17,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
   portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 야수 서식지 Lv.1~15 ›');
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
@@ -3267,12 +3270,14 @@ function animEnemy(e,dt){
     if(e.anim){e.anim.t+=dt;const k=e.anim.t/e.anim.dur;ar=k<.5?-.2-k*5:-2.7+(k-.5)*5;if(k>=1)e.anim=null;}
     p.armR.rotation.x=ar;p.armL.rotation.x=moving?sw*.5:.1;}
 }
+const NPC_FIXED=true;  // NPCs stand still at their posts (no wandering, no turning)
 function updNpcs(dt){
   for(const n of W.npcs){
+    if(n.wander&&NPC_FIXED){animHumanoid(n,dt,false);continue;}
     if(n.wander){n.wait-=dt;let mv=false;if(n.dest){const dx=n.dest.x-n.pos.x,dz=n.dest.z-n.pos.z,d=Math.hypot(dx,dz);if(d<.2)n.dest=null;else{const s=Math.min(d,2.6*dt);n.pos.x+=dx/d*s;n.pos.z+=dz/d*s;n.face=Math.atan2(dx,dz);resolve(n.pos,.3);n.walk+=s*2.3;mv=true;}}
       else if(n.wait<=0){n.wait=rand(2,6);n.dest={x:rand(-14,14)*ZS(W.zone),z:rand(-12,16)*ZS(W.zone)};}animHumanoid(n,dt,mv);continue;}
     const mv=n.walk>0&&n.walk!==n._lw;n._lw=n.walk;
-    if(!mv&&P&&!P.dead&&d2(n.pos,P.pos)<4&&n.mesh.rotation.z===0){n.face=Math.atan2(P.pos.x-n.pos.x,P.pos.z-n.pos.z);}
+    if(!NPC_FIXED&&!mv&&P&&!P.dead&&d2(n.pos,P.pos)<4&&n.mesh.rotation.z===0){n.face=Math.atan2(P.pos.x-n.pos.x,P.pos.z-n.pos.z);}
     animHumanoid(n,dt,mv);
   }
 }
@@ -3446,7 +3451,12 @@ function canEquip(g){if((g.lv||1)>S.level)return '착용 레벨이 부족합니�
 function gearLabel(g){return (g.type==='w'?'무기':g.type==='a'?'방어구 · '+SLOT_KO[g.part||'body']:'장신구 · '+SLOT_KO[g.acc==='ring'?'ring':g.acc])+' · Lv.'+(g.lv||1)+' · '+clsName(g.cls)+(g.cls&&g.cls!=='all'?' 전용':'');}
 /* front-view 2D art for each class's weapon and body armor (img/items/*.png, drawn from the art brief) */
 const ART_CLS=['warrior','rogue','shaman'],ART_KEY={weapon:'w',body:'a',head:'h',hands:'g',ring:'r',belt:'b'};
+/* icons rendered from the uploaded Meshy models, climbing with the item tier; tier 7 (dragon gear) keeps the drawn dragon set */
+const ART3D={w:{warrior:['Cudgel','AzureBlade','ColdLightBladeShortSword','StarlightHalberd','ThePrismaticCrucible','AbyssalMawBlade'],rogue:['FrostbiteDagger','EldritchDagger','RitualCthulhuDaggeroftheAncients'],shaman:['EnchantedScepter','CrystalStaff','DragonScepter']},
+  a:{warrior:['SpikedBattleArmor']},h:{warrior:['VerdantCrestHelmet']}};
+function art3d(k,c,g){const L=ART3D[k]&&ART3D[k][c];if(!L||g.db||(g.tier||0)>=7)return null;return L[Math.min(L.length-1,Math.floor((g.tier||0)*L.length/7))];}
 function itemIcon(g){const k=g&&ART_KEY[itemSlot(g)],c=g&&(ART_CLS.includes(g.cls)?g.cls:ART_CLS.includes(S.cls)?S.cls:null);  // class-neutral items take the wearer's style
+  const m3=k&&c&&art3d(k,c,g);if(m3)return '<img class="iart" src="img/items/m_'+m3+'.png" alt="" draggable="false">';
   if(k&&c)return '<img class="iart" src="img/items/'+k+'_'+c+'.png" alt="" draggable="false">';
   if(g.type==='w')return ICON[{warrior:'sword',rogue:'dagger',shaman:'bell'}[g.cls]||'sword'];if(g.type==='a')return ICON[{body:'armor',head:'shield',hands:'hammer',feet:'dash',cape:'banner'}[g.part||'body']];return ICON[{neck:'heal',ring:'orb',belt:'seal'}[g.acc]||'orb'];}
 function subText(o){if(o.u)return '<span class="uq">★ '+UNIQ[o.u][0]+'</span> <small>'+UNIQ[o.u][1]+'</small>';const d=SUBS[o.k];return d[0]+' +'+(d[1]?o.v.toFixed(1)+'%':fmt(o.v))+' <b class="gr g'+o.g+'">'+o.g+'</b>';}
