@@ -235,7 +235,11 @@ body.hasRes #gold,body.hasRes #qtrack{margin-top:11px}
 .bbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pset{display:inline-flex;gap:2px}
 .invtabs{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}.invtabs .tabs{margin:0}.bagc{font-size:12px;color:var(--dim)}
 .igrid{display:grid;grid-template-columns:repeat(auto-fill,54px);gap:8px;margin-top:8px;max-height:300px;overflow:auto;padding:2px}
-#itip{margin-top:10px}.tipc{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:linear-gradient(rgba(40,30,26,.95),rgba(20,14,14,.95))}
+#itip{margin-top:10px}
+#itip:not(:empty){position:fixed;inset:0;z-index:75;margin:0;background:rgba(6,4,6,.62);display:flex;align-items:center;justify-content:center;padding:10px}
+#itip:not(:empty)>.tipc{width:min(560px,100%);max-height:100%;overflow:auto;position:relative;box-shadow:0 16px 50px rgba(0,0,0,.8)}
+.tclose{position:absolute;right:10px;top:10px;z-index:2}
+.cmp{margin:8px 0;padding:8px 10px;border:1px solid #4a3a2c;border-radius:8px;background:rgba(0,0,0,.25);font-size:12px}.cmp .tt{color:var(--gold);margin-bottom:4px}.cmp div.r{display:flex;justify-content:space-between;gap:10px}.cmp .up{color:#6ae07a}.cmp .dn{color:#ff7a6a}.tipc{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:linear-gradient(rgba(40,30,26,.95),rgba(20,14,14,.95))}
 .tipc.r1{border-color:#4a9aff}.tipc.r2{border-color:#ffc83a}.tipc.r3{border-color:#ff3a2a;box-shadow:0 0 18px rgba(255,58,42,.35)}
 .tiph{display:flex;gap:10px;align-items:center}.tiph .ti{width:44px;height:44px;display:grid;place-items:center;border-radius:6px;background:#1b1412;color:var(--gold)}.tiph .ti svg{width:26px;height:26px}
 .tn{font:700 16px 'Gowun Batang',serif}.ts{font-size:11px;color:var(--dim)}.tbase{margin:8px 0;font-size:13px}
@@ -503,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-22</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-23</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1961,7 +1965,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   if(isRed())P.def*=.7;  // 붉은 이름: 방어력 -30%
   if(tierOf()===2){P.maxHp=Math.round(P.maxHp*1.1);P.maxMp=Math.round(P.maxMp*1.1);P.atk*=1.1;}
   if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
-  if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(typeof updSetFx==='function')updSetFx();}
+  if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(!SIMX&&typeof updSetFx==='function')updSetFx();}
 function makePlayer(){
   if(P){killObj(P.mesh);killObj(P.shield);if(P.tring)killObj(P.tring);killMerc();if(P.setFx)P.setFx.dispose();}
   const c=CLASSES[S.cls],h=heroModel(S.cls);scene.add(h.g);
@@ -3817,7 +3821,7 @@ function renderInv(){const box=$('#inv');if(!box)return;const G=P.gs||gearStats(
   box.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{INV.tab=b.dataset.tb;renderInv();});
   box.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{INV.sel=b.dataset.it;INV.locks=[];INV.jump=true;renderInv();});
   box.querySelectorAll('[data-es]').forEach(b=>b.onclick=()=>{const g=getEq(b.dataset.es);if(g){INV.sel=g.id;INV.locks=[];INV.jump=true;renderInv();}});
-  box.querySelectorAll('[data-cn]').forEach(b=>b.onclick=()=>{INV.sel=null;$('#itip').innerHTML='<div class="tipc"><b>'+b.title+'</b><p class="note">'+(b.dataset.cn==='potion'?'최대 체력 40% 회복 (H)':b.dataset.cn==='mpot'?'최대 마력 45% 회복 (M)':b.dataset.cn==='scale'?'이그니스가 매번 떨어뜨립니다. 용혈 제련·옵션 재설정에 사용':b.dataset.cn==='cryst'?'용혈 제련·옵션 잠금에 사용':'재료 · 소모품')+'</p></div>';});
+  box.querySelectorAll('[data-cn]').forEach(b=>b.onclick=()=>{INV.sel=null;$('#itip').onclick=ev=>{if(ev.target.id==='itip')closeTip();};$('#itip').innerHTML='<div class="tipc"><b>'+b.title+'</b><p class="note">'+(b.dataset.cn==='potion'?'최대 체력 40% 회복 (H)':b.dataset.cn==='mpot'?'최대 마력 45% 회복 (M)':b.dataset.cn==='scale'?'이그니스가 매번 떨어뜨립니다. 용혈 제련·옵션 재설정에 사용':b.dataset.cn==='cryst'?'용혈 제련·옵션 잠금에 사용':'재료 · 소모품')+'</p></div>';});
   box.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>presetUse(+b.dataset.pre));
   box.querySelectorAll('[data-pres]').forEach(b=>b.onclick=()=>{const i=+b.dataset.pres,o={};EQ_SLOTS.forEach(s=>{const g=getEq(s);if(g)o[s]=g.id;});S.presets[i]=o;save();toast('프리셋 '+(i+1)+'에 현재 장비를 저장했습니다.');renderInv();});
   $('#unAll').onclick=()=>{['head','body','hands','feet','cape','neck','ring1','ring2','belt'].forEach(unequip);renderInv();};
@@ -3830,20 +3834,30 @@ function renderInv(){const box=$('#inv');if(!box)return;const G=P.gs||gearStats(
     if(!this.dataset.ok){this.dataset.ok=1;this.textContent=list.length+'개 판매?';return;}let v=0;list.forEach(g=>{S.bag.splice(S.bag.indexOf(g),1);v+=gearValue(g);});S.gold+=v;toast(list.length+'개 판매 +'+fmt(v)+' G','gold');save();refreshHud();renderInv();};
   if(INV.sel)renderTip();
   invPrevStart();}
+/* stats of the whole character if item g were worn in its slot (for the comparison box) */
+let SIMX=false;
+function statSnap(){return {atk:P.atk,def:P.def,mdef:P.mdef||0,hp:P.maxHp,mp:P.maxMp,crit:P.crit*100,critX:P.critX*100,aspd:100/P.aspd*(CLASSES[S.cls].aspd||1)};}
+function simWith(slot,g){const hp=P.hp,mp=P.mp,old=getEq(slot),cur=statSnap();SIMX=true;try{setEq(slot,g);P.gs=gearStats();recalc();var nw=statSnap();}finally{setEq(slot,old);P.gs=gearStats();recalc();SIMX=false;P.hp=hp;P.mp=mp;}return {cur,nw};}
+function cmpHtml(g){let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';const cur=getEq(slot);
+  const {cur:a,nw:b}=simWith(slot,g),rows=[['atk','공격력',0],['def','방어력',0],['mdef','마법 방어',0],['hp','최대 HP',0],['mp','최대 MP',0],['crit','치명타 %',1],['critX','치명 피해 %',0],['aspd','공격 속도 %',0]];
+  const lines=rows.map(([k,n,dp])=>{const d=b[k]-a[k];if(Math.abs(d)<(dp?.05:.5))return '';const f=v=>dp?v.toFixed(1):fmt(Math.round(v));return '<div class="r"><span>'+n+'</span><span>'+f(a[k])+' → <b class="'+(d>0?'up':'dn')+'">'+f(b[k])+' ('+(d>0?'▲':'▼')+f(Math.abs(d))+')</b></span></div>';}).join('');
+  return '<div class="cmp"><div class="tt">현재 착용 · '+(cur?'<b style="color:'+RAR[cur.rar||0].c+'">'+wName(cur)+'</b> '+itemStat(cur):'없음 ('+SLOT_KO[slot]+')')+'</div>'+(lines||'<div class="note">능력치 변화 없음</div>')+'</div>';}
+function closeTip(){const pb=$('#pbody'),y=pb?pb.scrollTop:0;INV.sel=null;INV.locks=[];renderInv();if(pb)pb.scrollTop=y;}
 function renderTip(){const f=findItem(INV.sel),tip=$('#itip');if(!f){INV.sel=null;tip.innerHTML='';return;}const g=f.g,R=RAR[g.rar||0],eq=!!f.slot,why=canEquip(g);
   const rr=(g.subs&&g.subs.length)?rerollCost(g):null;
   tip.innerHTML='<div class="tipc r'+(g.rar||0)+'"><div class="tiph"><div class="ti">'+itemIcon(g)+'</div><div><div class="tn" style="color:'+R.c+'">'+wName(g)+'</div><div class="ts">'+R.n+' · '+gearLabel(g)+(eq?' · <b style="color:var(--ok)">장착 중</b>':'')+'</div></div></div>'+
     '<div class="tbase num">'+itemStat(g)+(g.rar>1?' <small>(기본 스탯 '+Math.round(R.m*100)+'%)</small>':'')+(g.dur!=null&&g.type==='w'?' · 내구도 '+Math.ceil(g.dur)+'%':'')+'</div>'+
     (g.subs&&g.subs.length?'<div class="tsub"><div class="tt">부옵션 '+g.subs.length+'줄'+(rr?' · 잠금할 옵션을 누르세요 (최대 2)':'')+'</div>'+g.subs.map((o,i)=>'<label class="sopt'+(INV.locks.includes(i)?' lk':'')+'"><input type="checkbox" data-lk="'+i+'"'+(INV.locks.includes(i)?' checked':'')+'> '+subText(o)+'</label>').join('')+'</div>':'')+
-    (g.set?setInfo(g.set):'')+(g.leg&&LEG[g.leg]?legInfo(g):'')+(why?'<p class="warnl">'+why+'</p>':'')+
+    (!eq&&g.type?cmpHtml(g):'')+(g.set?setInfo(g.set):'')+(g.leg&&LEG[g.leg]?legInfo(g):'')+(why?'<p class="warnl">'+why+'</p>':'')+
     '<div class="bbar">'+(eq?(f.slot!=='weapon'?'<button class="btn sm" id="tUn">해제</button>':''):'<button class="btn sm pri" id="tEq">장착</button>')+
     (rr?'<button class="btn sm" id="tRr">옵션 재설정</button>':'')+'<button class="btn sm" id="tLk">'+(g.lock?'잠금 해제':'잠금')+'</button>'+(eq?'':'<button class="btn sm" id="tSell">판매 '+fmt(gearValue(g))+' G</button>')+'</div>'+
     (rr?'<p class="note num">재설정 비용: 용의 비늘 '+rr.sc+' · '+fmt(rr.g)+' G'+(INV.locks.length?' · 용의 결정 '+rr.cr+' (잠금 '+INV.locks.length+'줄)':'')+'</p>':'')+'</div>';
   tip.querySelectorAll('[data-lk]').forEach(c=>c.onchange=()=>{const i=+c.dataset.lk;if(c.checked){if(INV.locks.length>=2){c.checked=false;return toast('옵션은 최대 2줄까지 잠글 수 있습니다.');}INV.locks.push(i);}else INV.locks=INV.locks.filter(x=>x!==i);renderTip();});
   const on=(id,fn)=>{const b=$(id);if(b)b.onclick=fn;};
   {const bb=tip.querySelector('.bbar'),hd=tip.querySelector('.tiph');if(bb&&hd)hd.after(bb);}
-  if(INV.jump){INV.jump=false;const pb=$('#pbody'),dy=tip.getBoundingClientRect().top-pb.getBoundingClientRect().top;if(dy>pb.clientHeight*.45||dy<0)pb.scrollTop+=dy-6;}
-  on('#tEq',()=>{if(equipItem(g))renderInv();});on('#tUn',()=>{unequip(f.slot);renderInv();});
+  INV.jump=false;{const c=document.createElement('button');c.className='btn sm tclose';c.textContent='닫기';tip.querySelector('.tipc').appendChild(c);c.onclick=closeTip;}
+  tip.onclick=ev=>{if(ev.target===tip)closeTip();};
+  on('#tEq',()=>{if(equipItem(g))closeTip();});on('#tUn',()=>{unequip(f.slot);renderInv();});
   on('#tLk',()=>{g.lock=!g.lock;save();renderInv();});
   on('#tSell',function(){if(g.lock)return toast('잠긴 장비는 판매할 수 없습니다.');if((g.rar||0)>=2&&!this.dataset.ok){this.dataset.ok=1;this.textContent='정말 판매?';return;}S.bag.splice(S.bag.indexOf(g),1);const v=gearValue(g);S.gold+=v;INV.sel=null;toast('['+g.name+'] 판매 +'+fmt(v)+' G');save();refreshHud();renderInv();});
   on('#tRr',()=>{const c=rerollCost(g);if(S.scale<c.sc||S.gold<c.g||S.cryst<c.cr)return toast('재료가 부족합니다 (용의 비늘 '+c.sc+' · '+fmt(c.g)+' G'+(c.cr?' · 용의 결정 '+c.cr:'')+')','bad');
@@ -4775,7 +4789,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-22';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-23';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
