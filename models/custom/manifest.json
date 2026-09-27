@@ -1903,6 +1903,18 @@
       ],
       "uniform": true,
       "userModel": "BlueTileCottage"
+    },
+    "barakas": {
+      "file": "barakas.glb.txt",
+      "kind": "boss",
+      "height": 7.0,
+      "mob": "barakas",
+      "imported": true,
+      "zones": [
+        "lair"
+      ],
+      "autoRig": "dragon",
+      "src": "release 바카라스 · Dragon_Meshy_AI_2026-04-10_10a598.glb"
     }
   }
 }
