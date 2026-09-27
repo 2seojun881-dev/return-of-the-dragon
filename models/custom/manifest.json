@@ -352,7 +352,9 @@
       "prompt": "A massive ancient boss dragon hovering mid-air with huge wings fully spread, neck arched back with glowing mouth preparing to breathe fire, obsidian red and black scales, glowing magma veins across the chest, dark fantasy game asset, clean mesh topology, high detail, flying pose",
       "meshy_task": "01a0de5e-9de7-779b-8007-c29adb2e0354",
       "zones": [
-        "altar"
+        "altar",
+        "prologue",
+        "title"
       ]
     },
     "p_rogue": {
@@ -1640,6 +1642,46 @@
       "zones": [
         "citadel"
       ]
+    },
+    "x_cloud": {
+      "file": "x_cloud.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_cloud"
+      ],
+      "zones": [],
+      "prompt": "round puffy ball of dark grey smoke, cumulus shaped, as tall as it is wide",
+      "meshy_task": "01a0e053-6d7d-7062-b8dd-e437540ed58c"
+    },
+    "x_cliff": {
+      "file": "x_cliff.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_cliff"
+      ],
+      "zones": [],
+      "prompt": "wide jagged dark rock cliff face, rectangular block of layered stone",
+      "meshy_task": "01a0e051-2d33-726d-9142-b9f8ccbe7c9c"
+    },
+    "x_volcano": {
+      "file": "x_volcano.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_volcano"
+      ],
+      "zones": [],
+      "prompt": "tall steep conical volcano mountain peak with a smoking crater at the very top and glowing lava rivers running down, much taller than wide",
+      "meshy_task": "01a0e053-6d75-72dc-9de6-d53425058a71"
+    },
+    "x_grass": {
+      "file": "x_grass.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_grass"
+      ],
+      "zones": [],
+      "prompt": "small tuft of wild green grass blades",
+      "meshy_task": "01a0e051-3fc9-7380-8205-5dcb86fb5102"
     }
   }
 }

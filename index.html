@@ -872,22 +872,33 @@ function groundTex(kind){if(!kind||!CUSTOM.ground[kind])return null;if(GTEX[kind
   const ct=kind==='ash'?.4:.65;  // pattern strength
   for(let i=0;i<px.length;i+=4){const l=(px[i]*.3+px[i+1]*.59+px[i+2]*.11)/avg,v=Math.max(0,Math.min(255,Math.round((.5+(l-1)*.5*ct)*255)));px[i]=px[i+1]=px[i+2]=v;px[i+3]=255;}
   const t=new THREE.DataTexture(px,512,512,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=4;t.needsUpdate=true;return GTEX[kind]=t;}
+function edgeFade(mat){mat.transparent=true;mat.depthWrite=false;mat.customProgramCacheKey=()=>'edgefade';
+  mat.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float edge;varying float vEdge;').replace('#include <begin_vertex>','#include <begin_vertex>\nvEdge=edge;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vEdge;').replace('#include <alphamap_fragment>','#include <alphamap_fragment>\ndiffuseColor.a*=smoothstep(0.,1.,vEdge);');};return mat;}
 function ground(cx,cz,w,d,col,jit,y){
-  const geo=new THREE.PlaneGeometry(w,d,Math.max(1,Math.ceil(w/5)),Math.max(1,Math.ceil(d/5)));geo.rotateX(-Math.PI/2);
+  const fe=!!y,seg=v=>fe?Math.min(40,Math.max(4,Math.ceil(v/1.2))):Math.max(1,Math.ceil(v/5));  // layered patches fade out over ~1.5m at their borders
+  const geo=new THREE.PlaneGeometry(w,d,seg(w),seg(d));geo.rotateX(-Math.PI/2);
+  if(fe){const p=geo.attributes.position,ed=[],fw=Math.min(1.6,w*.3,d*.3);for(let i=0;i<p.count;i++){const dx=w/2-Math.abs(p.getX(i)),dz=d/2-Math.abs(p.getZ(i));ed.push(Math.min(1,Math.min(dx,dz)/fw));}geo.setAttribute('edge',new THREE.Float32BufferAttribute(ed,1));}
   const tex=groundTex(groundKind(col));
   const c=new THREE.Color(col);if(tex)c.multiplyScalar(2);  // detail texture averages 0.5
   const cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
   for(let i=0;i<n;i++){const f=1+(srand()-.5)*j*2;cols.push(c.r*f,c.g*f,c.b*f);}
   geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
   if(tex){const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(uv.getX(i)*w+cx)/7,(uv.getY(i)*d-cz)/7);}  // ~7m per tile, continuous across patches
-  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2}));
+  const mat=new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2});
+  const m=new THREE.Mesh(geo,fe?edgeFade(mat):mat);if(fe)m.renderOrder=y;
   m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;W.root.add(m);return m;
 }
+let GRASS_G=null;
+function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_grass;GRASS_G=false;if(!src)return false;let mesh0=null;src.updateMatrixWorld(true);src.traverse(o=>{if(o.isMesh&&!mesh0)mesh0=o;});if(!mesh0)return false;
+  const geo=mesh0.geometry.clone();geo.applyMatrix4(mesh0.matrixWorld);geo.computeBoundingBox();const b=geo.boundingBox,s=.55/Math.max(.01,b.max.y-b.min.y),c=b.getCenter(new V());
+  geo.translate(-c.x,-b.min.y,-c.z);geo.scale(s,s,s);const mt=mesh0.material.clone();mt.side=THREE.DoubleSide;return GRASS_G={geo,mt,tris:(geo.index?geo.index.count:geo.attributes.position.count)/3};}
 function grass(cx,cz,w,d,n,col){
-  const geo=new THREE.ConeGeometry(.07,.5,3);geo.translate(0,.25,0);
-  const im=new THREE.InstancedMesh(geo,M(col),n),m4=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new V(),up=new V(0,1,0);
-  for(let i=0;i<n;i++){s.setScalar(.6+srand()*1.1);q.setFromAxisAngle(up,srand()*6);m4.compose(new V(cx+(srand()-.5)*w,0,cz+(srand()-.5)*d),q,s);im.setMatrixAt(i,m4);}
-  W.root.add(im);
+  const tuft=grassTuft();if(tuft){n=Math.max(20,Math.min(n,Math.floor(45000/tuft.tris)));}  // ~45k triangles per field at most
+  const geo=tuft?tuft.geo:new THREE.ConeGeometry(.07,.5,3);if(!tuft)geo.translate(0,.25,0);
+  const im=new THREE.InstancedMesh(geo,tuft?tuft.mt:M(col),n),m4=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new V(),up=new V(0,1,0);
+  const k0=tuft?1.4:1;for(let i=0;i<n;i++){s.setScalar((.6+srand()*1.1)*k0);q.setFromAxisAngle(up,srand()*6);m4.compose(new V(cx+(srand()-.5)*w,0,cz+(srand()-.5)*d),q,s);im.setMatrixAt(i,m4);}
+  if(tuft)im.receiveShadow=true;W.root.add(im);
 }
 function house(x,z,o){
   if(KIT){o=o||{};const w=o.w||6,d=o.d||5;const k=o.kind||pick(['building_home_A_red','building_home_B_red']);const g=prop(k,x,z,{fit:Math.max(w,d)*(k==='building_tavern_red'?.9:1.05),rot:(o.rot||0)+(o.face||0)});
@@ -955,14 +966,21 @@ function stall(x,z,col){if(KIT){prop('building_market_blue',x,z,{fit:4.2,rot:Mat
   for(let i=0;i<4;i++)mesh(new THREE.BoxGeometry(.4,.3,.4),M([0xc84a3a,0xe0b050,0x4a8a4a,0x5a6ac0][i]),-1+i*.66,1.15,0,g);addBox(x,z,1.6,.8);}
 function lamp(x,z){const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);if(KIT)prop('post_lantern',0,0,{h:3.2,par:g});else mesh(new THREE.CylinderGeometry(.08,.12,3,6),M(0x2a2a30,{metalness:.5}),0,1.5,0,g);const b=mesh(new THREE.OctahedronGeometry(.25),B(0xcfe8ff),0,3.1,0,g);b.castShadow=false;const pl=mesh(new THREE.SphereGeometry(.5,8,6),new THREE.MeshBasicMaterial({color:0x7ab8ff,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}),0,3.1,0,g);pl.castShadow=false;addCircle(x,z,.2);}
 function banner(x,z,col){if(KIT){const f=prop(col===0x4a6a2a?'flag_red':'flag_blue',x,z,{h:4.4});W.anim.push(t=>{f.rotation.y=Math.sin(t*1.5+x)*.12;});addCircle(x,z,.2);return;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.CylinderGeometry(.06,.06,4.2,5),M(0x3a3a40),0,2.1,0,g);const f=mesh(new THREE.BoxGeometry(.9,1.8,.05),M(col||0x2a4a8a),.5,3.2,0,g);W.anim.push(t=>{f.rotation.y=Math.sin(t*2+x)*.2;});addCircle(x,z,.2);}
+/* a Meshy smoke-cloud puff with its own fading material (falls back to a low-poly ball) */
+function cloudPuff(r,col,op){const src=PROPS.meshy_cloud;
+  if(src){const g=new THREE.Group(),m=src.clone(),bb=new THREE.Box3().setFromObject(src),sz=bb.getSize(new V()),c=bb.getCenter(new V()),s=2*r/Math.max(sz.x,sz.y,sz.z);
+    const mat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,fog:false,depthWrite:false});m.traverse(o=>{if(o.isMesh){o.material=mat;o.castShadow=false;}});
+    m.scale.setScalar(s);m.position.set(-c.x*s,-c.y*s,-c.z*s);g.add(m);g.material=mat;return g;}
+  return new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,fog:false,depthWrite:false}));}
 function volcano(x,z,s){
   const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(s||1);W.root.add(g);
   let top=42;
-  if(KIT&&PROPS.mountain_C){const m=prop('mountain_C',0,0,{fit:96,par:g,tint:0x2a1614});top=m.userData.size.y*.92;}
+  if(PROPS.meshy_volcano){const m=prop('meshy_volcano',0,0,{h:46,par:g});m.traverse(o=>{if(o.isMesh)o.material.fog=false;});top=m.userData.size.y*.9;}
+  else if(KIT&&PROPS.mountain_C){const m=prop('mountain_C',0,0,{fit:96,par:g,tint:0x2a1614});top=m.userData.size.y*.92;}
   else{const base=new THREE.Mesh(new THREE.CylinderGeometry(9,48,42,9,1,true),new THREE.MeshBasicMaterial({color:0x1b1112,fog:false}));base.position.y=21;g.add(base);}
   const glow=new THREE.Mesh(new THREE.CylinderGeometry(8,9,1.5,9),new THREE.MeshBasicMaterial({color:0xff5a1f,fog:false,transparent:true,opacity:.9,blending:THREE.AdditiveBlending}));glow.position.y=top;glow.scale.setScalar(top/42);g.add(glow);
   if(!KIT)for(let i=0;i<5;i++){const lv=new THREE.Mesh(new THREE.BoxGeometry(1.2,24,.5),new THREE.MeshBasicMaterial({color:0xc2360f,fog:false}));const a=i*1.3+.3;lv.position.set(Math.sin(a)*18,28,Math.cos(a)*18);lv.lookAt(0,28,0);lv.rotation.x+=.45;g.add(lv);}
-  const smokes=[];for(let i=0;i<7;i++){const sm=new THREE.Mesh(new THREE.IcosahedronGeometry(6+i*1.5,0),new THREE.MeshBasicMaterial({color:0x2a2224,transparent:true,opacity:.75,fog:false,depthWrite:false}));g.add(sm);smokes.push(sm);}
+  const smokes=[];for(let i=0;i<7;i++){const sm=cloudPuff(6+i*1.5,0x2a2224,.75);g.add(sm);smokes.push(sm);}
   W.anim.push(t=>{smokes.forEach((sm,i)=>{const k=((t*.06)+i/7)%1;sm.position.set(Math.sin(i*2+t*.2)*4+k*14,top+2+k*60,Math.cos(i)*3);sm.scale.setScalar(.6+k*1.4);sm.material.opacity=.8*(1-k);});glow.material.color.setHSL(.04,1,.45+Math.sin(t*2)*.08);});
   return g;
 }
@@ -1800,6 +1818,10 @@ function updShowcase(dt){
     const tgt=i===SEL?-(i-SHOW_MID)*.22+(Math.sin(rt*.5)*.12):-(i-SHOW_MID)*.22;o.h.g.rotation.y+=(tgt-o.h.g.rotation.y)*k;});
 }
 function makeDragon(){
+  const fm=CUSTOM.mobs.ignisFly;if(fm&&fm.gltf){const g=new THREE.Group(),m=fm.gltf.scene.clone();
+    m.traverse(o=>{if(o.isMesh){o.material=new THREE.MeshBasicMaterial({map:o.material.map,color:0xe0c8c0,fog:false});o.castShadow=false;}});  // unlit so it reads against the night sky
+    const bb=new THREE.Box3().setFromObject(m),sz=bb.getSize(new V()),c=bb.getCenter(new V()),s=26/Math.max(sz.x,sz.z);m.scale.setScalar(s);m.position.set(-c.x*s,-c.y*s-4,-c.z*s);g.add(m);
+    return {g,wings:[],eyes:[]};}
   if(KIT)return kitDragon();
   const g=new THREE.Group();const blk=new THREE.MeshBasicMaterial({color:0x0a0506,fog:false,side:THREE.DoubleSide});
   const body=new THREE.Mesh(new THREE.SphereGeometry(6,12,10),blk);body.scale.set(1,1.1,2);g.add(body);
@@ -1831,7 +1853,7 @@ function buildTitle(){
   W.bounds=[-400,400,-500,400];
   // cliff top (foreground) and the drop
   ground(0,4,70,30,0x2a2420,.3);
-  const cliff=mesh(new THREE.BoxGeometry(70,70,14),M(0x1d1815),0,-35.2,-17,W.root);
+  const cliff=PROPS.meshy_cliff?(()=>{const p=prop('meshy_cliff',0,-17,{w:70});p.position.y=-p.userData.size.y+.3;return p;})():mesh(new THREE.BoxGeometry(70,70,14),M(0x1d1815),0,-35.2,-17,W.root);
   for(let i=0;i<14;i++){if(KIT){const r=prop(pick(['rock_single_A','rock_single_C','rock_single_E']),-34+i*5.2,-10.5-srand()*2,{fit:4+srand()*6,rot:srand()*6,tint:0x5a4a44});if(r)r.position.y=-2-srand()*6;continue;}const r=mesh(new THREE.DodecahedronGeometry(2+srand()*3,0),M(0x241e1a),-34+i*5.2,-2-srand()*6,-10.5-srand()*2,W.root);r.rotation.set(srand(),srand(),srand());}
   const vg=mesh(new THREE.PlaneGeometry(1400,1400),new THREE.MeshStandardMaterial({color:0x1a1412,roughness:1}),0,-40,-300,W.root);vg.rotation.x=-Math.PI/2;
   // distant volcano & Silvermoon
@@ -1855,7 +1877,7 @@ function buildTitle(){
   // storm clouds (part on touch) and drifting black fog
   W.clouds=[];
   for(let i=0;i<22;i++){const far=i<14;const x=far?-260+i*40+srand()*20:-160+(i-14)*45,y=far?135+srand()*30:62+srand()*14,z=far?-320-srand()*80:-180-srand()*40;
-    const c=new THREE.Mesh(new THREE.IcosahedronGeometry(26+srand()*22,1),new THREE.MeshBasicMaterial({color:far?0x24161a:0x1c1418,fog:false,transparent:true,opacity:.92}));
+    const c=cloudPuff(26+srand()*22,far?0x24161a:0x1c1418,.92);
     c.position.set(x,y,z);c.scale.set(1.6,.45,1);W.root.add(c);c.userData.x0=x;W.clouds.push(c);}
   const ft=fogTexture();W.fogs=[];
   [-12,-22,-32].forEach((y,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(900,500),new THREE.MeshBasicMaterial({map:ft,color:i?0x1a1016:0x2a1c22,transparent:true,opacity:.55-i*.1,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(0,y,-200);m.material.map=ft.clone();m.material.map.needsUpdate=true;m.material.map.repeat.set(3,2);W.root.add(m);W.fogs.push(m);});

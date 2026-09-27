@@ -1,0 +1,34 @@
+{
+ "x_grass": {
+  "replace": [
+   "meshy_grass"
+  ],
+  "tris": 400,
+  "tex": 256,
+  "prompt": "small tuft of wild green grass blades"
+ },
+ "x_volcano": {
+  "replace": [
+   "meshy_volcano"
+  ],
+  "tris": 4000,
+  "tex": 512,
+  "prompt": "tall steep conical volcano mountain peak with a smoking crater at the very top and glowing lava rivers running down, much taller than wide"
+ },
+ "x_cloud": {
+  "replace": [
+   "meshy_cloud"
+  ],
+  "tris": 800,
+  "tex": 256,
+  "prompt": "round puffy ball of dark grey smoke, cumulus shaped, as tall as it is wide"
+ },
+ "x_cliff": {
+  "replace": [
+   "meshy_cliff"
+  ],
+  "tris": 3000,
+  "tex": 512,
+  "prompt": "wide jagged dark rock cliff face, rectangular block of layered stone"
+ }
+}

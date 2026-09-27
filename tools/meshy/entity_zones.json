@@ -70,7 +70,9 @@
    "altar"
   ],
   "ignisFly": [
-   "altar"
+   "altar",
+   "prologue",
+   "title"
   ]
  },
  "npc": {
