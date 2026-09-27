@@ -2258,8 +2258,8 @@ function buildCitadel(){
   fountain(0,0);
   // 기사단 사령부 (north-east)
   const CX=CMD_X;pavilion(CX,-21,14,8,5.5);addBox(CX,-24.2,6.5,.6);[-7,7].forEach(x=>[-25,-17].forEach(z=>addCircle(CX+x,z,.5)));for(let i=1;i<4;i++){addCircle(CX-7+i*3.5,-25,.45);}
-  const tbl=new THREE.Group();tbl.position.set(CX,.5,-19);W.root.add(tbl);if(KIT){prop('table_long',0,0,{w:4.2,par:tbl});}else{mesh(new THREE.BoxGeometry(4.2,.2,2.6),M(0x5a3a22),0,1,0,tbl);[-1.8,1.8].forEach(x=>[-1,1].forEach(z=>mesh(new THREE.BoxGeometry(.2,1,.2),M(0x4a2a18),x,.5,z,tbl)));}
-  const mp=new THREE.Mesh(new THREE.PlaneGeometry(3.8,2.3),new THREE.MeshStandardMaterial({map:mapTexture(),roughness:1}));mp.rotation.x=-Math.PI/2;mp.position.y=KIT&&tbl.children[0]&&tbl.children[0].userData.size?tbl.children[0].userData.size.y+.02:1.12;tbl.add(mp);addBox(CX,-19,2.2,1.4);
+  const tbl=new THREE.Group();tbl.position.set(CX,KIT?0:.5,-19);W.root.add(tbl);if(KIT){const tb=prop('table_long',0,0,{h:.85,par:tbl});if(tb){const sz=tb.userData.size;tb.scale.set(3.4/sz.x,1,1.9/sz.z);sz.set(3.4,sz.y,1.9);}}else{mesh(new THREE.BoxGeometry(4.2,.2,2.6),M(0x5a3a22),0,1,0,tbl);[-1.8,1.8].forEach(x=>[-1,1].forEach(z=>mesh(new THREE.BoxGeometry(.2,1,.2),M(0x4a2a18),x,.5,z,tbl)));}
+  const mp=new THREE.Mesh(new THREE.PlaneGeometry(KIT?3:3.8,KIT?1.6:2.3),new THREE.MeshStandardMaterial({map:mapTexture(),roughness:1}));mp.rotation.x=-Math.PI/2;mp.position.y=KIT&&tbl.children[0]&&tbl.children[0].userData.size?tbl.children[0].userData.size.y+.02:1.12;tbl.add(mp);addBox(CX,-19,2.2,1.4);
   banner(-8,-15,0x2a4a8a);banner(8,-15,0x2a4a8a);
   // 객주소 (south-west, between the main south gate and the west gate)
   bigBuilding(-20,19,9,6,5,0x8a4a2a,0xc8b8a0,'building_tavern_red');barrel(-14.5,17.5);barrel(-13.8,18.3);crate(-24.5,14);
