@@ -727,7 +727,8 @@
       ],
       "zones": [
         "citadel",
-        "grave"
+        "grave",
+        "hall"
       ],
       "prompt": "small stone roadside shrine with lit candles",
       "meshy_task": "01a0de97-df5f-74ad-a32b-34e6a01189f1"
@@ -797,6 +798,7 @@
       "zones": [
         "altar",
         "citadel",
+        "hall",
         "inn",
         "showcase",
         "title",
@@ -846,6 +848,7 @@
         "torch_mounted"
       ],
       "zones": [
+        "hall",
         "inn",
         "showcase",
         "title"
@@ -910,6 +913,7 @@
       ],
       "zones": [
         "citadel",
+        "hall",
         "title"
       ],
       "prompt": "red heraldic banner flag hanging from a wooden pole",
@@ -925,6 +929,7 @@
       ],
       "zones": [
         "citadel",
+        "hall",
         "plains"
       ],
       "prompt": "blue heraldic banner flag hanging from a wooden pole",
@@ -1115,6 +1120,7 @@
       "zones": [
         "citadel",
         "clock",
+        "hall",
         "inn"
       ],
       "prompt": "stack of three wooden crates",
@@ -1129,6 +1135,7 @@
       ],
       "zones": [
         "citadel",
+        "hall",
         "inn"
       ],
       "prompt": "three lit wax candles on an iron holder",
@@ -1172,6 +1179,7 @@
       ],
       "zones": [
         "citadel",
+        "hall",
         "plains",
         "village"
       ],
@@ -1308,7 +1316,8 @@
         "sword_shield"
       ],
       "zones": [
-        "citadel"
+        "citadel",
+        "hall"
       ],
       "prompt": "crossed sword and round shield wall display",
       "meshy_task": "01a0dea0-aea4-73a9-b63e-2b277e29d84b"
@@ -1368,7 +1377,7 @@
       },
       "rigged": true,
       "zones": [
-        "citadel"
+        "hall"
       ]
     },
     "w_wall_inner": {
@@ -1379,6 +1388,7 @@
         "wall_shelves"
       ],
       "zones": [
+        "hall",
         "inn"
       ],
       "prompt": "interior wall panel of timber frame and plaster, flat rectangular",
@@ -1398,7 +1408,7 @@
       },
       "rigged": true,
       "zones": [
-        "citadel"
+        "hall"
       ]
     },
     "w_floor_wood": {
@@ -1409,6 +1419,7 @@
         "floor_wood_large_dark"
       ],
       "zones": [
+        "hall",
         "inn"
       ],
       "prompt": "square wooden plank floor tile, flat, seen from above",
@@ -1422,6 +1433,7 @@
         "wall_window_open"
       ],
       "zones": [
+        "hall",
         "inn"
       ],
       "prompt": "interior timber and plaster wall panel with an open wooden window",
@@ -1434,6 +1446,7 @@
         "wall_doorway"
       ],
       "zones": [
+        "hall",
         "inn"
       ],
       "prompt": "interior timber and plaster wall panel with an open doorway",
@@ -1470,7 +1483,7 @@
       },
       "rigged": true,
       "zones": [
-        "citadel"
+        "hall"
       ]
     },
     "x_cloud": {

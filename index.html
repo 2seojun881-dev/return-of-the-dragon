@@ -532,7 +532,7 @@ auto:ic('<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 
 const CLASSES={
  novice:{name:'초보자',role:'견습 모험가 · Lv.15에 진급',hp:230,mp:100,atk:13,def:9,range:2.1,aspd:.9,speed:6.4,rad:.5,wtype:'sword',emblem:'sword',color:0xd8c8a0,gear:'목검 / 수련복',
   weapons:[['낡은 목검',0],['룬바의 수련검',8]],
-  blurb:'모든 모험가는 초보자로 시작합니다. 레벨 15가 되면 천명 성채 중앙 진급의 사당에서 세 직업(전사 · 도적 · 신) 중 하나로 진급합니다.',
+  blurb:'모든 모험가는 초보자로 시작합니다. 레벨 15가 되면 천명 성채 중앙 진급의 전당에서 세 직업(전사 · 도적 · 신) 중 하나로 진급합니다.',
   sk:{atk:{n:'휘두르기',d:'전방 좁은 범위에 물리 피해',i:'sword'},
       s1:{n:'힘껏 베기',d:'전방을 힘껏 베어 2배 피해',i:'dash',cd:6,lv:1,mp:10,tut:true}}},
  warrior:{name:'전사',role:'근접 · 중갑 딜탱',hp:330,mp:110,atk:14,def:15,range:2.2,aspd:.95,speed:6.3,rad:.5,wtype:'sword',emblem:'shield',color:0xff7a4a,gear:'대검·중검 / 판금 갑옷',
@@ -759,13 +759,13 @@ const QUESTS=[
  {id:'p6',zone:'plains',ch:'제1장',title:'천명 성채 입성',reward:{exp:200},
   steps:[{goals:[{k:'enter',id:'citadel',n:1,t:'천명 성채로 입장'}],guide:'열린 남문을 지나 천명 성채로 들어가세요.'}]},
  {id:'c1',zone:'citadel',ch:'제1장',title:'은빛 요새의 주인',reward:{exp:300},done:'citadel',
-  steps:[{talk:'eldric',cs:'eldric',text:'북쪽 사령부의 기사단장 엘드릭 만나기',guide:'천명 성채에 오신 것을 환영합니다! 북쪽 기사단 사령부의 엘드릭을 찾아가세요.'}]},
+  steps:[{talk:'eldric',cs:'eldric',text:'북동쪽 사령부의 기사단장 엘드릭 만나기',guide:'천명 성채에 오신 것을 환영합니다! 북동쪽 기사단 사령부의 엘드릭을 찾아가세요.'}]},
  {id:'c2',zone:'beasts',ch:'제2장',title:'서문의 짐승들',reward:{exp:12000,gold:5000,mpots:5,items:{'천명 기사단 망토':1}},
   steps:[{goals:[{k:'kill',id:'beastWolf',n:10,t:'흑갈색 늑대 전사 처치'}],note:'권장 Lv.8~15 · 천명 성채 서문',guide:'천명 성채 서문 밖 [야수 서식지](권장 Lv.1~15)에서 흑갈색 늑대 전사를 사냥하세요. 퀘스트 창을 탭하면 성문까지 자동으로 이동합니다.'}]},
  {id:'c2l',zone:'beasts',ch:'제2장',title:'진급의 자격',reward:{potions:5,mpots:5},
   steps:[{goals:[{k:'level',id:'15',n:1,t:'레벨 15 달성'}],note:'야수 서식지 · 권장 Lv.8~15',guide:'레벨 15가 되면 전사·도적·신 중 하나로 진급할 수 있습니다. 야수 서식지에서 사냥해 레벨 15를 달성하세요.'}]},
- {id:'c2p',zone:'citadel',ch:'제2장',title:'진급의 사당',reward:{exp:3000,gold:3000},
-  steps:[{goals:[{k:'promote',id:'any',n:1,t:'진급의 사당에서 진급하기'}],note:'천명 성채 중앙 · 진급의 사당',guide:'천명 성채 중앙 [진급의 사당]의 길드장(전사 다빈 · 도적 태완 · 신 서준)에게 말을 걸어 진급하세요. 진급하면 전용 무기와 갑옷을 선물로 받습니다.'}]},
+ {id:'c2p',zone:'citadel',ch:'제2장',title:'진급의 전당',reward:{exp:3000,gold:3000},
+  steps:[{goals:[{k:'promote',id:'any',n:1,t:'진급의 전당에서 진급하기'}],note:'천명 성채 · 분수 북서쪽 교회 [진급의 전당]',guide:'천명 성채 북서쪽 [진급의 전당]의 길드장(전사 다빈 · 도적 태완 · 신 서준)에게 말을 걸어 진급하세요. 사당은 분수 북서쪽 교회 [진급의 전당] 안에 있습니다. 진급하면 전용 무기와 갑옷을 선물로 받습니다.'}]},
  {id:'c3',zone:'grave',ch:'제2장',title:'원혼의 묘지',reward:{exp:60000,gold:30000,stones:{mid:5}},
   steps:[{goals:[{k:'kill',id:'graveGhost',n:12,t:'억울한 원혼 정화'}],note:'권장 Lv.28~40 · 동문',guide:'동문 밖 [원혼의 묘지](권장 Lv.15~40). 원혼은 멀리서 마법을 쏩니다. 광역 스킬로 한꺼번에 정리하세요.'}]},
  {id:'c4',zone:'clock',ch:'제3장',title:'멈추지 않는 태엽',reward:{exp:500000,gold:150000,stones:{high:3}},
@@ -880,11 +880,13 @@ function shake(a){if(!REDUCED)cam.shake=Math.max(cam.shake,a);}
 /* =========================================================
    world
    ========================================================= */
-let W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],bounds:[-30,30,-30,30],zone:''};
+let W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:''};
 const FX=[];
 function addFx(obj,life,upd,par){(par||W.root).add(obj);FX.push({obj,t:0,life,upd});return obj;}
 function updFx(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){f.obj.parent&&f.obj.parent.remove(f.obj);FX.splice(i,1);continue;}f.upd&&f.upd(k,dt,f);}}
 
+/* walkable height: flat plateaus, plus ramps (stairs) that climb from z=rz (ground) to z=rz1 (top) */
+function groundH(x,z){let h=0;for(const r of W.hts){if(x<r.x0||x>r.x1||z<r.z0||z>r.z1)continue;const v=r.rz==null?r.h:r.h*clamp((r.rz-z)/(r.rz-r.rz1),0,1);if(v>h)h=v;}return h;}
 function addCircle(x,z,r){const c={t:'c',x,z,r};W.cols.push(c);return c;}
 function addBox(x,z,hw,hd){const c={t:'b',x,z,hw,hd};W.cols.push(c);return c;}
 function resolve(p,rad){
@@ -930,7 +932,7 @@ function ground(cx,cz,w,d,col,jit,y){
   if(tex){const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,(uv.getX(i)*w+cx)/7,(uv.getY(i)*d-cz)/7);}  // ~7m per tile, continuous across patches
   const mat=new THREE.MeshStandardMaterial({vertexColors:true,map:tex,roughness:1,flatShading:!tex,polygonOffset:!!y,polygonOffsetFactor:-(y||0),polygonOffsetUnits:-(y||0)*2});
   const m=new THREE.Mesh(geo,fe?edgeFade(mat):mat);if(fe)m.renderOrder=y;
-  m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;W.root.add(m);return m;
+  m.position.set(cx,(y||0)*.012,cz);m.receiveShadow=true;m.userData.area=true;W.root.add(m);return m;
 }
 let GRASS_G=null;
 function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_grass;GRASS_G=false;if(!src)return false;let mesh0=null;src.updateMatrixWorld(true);src.traverse(o=>{if(o.isMesh&&!mesh0)mesh0=o;});if(!mesh0)return false;
@@ -939,7 +941,8 @@ function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_gras
 /* hand-made Meshy decor: [name, x, z, size(m), collision radius, rotation] */
 function decor(list){list.forEach(([n,x,z,s,r,rot])=>{if(!PROPS[n])return;const g=prop(n,x,z,{fit:s,rot:rot==null?srand()*6.28:rot});if(r)addCircle(x,z,r);return g;});}
 function grass(cx,cz,w,d,n,col){
-  const tuft=grassTuft();if(tuft){n=Math.max(20,Math.min(n,Math.floor(45000/tuft.tris)));}  // ~45k triangles per field at most
+  n=Math.round(n*ZS(W.zone)*ZS(W.zone)*.6);  // expanded zones: keep the grass reasonably dense
+  const tuft=grassTuft();if(tuft){n=Math.max(20,Math.min(n,Math.floor(70000/tuft.tris)));}  // ~45k triangles per field at most
   const geo=tuft?tuft.geo:new THREE.ConeGeometry(.07,.5,3);if(!tuft)geo.translate(0,.25,0);
   const im=new THREE.InstancedMesh(geo,tuft?tuft.mt:M(col),n),m4=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new V(),up=new V(0,1,0);
   const k0=tuft?1.4:1;for(let i=0;i<n;i++){s.setScalar((.6+srand()*1.1)*k0);q.setFromAxisAngle(up,srand()*6);m4.compose(new V(cx+(srand()-.5)*w,0,cz+(srand()-.5)*d),q,s);im.setMatrixAt(i,m4);}
@@ -954,9 +957,9 @@ function grass(cx,cz,w,d,n,col){
 /* buildings are 1.5x their old footprint; each grows away from the zone centre so the side facing roads/plazas
    (and its door) stays where it was */
 const BGROW=1.5;
-function growB(x,z,w,d){const k=BGROW-1;if(Math.abs(x)>=Math.abs(z))return {x:x+Math.sign(x||1)*w*k/2,z,s:BGROW};return {x,z:z+Math.sign(z||1)*d*k/2,s:BGROW};}
+function growB(x,z,w,d){if(ZS(W.zone)>1)return {x,z,s:ZS(W.zone)};const k=BGROW-1;if(Math.abs(x)>=Math.abs(z))return {x:x+Math.sign(x||1)*w*k/2,z,s:BGROW};return {x,z:z+Math.sign(z||1)*d*k/2,s:BGROW};}
 function house(x,z,o){
-  if(KIT){o=o||{};const sw0=o.rot&&Math.abs(Math.sin(o.rot))>.5,gb=growB(x,z,sw0?(o.d||5):(o.w||6),sw0?(o.w||6):(o.d||5));x=gb.x;z=gb.z;const w=(o.w||6)*gb.s,d=(o.d||5)*gb.s;const k=o.kind||pick(['building_home_A_red','building_home_B_red']);const g=prop(k,x,z,{fit:Math.max(w,d)*(k==='building_tavern_red'?.9:1.05),rot:(o.rot||0)+(o.face||0)});
+  if(KIT){o=o||{};const sw0=o.rot&&Math.abs(Math.sin(o.rot))>.5,gb=growB(x,z,sw0?(o.d||5):(o.w||6),sw0?(o.w||6):(o.d||5));x=gb.x;z=gb.z;const w=(o.w||6)*gb.s,d=(o.d||5)*gb.s;const k=o.kind||pick(['building_home_A_red','building_home_B_red']);const g=prop(k,x,z,{fit:Math.max(w,d)*(k==='building_tavern_red'?.9:1.05),rot:(o.rot||0)+(o.face||0)});if(g)g.userData.grown=true;
     const sw=o.rot&&Math.abs(Math.sin(o.rot))>.5;addBox(x,z,(sw?d:w)/2,(sw?w:d)/2);return g;}
   o=o||{};const w=o.w||6,d=o.d||5,h=o.h||3.2,g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);
   mesh(new THREE.BoxGeometry(w,h,d),M(o.wall||0xcdb89a),0,h/2,0,g);
@@ -987,7 +990,7 @@ function palisade(x1,z1,x2,z2,h){
   if(KIT&&PROPS.fence_wood_straight){const bb=PBOX.fence_wood_straight,sz=new V();bb.getSize(sz);const s=h/Math.max(sz.y,.01)*.62,pl=Math.max(sz.x,sz.z)*s;
     const len=Math.hypot(x2-x1,z2-z1),n=Math.max(1,Math.round(len/pl)),rot=Math.atan2(x2-x1,z2-z1)+Math.PI/2;
     for(let i=0;i<n;i++){const k=(i+.5)/n;prop('fence_wood_straight',x1+(x2-x1)*k,z1+(z2-z1)*k,{s,rot:sz.x>=sz.z?rot:rot+Math.PI/2});}
-    addBox((x1+x2)/2,(z1+z2)/2,Math.abs(x2-x1)/2+.3,Math.abs(z2-z1)/2+.3);return;}const len=Math.hypot(x2-x1,z2-z1),n=Math.ceil(len/.55);
+    addBox((x1+x2)/2,(z1+z2)/2,Math.abs(x2-x1)/2+.3,Math.abs(z2-z1)/2+.3).line=true;return;}const len=Math.hypot(x2-x1,z2-z1),n=Math.ceil(len/.55);
   const geo=new THREE.CylinderGeometry(.24,.26,h,6);const im=new THREE.InstancedMesh(geo,M(0x6a4a2e),n+1);const m4=new THREE.Matrix4();
   for(let i=0;i<=n;i++){const k=i/n;m4.makeTranslation(x1+(x2-x1)*k,h/2+(i%3)*.08,z1+(z2-z1)*k);im.setMatrixAt(i,m4);}
   im.castShadow=true;W.root.add(im);
@@ -997,7 +1000,7 @@ function stoneWall(x1,z1,x2,z2,h,col){h=h||6;
   if(KIT&&PROPS.wall_straight){const bb=PBOX.wall_straight,sz=new V();bb.getSize(sz);const s=h/sz.y,pl=Math.max(sz.x,sz.z)*s;
     const len=Math.hypot(x2-x1,z2-z1),n=Math.max(1,Math.round(len/pl)),rot=Math.atan2(x2-x1,z2-z1)+Math.PI/2;
     for(let i=0;i<n;i++){const k=(i+.5)/n;prop('wall_straight',x1+(x2-x1)*k,z1+(z2-z1)*k,{s,rot:sz.x>=sz.z?rot:rot+Math.PI/2});}
-    addBox((x1+x2)/2,(z1+z2)/2,Math.max(Math.abs(x2-x1),1.6)/2,Math.max(Math.abs(z2-z1),1.6)/2);return;}const w=Math.abs(x2-x1)+.01,d=Math.abs(z2-z1)+.01;const hw=Math.max(w,1.6),hd=Math.max(d,1.6);
+    addBox((x1+x2)/2,(z1+z2)/2,Math.max(Math.abs(x2-x1),1.6)/2,Math.max(Math.abs(z2-z1),1.6)/2).line=true;return;}const w=Math.abs(x2-x1)+.01,d=Math.abs(z2-z1)+.01;const hw=Math.max(w,1.6),hd=Math.max(d,1.6);
   mesh(new THREE.BoxGeometry(hw,h,hd),M(col||0xb8bcc4),(x1+x2)/2,h/2,(z1+z2)/2,W.root);
   const n=Math.floor(Math.max(w,d)/1.6);for(let i=0;i<n;i+=2){const k=(i+.5)/n;mesh(new THREE.BoxGeometry(w>d?.9:hw,.8,w>d?hd:.9),M(col||0xb8bcc4),x1+(x2-x1)*k,h+.4,z1+(z2-z1)*k,W.root);}
   addBox((x1+x2)/2,(z1+z2)/2,hw/2,hd/2);}
@@ -1016,7 +1019,7 @@ function cart(x,z,rot,broken){if(KIT){prop('wheelbarrow',x,z,{fit:2.6,rot:rot||0
   const b=mesh(new THREE.BoxGeometry(1.8,.6,3),M(0x7a5a3a),0,.9,0,g);if(broken)b.rotation.z=.35;
   [[-1,.8],[1,.8],[-1,-.8],[1,-.8]].forEach(([sx,sz],i)=>{if(broken&&i===1)return;const w=mesh(new THREE.CylinderGeometry(.5,.5,.12,10),M(0x4a3222),sx,.5,sz,g);w.rotation.z=Math.PI/2;});
   if(broken){const w=mesh(new THREE.CylinderGeometry(.5,.5,.12,10),M(0x4a3222),1.8,.06,1,g);}addCircle(x,z,1.5);}
-function stall(x,z,col){if(KIT){const gb=growB(x,z,4,6.5);prop('building_market_blue',gb.x,gb.z,{fit:7,rot:Math.PI/2});addBox(gb.x,gb.z,2.4,3.2);return;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(3,1,1.4),M(0x7a5a3a),0,.5,0,g);
+function stall(x,z,col){if(KIT){const gb=growB(x,z,4,6.5);{const sg=prop('building_market_blue',gb.x,gb.z,{fit:7*(ZS(W.zone)>1?ZS(W.zone)/1.5:1),rot:Math.PI/2});if(sg)sg.userData.grown=true;}addBox(gb.x,gb.z,2.4,3.2);return;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(3,1,1.4),M(0x7a5a3a),0,.5,0,g);
   [-1.4,1.4].forEach(sx=>mesh(new THREE.BoxGeometry(.12,2.6,.12),M(0x4a3222),sx,1.3,.6,g));const r=mesh(new THREE.BoxGeometry(3.4,.1,2),M(col),0,2.6,.2,g);r.rotation.x=-.2;
   for(let i=0;i<4;i++)mesh(new THREE.BoxGeometry(.4,.3,.4),M([0xc84a3a,0xe0b050,0x4a8a4a,0x5a6ac0][i]),-1+i*.66,1.15,0,g);addBox(x,z,1.6,.8);}
 function lamp(x,z){const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);if(KIT)prop('post_lantern',0,0,{h:3.2,par:g});else mesh(new THREE.CylinderGeometry(.08,.12,3,6),M(0x2a2a30,{metalness:.5}),0,1.5,0,g);const b=mesh(new THREE.OctahedronGeometry(.25),B(0xcfe8ff),0,3.1,0,g);b.castShadow=false;const pl=mesh(new THREE.SphereGeometry(.5,8,6),new THREE.MeshBasicMaterial({color:0x7ab8ff,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}),0,3.1,0,g);pl.castShadow=false;addCircle(x,z,.2);}
@@ -1057,7 +1060,7 @@ function pavilion(x,z,w,d,h){const g=new THREE.Group();g.position.set(x,0,z);W.r
   mesh(new THREE.BoxGeometry(w+1,.6,d+1),M(0xaeb2bc),0,h+.8,0,g);const r=mesh(new THREE.CylinderGeometry(.1,(d+2)/2,2.4,4,1),M(0x3a5a9a),0,h+2.3,0,g);r.rotation.y=Math.PI/4;r.scale.x=(w+2)/(d+2)*1.1;
   mesh(new THREE.BoxGeometry(w-1,h,.5),M(0xb8bcc4),0,h/2+.5,-d/2+.3,g);
   return g;}
-function bigBuilding(x,z,w,d,h,roof,wall,kind){if(KIT&&kind){const gb=growB(x,z,w,d);x=gb.x;z=gb.z;w*=gb.s;d*=gb.s;const g=prop(kind,x,z,{fit:Math.max(w,d)*1.2,rot:0});addBox(x,z,w/2,d/2);return g;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(w,h,d),M(wall||0xaeb2bc),0,h/2,0,g);
+function bigBuilding(x,z,w,d,h,roof,wall,kind){if(KIT&&kind){const gb=growB(x,z,w,d);x=gb.x;z=gb.z;w*=gb.s;d*=gb.s;const g=prop(kind,x,z,{fit:Math.max(w,d)*1.2,rot:0});if(g)g.userData.grown=true;addBox(x,z,w/2,d/2);return g;}const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);mesh(new THREE.BoxGeometry(w,h,d),M(wall||0xaeb2bc),0,h/2,0,g);
   const r=mesh(new THREE.ConeGeometry(Math.max(w,d)*.75,3,4),M(roof||0x3a5a9a),0,h+1.5,0,g);r.rotation.y=Math.PI/4;r.scale.set(w/Math.max(w,d),1,d/Math.max(w,d));
   mesh(new THREE.BoxGeometry(1.6,2.4,.2),M(0x4a3222),0,1.2,d/2+.05,g);addBox(x,z,w/2,d/2);return g;}
 function mapTexture(){const c=document.createElement('canvas');c.width=512;c.height=384;const g=c.getContext('2d');
@@ -1254,7 +1257,7 @@ function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.
 /* Meshy models: entries with "zones" load only when a zone that uses them is built (and its neighbours are
    prefetched in the background), so phones don't download every model at startup. */
 let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
-const ZONE_NEAR={inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
+const ZONE_NEAR={hall:['citadel'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura']};
 function parseCustom(f){return CUSTOM_ONCE[f]||(CUSTOM_ONCE[f]=parseB64('models/custom/'+f));}
 function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
   return CUSTOM_LOAD[k]=parseCustom(e.file).then(async g=>{
@@ -1765,7 +1768,7 @@ function newSave(cls){cls=cls||'novice';const c=CLASSES[cls];return {cls,level:1
   unlocked:{s1:false,s2:false,ult:false},items:{},title:'',guild:null,coin:0,att:'',rune:null,daily:{date:'',boar:0,raider:0,c1:false,c2:false},sold:[]};}
 const DB_RENAME={'용혈 섬광궁':'용혈 섬광단검','용혈 멸세봉':'용혈 멸세령'};
 function ensureSave(s){
-  if(s.cls==='merchant')setTimeout(()=>toast('상인 직업이 사라졌습니다. 천명 성채 [진급의 사당]에서 전사 · 도적 · 신 중 하나를 다시 고르세요.','gold'),4000);
+  if(s.cls==='merchant')setTimeout(()=>toast('상인 직업이 사라졌습니다. 천명 성채 [진급의 전당]에서 전사 · 도적 · 신 중 하나를 다시 고르세요.','gold'),4000);
   if(OLD_CLS[s.cls]){const nc=s.level>=15?OLD_CLS[s.cls]:'novice';if(s.name===({knight:'뱅가드 나이트',ranger:'섀도우 레인저',sorcerer:'엘리멘탈 소서러'})[s.cls])s.name=CLASSES[nc].name;s.cls=nc;}
   if(!s.qv){if(s.q>=12)s.q+=2;s.qv=2;}
   if(s.tut===undefined)s.tut=!!(s.unlocked&&s.unlocked.s1)||s.q>2;
@@ -1889,6 +1892,7 @@ const ZONES={
  title:{name:'',build:buildTitle},
  showcase:{name:'',build:buildShowcase},
  inn:{name:'잿빛 잎새 마을 · 여관',build:buildInn,spawn:[4,1]},
+ hall:{name:'천명 성채 · 진급의 전당',build:buildHall,spawn:[0,4.8]},
  village:{name:'잿빛 잎새 마을',build:buildVillage,spawn:[-8,12]},
  plains:{name:'바람노래 평원',build:buildPlains,spawn:[0,22]},
  citadel:{name:'천명 성채',build:buildCitadel,spawn:[0,12]},
@@ -1901,6 +1905,7 @@ const ZONES={
 const ZONE_ORDER=['inn','village','plains','citadel'];
 const HUBZ=['beasts','grave','clock','asura','altar'];
 function nextZone(from,to){if(from===to)return null;
+  if(from==='hall')return 'citadel';if(to==='hall')return from==='citadel'?'hall':nextZone(from,'citadel');
   if(from==='citadel'){if(HUBZ.includes(to))return to==='altar'&&!W.portals.find(p=>p.to==='altar')?'asura':to;return 'plains';}
   if(HUBZ.includes(from)){if(to==='altar'&&from==='asura')return 'altar';return 'citadel';}
   const ti=ZONE_ORDER.indexOf(HUBZ.includes(to)?'citadel':to),ci=ZONE_ORDER.indexOf(from);if(ti<0||ci<0)return null;return ZONE_ORDER[ci+(ti>ci?1:-1)];}
@@ -1909,10 +1914,34 @@ function clearZone(){
   scene.remove(W.root);
   W.enemies.forEach(e=>e.tag&&e.tag.remove());W.npcs.forEach(n=>n.tag&&n.tag.remove());W.portals.forEach(p=>p.tagEl&&p.tagEl.remove());
   floats.forEach(f=>f.el.remove());floats.length=0;FX.length=0;
-  W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],bounds:[-30,30,-30,30],zone:''};
+  W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:''};
   scene.add(W.root);
 }
-function buildZone(z){clearZone();_s=12345;W.zone=z;ZONES[z].build();if(z!=='prologue')updSpawners(0,true);}
+/* outdoor zones are laid out at 2x their original coordinates (4x the area): every placed object moves out, ground,
+   roads, water and walls stretch, buildings grow 2x, trees/props/characters keep their size, spawners hold 3x mobs */
+const ZSCALE={village:2,plains:2,citadel:2,beasts:2,grave:2,clock:2,asura:2};
+const ZS=z=>ZSCALE[z]||1;
+function LV(x,y,z){const k=ZS(W.zone);return new V(x*k,y,z*k);}
+function expandZone(z){const k=ZS(z);if(k===1)return;
+  const b0=Math.max(...W.bounds.map(Math.abs));W.bounds=W.bounds.map(v=>v*k);
+  W.root.children.slice().forEach(o=>{
+    if(o.isInstancedMesh){const m=new THREE.Matrix4(),p=new V(),q=new THREE.Quaternion(),s=new V();for(let i=0;i<o.count;i++){o.getMatrixAt(i,m);m.decompose(p,q,s);p.x*=k;p.z*=k;m.compose(p,q,s);o.setMatrixAt(i,m);}o.instanceMatrix.needsUpdate=true;return;}
+    if(Math.hypot(o.position.x,o.position.z)>b0*2.6)return;  // distant backdrop (volcanoes) stays put
+    const u=o.userData||{};
+    if(u.area)o.scale.set(o.scale.x*k,o.scale.y,o.scale.z*k);
+    else if(o.isMesh&&o.geometry&&/Plane|Circle|Ring/.test(o.geometry.type)&&Math.abs(o.rotation.x+Math.PI/2)<.01){o.geometry.computeBoundingBox();const bs=o.geometry.boundingBox.getSize(new V());if(Math.max(bs.x,bs.y)>6){o.scale.x*=k;o.scale.y*=k;}}
+    else if(u.prop&&/wall|fence/.test(u.prop)&&u.size){if(u.size.x>=u.size.z)o.scale.x*=k;else o.scale.z*=k;}
+    else if(u.prop&&/^building_/.test(u.prop)&&!u.grown)o.scale.multiplyScalar(k);
+    o.position.x*=k;o.position.z*=k;});
+  W.cols.forEach(c=>{c.x*=k;c.z*=k;if(c.scaleSize){c.hw*=k;c.hd*=k;}else if(c.line){if(c.hw>=c.hd)c.hw*=k;else c.hd*=k;}});
+  W.npcs.forEach(n=>{if(n.home){n.home.x*=k;n.home.z*=k;}});
+  W.enemies.forEach(en=>{en.home.x*=k;en.home.z*=k;});
+  W.portals.forEach(p=>{p.x*=k;p.z*=k;});
+  W.hts.forEach(r=>{r.x0*=k;r.x1*=k;r.z0*=k;r.z1*=k;if(r.rz!=null){r.rz*=k;r.rz1*=k;}});
+  if(W.shrine){W.shrine.x*=k;W.shrine.z*=k;}
+  W.spawners.forEach(s=>{s.x*=k;s.z*=k;s.r*=k;if(s.pts)s.pts=s.pts.map(([x,zz])=>[x*k,zz*k]);const d=MOBS[s.mob]||{};
+    if(typeof s.n==='number'&&!d.static&&!d.boss&&!d.dummy)s.n=Math.min(12,Math.round(s.n*2.5));});}
+function buildZone(z){clearZone();_s=12345;W.zone=z;ZONES[z].build();expandZone(z);if(z!=='prologue')updSpawners(0,true);}
 
 
 const SHOW_CLS=['warrior','novice','rogue','shaman'],SHOW_MID=1.5,SHOW_GAP=3.1,SHOW_START=SHOW_CLS.indexOf('novice'),SHOW_N=SHOW_CLS.length;
@@ -2057,6 +2086,33 @@ function buildPrologue(){
   dragon=makeDragon();dragon.g.position.set(0,20,-110);dragon.g.scale.setScalar(1.3);W.root.add(dragon.g);dragon.g.visible=false;
   W.anim.push(t=>{if(!dragon)return;dragon.wings.forEach((w,i)=>{w.rotation.z=(i?-1:1)*Math.sin(t*1.6)*.25;});});
 }
+function buildHall(){
+  setEnv({sky:0x0e0a08,fog:[30,70],ht:0xe8d0a8,hb:0x2a1c12,hi:1.15,sun:0xffe0b0,si:1.1,ash:false});
+  W.bounds=[-9.2,9.2,-6.6,7.4];
+  ground(0,0,120,120,0x0c0908,.02);
+  const T=4;
+  if(PROPS.floor_wood_large)for(let ix=0;ix<5;ix++)for(let iz=0;iz<4;iz++)prop('floor_wood_large',-8+ix*T,-6+iz*T,{s:1});
+  ground(0,0,3.2,14,0x7a1a14,.04,1);ground(0,-5.2,17,2.6,0x7a1a14,.04,1);  // red carpet to the three masters
+  const wl=(n,x,z,r)=>{const g=prop(n,x,z,{s:1});if(g)g.rotation.y=r;return g;};
+  if(PROPS.wall){[-8,-4,0,4,8].forEach(x=>wl('wall',x,-8.2,0));[-6,-2,2,6].forEach(z=>{wl(z===-2?'wall_window_open':'wall',-10.2,z,Math.PI/2);wl(z===-2?'wall_window_open':'wall',10.2,z,-Math.PI/2);});
+    [-8,8].forEach(x=>{const g=wl('wall',x,8.2,Math.PI);if(g)g.scale.y=.35;});}
+  [[-10,-8],[10,-8],[-10,8],[10,8],[-4,-7.6],[4,-7.6]].forEach(([x,z])=>prop('pillar_decorated',x,z,{h:5}));
+  addBox(0,-9,11,1);addBox(-11,0,1,9);addBox(11,0,1,9);addBox(-6,9,4.5,1);addBox(6,9,4.5,1);
+  // three stations: warrior (west), god (north centre, raised), rogue (east)
+  const stn=(x,z,col)=>{const r=new THREE.Mesh(new THREE.RingGeometry(1.5,1.75,40),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));r.rotation.x=-Math.PI/2;r.position.set(x,.06,z);W.root.add(r);W.anim.push(t=>{r.material.opacity=.5+Math.sin(t*2+x)*.2;});
+    const l=new THREE.PointLight(col,1.2,9,2);l.position.set(x,3,z);W.root.add(l);};
+  stn(-6,-4.6,0xff5a3a);stn(0,-5.8,0xfff0b0);stn(6,-4.6,0x9a6aff);
+  prop('banner_red',-6,-7.4,{h:4.2});prop('weaponrack',-8.4,-4.2,{h:1.8,rot:Math.PI/2});prop('sword_shield',-8.8,-6.6,{h:1.6,rot:Math.PI/2});
+  prop('banner_blue',6,-7.4,{h:4.2});prop('crates_stacked',8.6,-6.4,{fit:1.6});
+  prop('shrine_candles',0,-7.3,{h:1.5});[-1.6,1.6].forEach(x=>prop('candle_triple',x,-7,{h:.8}));
+  [[-9.4,-2],[9.4,-2],[-9.4,4],[9.4,4]].forEach(([x,z])=>{const t=prop('torch_mounted',x,z,{h:1,y:2.2});if(t)t.rotation.y=x<0?Math.PI/2:-Math.PI/2;const l=new THREE.PointLight(0xffa050,1,8,2);l.position.set(x*.9,2.6,z);W.root.add(l);});
+  spawnNpc('dabin',-6,-4.6,0);spawnNpc('taewan',6,-4.6,0);
+  const god=spawnNpc('seojun',0,-5.8,0);god.y=1;god.tagY=3.4;
+  const halo=new THREE.Mesh(new THREE.TorusGeometry(.5,.05,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=3.2;god.mesh.add(halo);
+  W.anim.push(t=>{god.y=1+Math.sin(t*1.4)*.25;halo.rotation.z=t;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
+  W.shrine={x:0,z:-3};
+  portal(0,7.6,'citadel',[-17,-10.6],()=>true,'','천명 성채로 나가기 ›',{door:true});
+}
 function buildInn(){
   setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.62,sun:0xffc890,si:.75,ash:false});
   W.bounds=[-6,6,-4.4,4.6];
@@ -2185,8 +2241,9 @@ function buildPlains(){
   decor([['meshy_stump',-12,-10,1.8,.8],['meshy_stump',12,-32,1.6,.7],['meshy_stump',-11,-70,1.8,.8],['meshy_supplies',3.2,21,2.4,.9,0],
     ['meshy_bush',-20,-5,2.2,.8],['meshy_bush',20,-24,2.2,.8],['meshy_bush',-21,-38,2,.8],['meshy_bush',19,5,2,.8]]);
   portal(0,26.5,'village',[0,-27],()=>true,'','잿빛 잎새 마을 ›');
-  portal(0,-101.5,'citadel',[-22,24],()=>S.q>qIdx('p5'),'성문이 굳게 닫혀 있습니다. 수비대장 헥터의 허락이 필요합니다.','천명 성채 ›');
+  portal(0,-101.5,'citadel',[0,24],()=>S.q>qIdx('p5'),'성문이 굳게 닫혀 있습니다. 수비대장 헥터의 허락이 필요합니다.','천명 성채 ›');
 }
+const CMD_X=18;  // 기사단 사령부 x (north-east); the eldric cutscene is framed around it
 function buildCitadel(){
   setEnv({sky:0x404c66,fog:[40,150],ht:0xb4c4e4,hb:0x33333f,hi:.5,sun:0xffe2bc,si:.95,ash:false});
   W.bounds=[-28,28,-27,27];
@@ -2194,63 +2251,72 @@ function buildCitadel(){
   ground(0,0,60,60,0x5e636e,.08,1);
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
   const WC=0xa4a8b2;
-  stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,11,-29,8,WC);stoneWall(17,-29,30,-29,8,WC);
+  stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,-3.2,-29,8,WC);stoneWall(3.2,-29,30,-29,8,WC);
   stoneWall(-30,29,-25,29,8,WC);stoneWall(-19,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
   stoneWall(-30,-29,-30,-3.6,8,WC);stoneWall(-30,3.6,-30,29,8,WC);stoneWall(30,-29,30,-3.6,8,WC);stoneWall(30,3.6,30,29,8,WC);
   tower(-29,-28,12,0xaeb2bc);tower(29,-28,12,0xaeb2bc);tower(-29,28,12,0xaeb2bc);tower(29,28,12,0xaeb2bc);
   fountain(0,0);
-  pavilion(0,-21,14,8,5.5);addBox(0,-24.2,6.5,.6);[-7,7].forEach(x=>[-25,-17].forEach(z=>addCircle(x,z,.5)));for(let i=1;i<4;i++){addCircle(-7+i*3.5,-25,.45);}
-  const tbl=new THREE.Group();tbl.position.set(0,.5,-19);W.root.add(tbl);if(KIT){prop('table_long',0,0,{w:4.2,par:tbl});}else{mesh(new THREE.BoxGeometry(4.2,.2,2.6),M(0x5a3a22),0,1,0,tbl);[-1.8,1.8].forEach(x=>[-1,1].forEach(z=>mesh(new THREE.BoxGeometry(.2,1,.2),M(0x4a2a18),x,.5,z,tbl)));}
-  const mp=new THREE.Mesh(new THREE.PlaneGeometry(3.8,2.3),new THREE.MeshStandardMaterial({map:mapTexture(),roughness:1}));mp.rotation.x=-Math.PI/2;mp.position.y=KIT&&tbl.children[0]&&tbl.children[0].userData.size?tbl.children[0].userData.size.y+.02:1.12;tbl.add(mp);addBox(0,-19,2.2,1.4);
+  // 기사단 사령부 (north-east)
+  const CX=CMD_X;pavilion(CX,-21,14,8,5.5);addBox(CX,-24.2,6.5,.6);[-7,7].forEach(x=>[-25,-17].forEach(z=>addCircle(CX+x,z,.5)));for(let i=1;i<4;i++){addCircle(CX-7+i*3.5,-25,.45);}
+  const tbl=new THREE.Group();tbl.position.set(CX,.5,-19);W.root.add(tbl);if(KIT){prop('table_long',0,0,{w:4.2,par:tbl});}else{mesh(new THREE.BoxGeometry(4.2,.2,2.6),M(0x5a3a22),0,1,0,tbl);[-1.8,1.8].forEach(x=>[-1,1].forEach(z=>mesh(new THREE.BoxGeometry(.2,1,.2),M(0x4a2a18),x,.5,z,tbl)));}
+  const mp=new THREE.Mesh(new THREE.PlaneGeometry(3.8,2.3),new THREE.MeshStandardMaterial({map:mapTexture(),roughness:1}));mp.rotation.x=-Math.PI/2;mp.position.y=KIT&&tbl.children[0]&&tbl.children[0].userData.size?tbl.children[0].userData.size.y+.02:1.12;tbl.add(mp);addBox(CX,-19,2.2,1.4);
   banner(-8,-15,0x2a4a8a);banner(8,-15,0x2a4a8a);
-  // 객주소 (south-west)
+  // 객주소 (south-west, between the main south gate and the west gate)
   bigBuilding(-20,19,9,6,5,0x8a4a2a,0xc8b8a0,'building_tavern_red');barrel(-14.5,17.5);barrel(-13.8,18.3);crate(-24.5,14);
-  // 영혼의 제단 (south-east)
-  bigBuilding(20,19,9,6,5,0x3a4a8a,0xc8c4dc,'building_church_blue');
-  const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0xffe0a0,transparent:true,opacity:.75,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(15.5,.07,12);W.root.add(al);W.anim.push(t=>{al.rotation.z=t*.3;al.material.opacity=.55+Math.sin(t*2)*.2;});
-  if(KIT){prop('shrine_candles',17.8,12,{h:1.6});prop('candle_triple',13.4,12.4,{h:.9});}
-  // 철화 대장간 (north-east)
-  bigBuilding(21,-18,8,8,5.5,0x6a3a2a,0xb8b0a4,'building_blacksmith_red');const fg=new THREE.PointLight(0xff7a2a,1.5,10,2);fg.position.set(16,1.5,-15);W.root.add(fg);W.anim.push(t=>{fg.intensity=1.3+Math.sin(t*9)*.3;});
-  if(KIT){prop('box_large',16,-16.5,{fit:1.6,tint:0x6a5a50});const ff=flameFx(0xff6a1a,0xffc060,1.1);ff.position.set(16,1.3,-16.5);W.root.add(ff);W.anim.push(t=>ff.userData.tick(t));prop('keg',13.6,-14.6,{h:.9,tint:0x5a5a60});}
-  else{mesh(new THREE.BoxGeometry(1.6,1.2,1.6),M(0x5a5450),16,.6,-16.5,W.root);mesh(new THREE.BoxGeometry(1.2,.1,1.2),B(0xff6a1a),16,1.22,-16.5,W.root);mesh(new THREE.BoxGeometry(.9,.6,.5),M(0x3a3a40,{metalness:.7}),13.6,.6,-14.6,W.root);}
-  addBox(16,-16.5,.8,.8);addCircle(13.6,-14.6,.6);if(KIT)prop('sword_shield',18.4,-13.2,{h:1.4});
+  // 영혼의 제단 (north, raised): a symmetric stone terrace with a long stair on the main axis, blue + gold light
+  {const TH=1.6,tg=new THREE.Group();tg.position.set(0,0,-23);tg.userData.area=true;W.root.add(tg);
+    const stone=M(0xb4b8c8),trim=M(0xc8a24a,{metalness:.3,roughness:.5});
+    mesh(new THREE.BoxGeometry(16,TH,12),stone,0,TH/2,0,tg);mesh(new THREE.BoxGeometry(16.4,.14,12.4),trim,0,TH+.02,0,tg);
+    mesh(new THREE.BoxGeometry(9,.06,7),M(0x2a3a7a),0,TH+.1,.6,tg);
+    for(let i=0;i<8;i++){const h=(i+1)*TH/8;mesh(new THREE.BoxGeometry(6.4,h,.5),stone,0,h/2,10-i*.5-.25,tg);}
+    [-1,1].forEach(s=>mesh(new THREE.BoxGeometry(.4,TH+.3,4.2),trim,s*3.4,(TH+.3)/2,8,tg));
+    W.hts.push({x0:-8,x1:8,z0:-29,z1:-17,h:TH},{x0:-3.2,x1:3.2,z0:-17,z1:-13,h:TH,rz:-13,rz1:-17});
+    [[-5.6,-17,2.4,.3],[5.6,-17,2.4,.3],[-8,-23,.3,6],[8,-23,.3,6],[-3.4,-15,.2,2],[3.4,-15,.2,2]].forEach(([x,z,hw,hd])=>{addBox(x,z,hw,hd).line=true;});
+    [[-7,-18],[7,-18],[-7,-27.5],[7,-27.5],[-3.6,-27.5],[3.6,-27.5]].forEach(([x,z])=>{prop('pillar_decorated',x,z,{h:4.6,y:TH});addCircle(x,z,.45);});
+    const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0x8ab8ff,transparent:true,opacity:.75,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(0,TH+.14,-22);W.root.add(al);
+    const beam=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.6,14,20,1,true),new THREE.MeshBasicMaterial({color:0x5a9aff,transparent:true,opacity:.16,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(0,TH+7,-22);W.root.add(beam);
+    const bl=new THREE.PointLight(0x6a9aff,1.8,16,2);bl.position.set(0,TH+3.5,-22);W.root.add(bl);
+    [-5,5].forEach(x=>{const gl=new THREE.PointLight(0xffc860,1.1,10,2);gl.position.set(x,TH+2.6,-19);W.root.add(gl);});
+    W.anim.push(t=>{al.rotation.z=t*.3;al.material.opacity=.55+Math.sin(t*2)*.2;beam.material.opacity=.12+Math.sin(t*1.3)*.05;bl.intensity=1.6+Math.sin(t*2)*.3;});
+    if(KIT){prop('shrine_candles',-2.6,-24.6,{h:1.6,y:TH});prop('shrine_candles',2.6,-24.6,{h:1.6,y:TH});[-4.4,4.4].forEach(x=>prop('candle_triple',x,-20,{h:.9,y:TH}));prop('banner_blue',-5.4,-28,{h:4.4,y:TH});prop('banner_blue',5.4,-28,{h:4.4,y:TH});}}
+  // 철화 대장간 (south-east, beside the east gate and away from the plaza)
+  bigBuilding(21,18,8,8,5.5,0x6a3a2a,0xb8b0a4,'building_blacksmith_red');const fg=new THREE.PointLight(0xff7a2a,1.5,10,2);fg.position.set(16,1.5,15);W.root.add(fg);W.anim.push(t=>{fg.intensity=1.3+Math.sin(t*9)*.3;});
+  if(KIT){prop('box_large',16,16.5,{fit:1.6,tint:0x6a5a50});const ff=flameFx(0xff6a1a,0xffc060,1.1);ff.position.set(16,1.3,16.5);W.root.add(ff);W.anim.push(t=>ff.userData.tick(t));prop('keg',13.6,14.6,{h:.9,tint:0x5a5a60});}
+  else{mesh(new THREE.BoxGeometry(1.6,1.2,1.6),M(0x5a5450),16,.6,16.5,W.root);mesh(new THREE.BoxGeometry(1.2,.1,1.2),B(0xff6a1a),16,1.22,16.5,W.root);mesh(new THREE.BoxGeometry(.9,.6,.5),M(0x3a3a40,{metalness:.7}),13.6,.6,14.6,W.root);}
+  addBox(16,16.5,.8,.8);addCircle(13.6,14.6,.6);if(KIT)prop('sword_shield',18.4,13.2,{h:1.4});
   // 룬 공방 / 거래소 / 수련장 / 잡화점
   const mc=new THREE.Mesh(new THREE.RingGeometry(1.4,1.7,6),new THREE.MeshBasicMaterial({color:0x7ac8ff,transparent:true,opacity:.7,side:THREE.DoubleSide}));mc.rotation.x=-Math.PI/2;mc.position.set(22,.06,-7.5);W.root.add(mc);W.anim.push(t=>{mc.rotation.z=t*.5;});
-  stall(-21,-15,0xb03a3a);stall(-21,-9,0x3a6ab0);crate(-25,-12);
-  if(KIT){prop('target',-13,-20,{h:2});prop('target',-9,-20,{h:2});prop('weaponrack',-15.5,-16,{h:1.8});}
-  stall(12,14.5,0xc8a03a);
+  stall(-24,-9.5,0xb03a3a);stall(-10.5,-9.5,0x3a6ab0);crate(-26,-13);
+  if(KIT){prop('target',-22,7,{h:2});prop('target',-18.5,7,{h:2});prop('weaponrack',-25.5,9,{h:1.8});}
+  stall(8.5,21,0xc8a03a);
   lamp(-5,-5);lamp(5,-5);lamp(-5,5);lamp(5,5);lamp(-4,14);lamp(4,14);lamp(-25,-4.5);lamp(-25,4.5);lamp(25,-4.5);lamp(25,4.5);
   [[-26,-22],[-26,22],[26,24]].forEach(([x,z])=>tree(x,z,1.1));
   volcano(80,-300,1.8);
-  if(KIT){[[-29,-28],[29,-28],[-29,28],[29,28]].forEach(([x,z])=>prop('flag_blue',x,z,{h:4,y:14}));prop('crates_stacked',-24,8,{fit:1.8});}
+  if(KIT){[[-29,-28],[29,-28],[-29,28],[29,28]].forEach(([x,z])=>prop('flag_blue',x,z,{h:4,y:14}));prop('crates_stacked',-26.5,12.5,{fit:1.8});}
   const fc=(x,z)=>Math.atan2(-x,-z);
-  if(PROPS.meshy_throne){prop('meshy_throne',0,-23.6,{h:3.6});addCircle(0,-23.6,1.2);}
-  spawnNpc('eldric',0,-20.7,0);spawnNpc('aide',2.6,-20.4,-.3);
+  if(PROPS.meshy_throne){prop('meshy_throne',CMD_X,-23.6,{h:3.6});addCircle(CMD_X,-23.6,1.2);}
+  spawnNpc('eldric',CMD_X,-20.7,0);spawnNpc('aide',CMD_X+2.6,-20.4,-.3);
   spawnNpc('aril',-15,13.5,fc(-15,13.5));spawnNpc('mari',-9.5,16,fc(-9.5,16));spawnNpc('varkan',-8,23,fc(-8,23));
-  spawnNpc('rowen',15.5,14.4,fc(15.5,14.4));
-  spawnNpc('burkan',15,-12.5,fc(15,-12.5));spawnNpc('elara',22,-5.5,fc(22,-5.5));
-  spawnNpc('sylvia',-17,-12,fc(-17,-12));
-  // 진급의 사당: the four guild masters around a candle shrine north of the fountain
-  const SX=0,SZ=-9.8;W.shrine={x:SX,z:SZ+2.4};
-  if(KIT){prop('shrine_candles',SX,SZ,{h:1.3});[0,1,2,3,4,5].forEach(i=>{const a=i/6*6.283;prop('candle_triple',SX+Math.cos(a)*3.75,SZ+Math.sin(a)*3.75,{h:.7});});
-    [[-3.4,-1.8,'flag_red'],[3.4,-1.8,'banner_patternA_blue'],[-3.4,1.8,'banner_red'],[3.4,1.8,'banner_blue']].forEach(([x,z,n])=>prop(n,SX+x*1.3,SZ+z-1.2,{h:3.2}));}
-  const sr=new THREE.Mesh(new THREE.RingGeometry(3.6,3.9,6),new THREE.MeshBasicMaterial({color:0xffe0a0,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));sr.rotation.x=-Math.PI/2;sr.position.set(SX,.3,SZ);W.root.add(sr);W.anim.push(t=>{sr.rotation.z=t*.2;sr.material.opacity=.45+Math.sin(t*2)*.15;});
-  addCircle(SX,SZ,.8);
-  spawnNpc('dabin',SX-3.4,SZ+1.6,0);spawnNpc('taewan',SX+3.4,SZ+1.6,0);spawnNpc('dongjun',SX-3.4,SZ-1.8,.3);
-  const god=spawnNpc('seojun',SX+3.4,SZ-1.8,-.3);god.y=1;god.tagY=3.4;
-  const halo=new THREE.Mesh(new THREE.TorusGeometry(.5,.05,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=3.2;god.mesh.add(halo);
-  const aura=new THREE.Mesh(new THREE.CircleGeometry(1.6,32),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));aura.rotation.x=-Math.PI/2;aura.position.set(0,.08,-10);W.root.add(aura);
-  W.anim.push(t=>{god.y=1+Math.sin(t*1.4)*.25;halo.rotation.z=t;aura.material.opacity=.22+Math.sin(t*2)*.08;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
-  spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;
+  spawnNpc('rowen',0,-22.6,0);
+  spawnNpc('burkan',15,12.5,fc(15,12.5));spawnNpc('elara',22,-5.5,fc(22,-5.5));
+  spawnNpc('sylvia',-19.5,-8,fc(-19.5,-8));
+  // 진급의 전당: the guild masters (다빈 · 태완 · 서준) wait inside the church in the north-west quarter
+  const SX=-17,SZ=-19;
+  if(PROPS.building_church_blue){const ch=prop('building_church_blue',SX,SZ,{fit:10.5,rot:0});if(ch)ch.userData.grown=true;}
+  const hb=addBox(SX,SZ,4.6,4.6);hb.scaleSize=true;
+  portal(SX,SZ+6,'hall',[0,4.8],()=>true,'','진급의 전당 ›',{door:true});W.shrine={x:SX,z:SZ+6.7};
+  if(PROPS.banner_red)[[-3.2,'banner_red'],[3.2,'banner_blue']].forEach(([x,n])=>prop(n,SX+x,SZ+5.8,{h:3.4}));
+  spawnNpc('dongjun',-15.5,-4.5,Math.PI/2);
+  spawnNpc('guard',-25,-2,fc(-25,-2)).d=NPCS.guard;spawnNpc('guard',25,2,fc(25,2)).d=NPCS.guard;spawnNpc('guard',-3,25,Math.PI).d=NPCS.guard;spawnNpc('guard',3,25,Math.PI).d=NPCS.guard;
   for(let i=0;i<6;i++)spawnWanderer(rand(-12,12),rand(-8,10));
   const ok=()=>true;
-  decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-17.5,-18,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
+  decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-26,-17,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
   portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 야수 서식지 Lv.1~15 ›');
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
-  portal(0,28.5,'clock',[0,-32],ok,'','남문 · 태엽 미로 Lv.40~70 ›');
+  portal(-22,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
   portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
-  portal(14,-28.5,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›');
-  portal(-22,28.5,'plains',[0,-94],ok,'','옛길 · 바람노래 평원 ›');
+  portal(0,-28.2,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›').g.position.y=1.6;
+  portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
 }
 function scatterProps(list,n,x0,x1,z0,z1,avoid){if(!KIT)return;for(let i=0;i<n;i++){const x=x0+srand()*(x1-x0),z=z0+srand()*(z1-z0);if(avoid&&avoid(x,z))continue;const it=list[Math.floor(srand()*list.length)];prop(it[0],x,z,{fit:it[1]*(.8+srand()*.4),rot:srand()*6.28,tint:it[2]});}}
 const always=()=>true;
@@ -2309,7 +2375,7 @@ function buildClock(){
   spawner('clockDoll',-20,0,5,4,8,always,null,[40,47]);spawner('clockDoll',0,-16,5,4,8,always,null,[47,56]);spawner('clockDoll',26,-14,5,3,8,always,null,[50,56]);
   spawner('clockGolem',-4,14,4,2,10,always,null,[56,62]);spawner('clockGolem',28,20,4,2,10,always,null,[62,70]);spawner('clockGolem',-24,30,4,2,10,always,null,[64,70]);
   spawner('clockBoss',-10,31,0,1,180,always);
-  portal(0,-36.5,'citadel',[0,25],always,'','천명 성채 남문 ›');
+  portal(0,-36.5,'citadel',[-22,25],always,'','천명 성채 남문 ›');
 }
 function buildAsura(){
   setEnv({sky:0x2a0c0a,fog:[26,120],ht:0xc86a5a,hb:0x1a0806,hi:.5,sun:0xff7a4a,si:1,ash:true,ashCol:0xff6a2a,ashUp:true,ashSize:.16});
@@ -2339,7 +2405,7 @@ function buildAltar(){
   volcano(0,-160,2.4);
   if(S.level<90)later(1,()=>toast('경고: 권장 레벨 99 · 현재 레벨로는 이그니스의 공격 한 번에 쓰러질 수 있습니다','bad'));
   spawner('ignis',0,-6,0,1,90,always);
-  portal(0,27.5,'citadel',[14,-25],always,'','천명 성채 북문 ›');
+  portal(0,27.5,'citadel',[0,-25],always,'','천명 성채 북문 ›');
 }
 
 /* =========================================================
@@ -2384,6 +2450,7 @@ function startStep(resume){
 }
 function objective(){
   const q=curQ(),st=curStep();if(!q||!st)return null;
+  if(W.zone==='hall'&&st.goals&&st.goals.some(g=>g.k==='promote')){const n=W.npcs.find(n=>n.d&&n.d.cls===(S.want||'warrior'));if(n)return{x:n.pos.x,z:n.pos.z,npc:n};}
   if(q.zone!==W.zone){const next=nextZone(W.zone,q.zone);const p=next&&W.portals.find(p=>p.to===next);return p?{x:p.x,z:p.z,portal:p}:null;}
   if(st.talk){const n=W.npcs.find(n=>n.id===st.talk);return n?{x:n.pos.x,z:n.pos.z,npc:n}:null;}
   if(st.goals){const gi=st.goals.findIndex((g,i)=>(S.cnt[i]||0)<g.n);if(gi<0)return null;const g=st.goals[gi];
@@ -2409,39 +2476,39 @@ function autoNav(){
 const STARTS={
   wolf(){cutscene(async()=>{
     updSpawners(0,true);const wolf=W.enemies.find(e=>e.type==='wolfBoss');if(!wolf)return;
-    wolf.pos.set(0,0,-40);wolf.mesh.rotation.y=0;
-    cam.pos.set(0,9,-12);cam.look.set(0,1.5,-28);
+    wolf.pos.copy(LV(0,0,-40));wolf.mesh.rotation.y=0;
+    cam.pos.copy(LV(0,9,-12));cam.look.copy(LV(0,1.5,-28));
     await wait(.6);
-    shake(.6);burst(0,2,-30,0x3a3030,30,6,1,.8,-4);
+    shake(.6);burst(0*ZS(W.zone),2,-30*ZS(W.zone),0x3a3030,30,6,1,.8,-4);
     tween(.4,k=>{W.gateL.rotation.y=-.9-k*1.2;W.gateR.rotation.y=.9+k*1.2;W.gateL.position.y=1.4-k*1.2;W.gateR.position.y=1.4-k*1.2;});
-    const a=wolf.pos.clone();await new Promise(r=>tween(1.1,k=>{wolf.pos.lerpVectors(a,new V(0,0,-22),k);wolf.walk+=.3;},r,e=>e));
+    const a=wolf.pos.clone();await new Promise(r=>tween(1.1,k=>{wolf.pos.lerpVectors(a,LV(0,0,-22),k);wolf.walk+=.3;},r,e=>e));
     W.guards.forEach((g,i)=>{if(g.parts.skinned)g.parts.playOnce('Death_A',0,true);else tween(.4,k=>{g.mesh.rotation.z=(i?-1:1)*k*1.5;g.mesh.position.y=k*.2;});g.tag.style.opacity=.3;});
-    shake(.4);burst(0,1.5,-22,0x2a1a1a,40,5,1.2,.9,-1);
+    shake(.4);burst(0*ZS(W.zone),1.5,-22*ZS(W.zone),0x2a1a1a,40,5,1.2,.9,-1);
     caption('타락한 해골 주술사가 북쪽 문을 부수고 난입했다!');
-    await camTo(new V(0,6,-15),new V(0,2,-22),1);
+    await camTo(LV(0,6,-15),LV(0,2,-22),1);
     await wait(1.4);caption('');
-    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(new V(0,1,0)),.8);
+    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(LV(0,1,0)),.8);
   });},
-  aldusRun(){const a=W.npcs.find(n=>n.id==='aldus');if(!a)return;const from=a.pos.clone(),to=new V(2.5,0,-22);if(from.distanceTo(to)<1)return;a.col.off=true;
+  aldusRun(){const a=W.npcs.find(n=>n.id==='aldus');if(!a)return;const from=a.pos.clone(),to=LV(2.5,0,-22);if(from.distanceTo(to)<1)return;a.col.off=true;
     a.mesh.rotation.y=Math.atan2(to.x-from.x,to.z-from.z);tween(3.5,k=>{a.pos.lerpVectors(from,to,k);a.walk=(a.walk||0)+.25;},()=>{a.col.x=to.x;a.col.z=to.z;a.col.off=false;a.walk=0;a.home.copy(to);},e=>e);},
   turka(){cutscene(async()=>{
     updSpawners(0,true);const t=W.enemies.find(e=>e.type==='turka');if(!t)return;
-    t.pos.set(0,14,-58);cam.pos.set(0,8,-44);cam.look.set(0,2,-56);await wait(.4);
+    t.pos.copy(LV(0,14,-58));cam.pos.copy(LV(0,8,-44));cam.look.copy(LV(0,2,-56));await wait(.4);
     await new Promise(r=>tween(.7,k=>{t.pos.y=14*(1-k);},r,e=>e*e));
-    shake(.8);ringFx(0,-58,6,0xffa060,.6);burst(0,.5,-58,0x8a6a4a,40,7,1,.7);
+    shake(.8);ringFx(0*ZS(W.zone),-58*ZS(W.zone),6,0xffa060,.6);burst(0*ZS(W.zone),.5,-58*ZS(W.zone),0x8a6a4a,40,7,1,.7);
     await dialog(DLG.p4);
-    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(new V(0,1,0)),.8);
+    await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(LV(0,1,0)),.8);
   });},
 };
 const DONE={
   async epilogue(){
     await cutscene(async()=>{
-      P.target=null;P.dest=null;P.pos.set(0,0,-24);P.mesh.rotation.y=Math.PI;
-      cam.pos.set(0,3,-18);cam.look.set(0,1.6,-26);
+      P.target=null;P.dest=null;P.pos.copy(LV(0,0,-24));P.mesh.rotation.y=Math.PI;
+      cam.pos.copy(LV(0,3,-18));cam.look.copy(LV(0,1.6,-26));
       caption('마을 사람들의 환송을 받으며 북쪽 성문을 나선다.');
-      const from=P.pos.clone();tween(4,k=>{P.pos.lerpVectors(from,new V(0,0,-33),k);P.walk+=.22;},null,e=>e);
+      const from=P.pos.clone();tween(4,k=>{P.pos.lerpVectors(from,LV(0,0,-33),k);P.walk+=.22;},null,e=>e);
       await wait(1.5);
-      await camTo(new V(0,26,-12),new V(20,14,-120),4);
+      await camTo(LV(0,26,-12),LV(20,14,-120),4);
       caption('');
       showChapter('제1장','불타는 하늘의 전조','시작');await wait(3.2);hideChapter();await wait(.6);
     });
@@ -2449,32 +2516,32 @@ const DONE={
   },
   async gate(){
     await cutscene(async()=>{
-      cam.pos.set(0,10,-80);cam.look.set(0,3,-98);await wait(.4);
+      cam.pos.copy(LV(0,10,-80));cam.look.copy(LV(0,3,-98));await wait(.4);
       const y0=W.door.position.y;shake(.3);await new Promise(r=>tween(2.2,k=>{W.door.position.y=y0+k*6;},r));
       W.doorCol.off=true;caption('굳게 닫혀 있던 천명 성채의 철문이 열린다.');await wait(1.6);caption('');
-      await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(new V(0,1,0)),.8);
+      await camTo(P.pos.clone().add(CAM_OFF),P.pos.clone().add(LV(0,1,0)),.8);
     });
   },
   async citadel(){
     const nq=curQ();
     S.gold+=20000;S.stones.low+=10;S.stones.mid+=3;S.scrolls+=1;save();refreshHud();
-    await dialog([['sys','천명 성채 입성 기념 지원품이 지급되었습니다.\n· 20,000 골드\n· 하급 강화석 ×10, 중급 강화석 ×3\n· 보호의 주문서 ×1'],['sys','천명 성채 안내\n· 남서쪽 [객주소] 객주인 아릴: 귀환지 등록, 잡템 매각, 창고\n· 남동쪽 [영혼의 제단] 대제사장 로웬: 경험치로 스탯 강화, Lv.99 한계 돌파\n· 북동쪽 [철화 대장간] 대장장이 부르칸: 강화, 수리, 용혈 무기 제련'],['sys','· 무관 다빈(전사 수련) · 정보상 태완(지름길) · 잡화상 동준(잡화점) · 광장의 천명의 신 서준(하루 한 번 축복)\n· 서문 Lv.1~15 · 동문 Lv.15~40 · 남문 Lv.40~70 · 북문 Lv.70~99 · 북동쪽 용혈의 제단']]);
+    await dialog([['sys','천명 성채 입성 기념 지원품이 지급되었습니다.\n· 20,000 골드\n· 하급 강화석 ×10, 중급 강화석 ×3\n· 보호의 주문서 ×1'],['sys','천명 성채 안내\n· 남서쪽 [객주소] 객주인 아릴: 귀환지 등록, 잡템 매각, 창고\n· 북쪽 계단 위 [영혼의 제단] 대제사장 로웬: 경험치로 스탯 강화, Lv.99 한계 돌파\n· 동문 옆 [철화 대장간] 대장장이 부르칸: 강화, 수리, 용혈 무기 제련'],['sys','· 무관 다빈(전사 수련) · 정보상 태완(지름길) · 잡화상 동준(잡화점) · 광장의 천명의 신 서준(하루 한 번 축복)\n· 서문 Lv.1~15 · 동문 Lv.15~40 · 남서문 Lv.40~70 · 북서문 Lv.70~99 · 영혼의 제단 뒤 용혈의 제단']]);
   },
 };
 async function csEldric(){
   await cutscene(async()=>{
-    P.target=null;P.dest=null;P.pos.set(0,0,-16.4);P.mesh.rotation.y=Math.PI;
+    P.target=null;P.dest=null;P.pos.copy(LV(0+CMD_X,0,-16.4));P.mesh.rotation.y=Math.PI;
     const el=W.npcs.find(n=>n.id==='eldric');el.mesh.rotation.y=0;
-    cam.pos.set(0,14,-2);cam.look.set(0,2,-20);
+    cam.pos.copy(LV(0+CMD_X,14,-2));cam.look.copy(LV(0+CMD_X,2,-20));
     caption('천명 성채 · 기사단 사령부');
-    await camTo(new V(-4,5,-13),new V(0,2,-20),3);caption('');
+    await camTo(LV(-4+CMD_X,5,-13),LV(0+CMD_X,2,-20),3);caption('');
     await dialog(DLG.c1a);
-    await camTo(new V(1.5,4.4,-16.5),new V(0,1.2,-19.3),1.4);
+    await camTo(LV(1.5+CMD_X,4.4,-16.5),LV(0+CMD_X,1.2,-19.3),1.4);
     await dialog(DLG.c1b);
-    await camTo(new V(3,3.6,-15.5),new V(0,1.8,-20.5),1);
-    tween(.5,k=>{el.pos.z=-20.7+k*.5;el.parts.b.rotation.x=k*.3;});
+    await camTo(LV(3+CMD_X,3.6,-15.5),LV(0+CMD_X,1.8,-20.5),1);
+    tween(.5,k=>{el.pos.z=(-20.7+k*.5)*ZS(W.zone);el.parts.b.rotation.x=k*.3;});
     await dialog(DLG.c1c);
-    el.parts.b.rotation.x=0;el.pos.z=-20.7;
+    el.parts.b.rotation.x=0;el.pos.z=-20.7*ZS(W.zone);
   });
   const q=QUESTS[qIdx('c2')];
   await questPopup(q,'메인 퀘스트 · [제2장] 서문의 짐승들','천명 성채 서문 밖 야수 서식지에서 흑갈색 늑대 전사 10마리 처치 (권장 Lv.8~15)');
@@ -2598,7 +2665,7 @@ function playerDie(){
   later(3,()=>{
     $('#dead').hidden=true;P.dead=false;P.parts.b.rotation.x=0;P.parts.b.position.y=0;if(P.parts.skinned)P.parts.resetPose();P.hp=P.maxHp;
     if(S.home&&W.zone!=='citadel'){P.hp=P.maxHp;P.mp=P.maxMp;$('#dead').hidden=true;gotoZone('citadel',INN_POS);toast('객주소에서 깨어났습니다');return;}
-    const sp=S.home&&W.zone==='citadel'?INN_POS:ZONES[W.zone].spawn;P.pos.set(sp[0],0,sp[1]);resolve(P.pos,P.rad);P.mp=P.maxMp;
+    const sp=S.home&&W.zone==='citadel'?INN_POS:ZONES[W.zone].spawn;P.pos.set(sp[0]*ZS(W.zone),0,sp[1]*ZS(W.zone));resolve(P.pos,P.rad);P.mp=P.maxMp;
     W.enemies.forEach(e=>{if(e.d.boss&&!e.dead){e.hp=e.maxHp;e.pos.copy(e.home);}});
     ringFx(P.pos.x,P.pos.z,2,0xfff0a0,.8);toast('부활했습니다');refreshHud();
   });
@@ -2615,7 +2682,7 @@ function levelUp(){
   const sk=CLASSES[S.cls].sk;SKEYS.forEach(k=>{const s=sk[k];if(s&&s.lv===S.level&&!s.tut){toast((s.passive?'새 패시브 · ':'새 스킬 · ')+s.n,'gold');flashSkill(k);}});
   refreshSkills();
   if(S.level>=15)progress('level','15');
-  if(S.cls==='novice'&&S.level===15)later(1.2,()=>toast('진급 가능! 천명 성채 중앙 [진급의 사당]에서 직업을 선택하세요','big'));
+  if(S.cls==='novice'&&S.level===15)later(1.2,()=>toast('진급 가능! 천명 성채 북서쪽 [진급의 전당]에서 직업을 선택하세요','big'));
 }
 function flashSkill(k){const b=$('#b-'+k);if(!b)return;b.classList.add('flash');later(2,()=>b.classList.remove('flash'));}
 function unlock(k){if(k==='s1'){if(S.tut)return;S.tut=true;}const sk=CLASSES[S.cls].sk[k];if(sk)toast('새 스킬 · '+sk.n,'gold');flashSkill(k);refreshSkills();save();}
@@ -2705,7 +2772,7 @@ function skOk(k){const s=CLASSES[S.cls].sk[k];return !!s&&S.level>=s.lv&&(!s.tut
 function skNeed(k){const s=CLASSES[S.cls].sk[k];if(!s)return S.cls==='novice'?'Lv.15 진급':'-';if(s.tut&&!S.tut)return '잠김';return 'Lv.'+s.lv;}
 function useSkill(k){
   if(!P||P.dead||paused())return;const sk=CLASSES[S.cls].sk[k];
-  if(!sk){toast(S.cls==='novice'?'레벨 15에 진급하면 직업 스킬을 배웁니다. (천명 성채 · 진급의 사당)':'스킬이 없습니다.');return;}
+  if(!sk){toast(S.cls==='novice'?'레벨 15에 진급하면 직업 스킬을 배웁니다. (천명 성채 · 진급의 전당)':'스킬이 없습니다.');return;}
   if(sk.passive){toast('[패시브] '+sk.n+' — '+sk.d.replace('(패시브) ',''));return;}
   if(!skOk(k)){toast('아직 배우지 않은 스킬입니다 ('+skNeed(k)+' 해금)');return;}
   if(P.cd[k]>0){toast('재사용 대기 중입니다.');return;}
@@ -3090,7 +3157,7 @@ function animEnemy(e,dt){
 function updNpcs(dt){
   for(const n of W.npcs){
     if(n.wander){n.wait-=dt;let mv=false;if(n.dest){const dx=n.dest.x-n.pos.x,dz=n.dest.z-n.pos.z,d=Math.hypot(dx,dz);if(d<.2)n.dest=null;else{const s=Math.min(d,2.6*dt);n.pos.x+=dx/d*s;n.pos.z+=dz/d*s;n.face=Math.atan2(dx,dz);resolve(n.pos,.3);n.walk+=s*2.3;mv=true;}}
-      else if(n.wait<=0){n.wait=rand(2,6);n.dest={x:rand(-14,14),z:rand(-12,16)};}animHumanoid(n,dt,mv);continue;}
+      else if(n.wait<=0){n.wait=rand(2,6);n.dest={x:rand(-14,14)*ZS(W.zone),z:rand(-12,16)*ZS(W.zone)};}animHumanoid(n,dt,mv);continue;}
     const mv=n.walk>0&&n.walk!==n._lw;n._lw=n.walk;
     if(!mv&&P&&!P.dead&&d2(n.pos,P.pos)<4&&n.mesh.rotation.z===0){n.face=Math.atan2(P.pos.x-n.pos.x,P.pos.z-n.pos.z);}
     animHumanoid(n,dt,mv);
@@ -3174,7 +3241,7 @@ async function gotoZone(z,arrive){
   await fade(1,.45);
   await needZone(z);
   buildZone(z);S.zone=z;
-  const a=arrive||ZONES[z].spawn;P.pos.set(a[0],0,a[1]);if(P.mercLeft>0)spawnMerc();updSetFx();P.face=z==='plains'&&a[1]<0?Math.PI:Math.PI;P.mesh.rotation.y=P.face;
+  const a=arrive||ZONES[z].spawn;P.pos.set(a[0]*ZS(z),0,a[1]*ZS(z));resolve(P.pos,P.rad);if(P.mercLeft>0)spawnMerc();updSetFx();P.face=z==='plains'&&a[1]<0?Math.PI:Math.PI;P.mesh.rotation.y=P.face;
   cam.pos.copy(P.pos).add(CAM_OFF);cam.look.copy(P.pos);
   $('#zname').textContent=ZONES[z].name;
   progress('enter',z);save();refreshQuest();
@@ -3501,7 +3568,7 @@ function openPromo(k,nid){const c=CLASSES[k],mine=S.cls===k,nov=S.cls==='novice'
     !nov?'<p class="note">이미 ['+CLASSES[S.cls].name+'](으)로 진급했습니다. 진급은 한 번만 할 수 있습니다.</p>':
     can?'<button class="btn pri" id="prGo" style="width:100%">'+c.name+'(으)로 진급하기</button><p class="note">진급하면 되돌릴 수 없습니다. 진급 선물: '+TIERS[1].w[k]+' · '+TIERS[1].a[k]+'</p>':
     '<button class="btn" disabled style="width:100%">레벨 15 필요 (현재 Lv.'+S.level+')</button>')+'</div>';
-  openPanel('진급의 사당 · '+NPCS[nid].name,h);
+  openPanel('진급의 전당 · '+NPCS[nid].name,h);
   const b=$('#prGo');if(b)b.onclick=()=>{if(b.dataset.ok){closePanel();promote(k);return;}b.dataset.ok='1';b.textContent='정말 '+c.name+'(으)로 진급합니까? 한 번 더 누르면 진급합니다';b.classList.add('warn');};}
 function promote(k){if(S.cls!=='novice'||S.level<15)return;
   const pos=P.pos.clone(),face=P.face;S.cls=k;makePlayer();P.pos.copy(pos);P.face=face;P.mesh.rotation.y=face;
@@ -3532,7 +3599,7 @@ function openMenu(){
    (CUSTOM.n?'<div class="sec"><h3>Meshy AI 모델</h3><p class="note">커스텀 모델 '+CUSTOM.n+'개 적용 중: '+[...Object.keys(CUSTOM.props),...Object.keys(CUSTOM.mobs),...Object.keys(CUSTOM.npcs)].join(', ')+'</p></div>':'')+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
-   (S.admin?'<div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 사당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
+   (S.admin?'<div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
@@ -3669,7 +3736,7 @@ function loop(now){
     updProj(dt);updAreas(dt);updSpawners(dt,false);
     // reach goals
   }else if(P&&gameOn){animHumanoid(P,dt,P.walk!==P._pw);P._pw=P.walk;}
-  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);}
+  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
   updFx(dt);updFloats(dt);
   W.anim.forEach(f=>f(rt));
   // camera
@@ -3900,7 +3967,7 @@ async function startGame(s,resume){
   }else{
     $('#fade').style.opacity=1;
     await needZone(S.zone);
-    buildZone(S.zone);const a=S.pos||ZONES[S.zone].spawn;P.pos.set(a[0],0,a[1]);resolve(P.pos,P.rad);
+    buildZone(S.zone);const a=S.pos||ZONES[S.zone].spawn.map(v=>v*ZS(S.zone));P.pos.set(a[0],0,a[1]);resolve(P.pos,P.rad);
     cam.pos.copy(P.pos).add(CAM_OFF);cam.look.copy(P.pos);
     gameOn=true;$('#hud').hidden=false;setAuto(AUTO.on,true);$('#zname').textContent=ZONES[S.zone].name;refreshHud();refreshQuest();
     fade(0,.8);startStep(true);toast(ZONES[S.zone].name,'big');
@@ -3954,5 +4021,3 @@ showTitle();
 loadHeroes(p=>updTitleStatus(p)).then(ok=>{kitReady=true;if(!ok)console.warn('KayKit assets unavailable — using built-in models');if(W.zone==='title'&&ok&&!titleBusy){buildZone('title');}updTitleStatus(1);});
 })();
 </script>
-</body>
-</html>
