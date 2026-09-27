@@ -1428,6 +1428,11 @@ function skelAura(h,col){const r=new THREE.Mesh(new THREE.RingGeometry(.9,1.5,40
 function skelModel(type,d){const c=SKEL[type];const h=rigChar(c.file,{attach:c.attach,keep:c.keep,eyes:c.eyes,tint:c.tint,ghost:c.ghost,scale:(c.scale||(d.scale||.8)/.8*.92),cfg:{idle:c.dormant?'Skeletons_Inactive_Floor_Pose':'Idle_Combat',run:'Running_A',atk:c.atk,dormant:!!c.dormant},phase:Math.random()*2});if(type==='wolfBoss')skelAura(h,0x9a4aff);if(c.ghost){h.y=.5;const t0=Math.random()*6;h.tick=t=>{h.b.position.y=.5+Math.sin(t*2+t0)*.15;};}
   if(c.red){const hd=findBone(h.model,'head');if(hd){[-1,1].forEach(s2=>{const eye=new THREE.Mesh(new THREE.SphereGeometry(.07,6,5),glowM(0xff2a0a));eye.position.set(s2*.18,.35,.42);eye.scale.setScalar(1/h.sc*.6*h.sc);hd.add(eye);});}}
   return h;}
+let GLOWT=null;function glowTex(){if(GLOWT)return GLOWT;const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.5,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);return GLOWT=new THREE.CanvasTexture(c);}
+/* warm rim light on the silhouette + lifted shadows, so even a black-leather hero reads on the dark altar */
+function heroRim(m){m.emissive.setHex(0x2a2218);m.emissiveMap=null;m.customProgramCacheKey=()=>'herorim';
+  m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n  float rimF=1.0-clamp(dot(normalize(vViewPosition),normal),0.0,1.0);totalEmissiveRadiance+=vec3(1.0,0.78,0.52)*pow(rimF,2.2)*0.95;');};return m;}
 /* player action -> clip on a Meshy-rigged hero (attack / skill / cast from Meshy's animation library) */
 const MESHY_ACT={swing:['attack',.6],dash:['skill',.5],cast:['cast',.6],cast2:['cast',.7],cast3:['skill',1],summon:['cast',1.2],leap:['skill',1],spin:['skill',1.6],ult:['skill',.8],throw:['attack',.5],banner:['cast',1],bow:['attack',.5]};
 function meshyHero(cls){const h=customRig(CUSTOM.players[cls]);h.cfg={idle:'Idle',run:'Running_A',map:MESHY_ACT};h.hero=true;return h;}
@@ -1684,6 +1689,11 @@ function makePlayer(){
   const c=CLASSES[S.cls],h=heroModel(S.cls);scene.add(h.g);
   P={mesh:h.g,parts:h,pos:h.g.position,hp:1,maxHp:1,dest:null,target:null,hunt:null,face:Math.PI,atkCd:0,cd:{s1:0,s2:0,s3:0,ult:0},barrier:0,barrierT:0,stealthT:0,godT:0,mercLeft:0,lock:0,shieldT:0,kb:null,dead:false,anim:null,potCd:0,stuck:0,last:new V(),walk:0,isPlayer:true,wmesh:null,y:0};
   const sh=new THREE.Mesh(new THREE.SphereGeometry(1.4,16,12),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}));sh.position.y=1;sh.visible=false;h.g.add(sh);P.shield=sh;
+  // keep the player readable on dark maps (altar, graveyard, canyon): a faint self-glow from its own texture + a soft hero light
+  if(h.custom)h.model.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=heroRim(o.material.clone());}});
+  const hl=new THREE.PointLight(0xffe6cc,1.2,9,2);hl.position.set(0,3.4,1.2);h.g.add(hl);P.heroLight=hl;
+  const fg=new THREE.Mesh(new THREE.CircleGeometry(1.15,32),new THREE.MeshBasicMaterial({map:glowTex(),color:0xffd8a0,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending}));
+  fg.rotation.x=-Math.PI/2;fg.position.y=.05;fg.renderOrder=2;h.g.add(fg);  // soft pool of light at the player's feet
   const tr=new THREE.Mesh(new THREE.RingGeometry(.9,1.15,32),new THREE.MeshBasicMaterial({color:0xff4a3a,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide}));tr.rotation.x=-Math.PI/2;tr.visible=false;scene.add(tr);P.tring=tr;
   setWeaponModel();recalc();P.hp=P.maxHp;P.mp=P.maxMp;
 }
