@@ -502,7 +502,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-18</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-20</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -596,7 +596,7 @@ const CLASSES={
   sk:{atk:{n:'대검 베기',d:'전방 범위에 물리 피해',i:'sword'},
       s1:{n:'대지 분쇄',d:'전방 6m 돌진 후 지면 강타: 물리 180% 피해 + 1.5초 기절 · 분노 +15',i:'hammer',cd:12,lv:15},
       s2:{n:'수호의 반격',d:'2초 방어 채널링: 최대 체력 20% 보호막 · 흡수 피해 10%당 분노 5 · 끝나면 주변 4m 충격파 (150% + 흡수량 40%)',i:'shield',cd:16,lv:35},
-      s3:{n:'광풍 참격',d:'분노 전부 소모 (최소 30): 전방 회전 베기 250% + 분노 1당 3.5% (최대 600%) · 방어 30% 관통',i:'spin',cd:8,lv:55,res:30},
+      s3:{n:'광풍 참격',d:'분노 전부 소모 (최소 30): 물리 250% × (1 + 소모 분노/100 × 1.4) — 분노 100이면 600% · 대상 방어력 30% 관통',i:'spin',cd:8,lv:55,res:30},
       ult:{n:'지각 변동',d:'도약 후 내리찍어 광역 띄움 + 400% 피해',i:'quake',cd:28,lv:80,mp:150}}},
  rogue:{name:'도적',role:'근접 · 기력/급소 암살자',hp:215,mp:120,atk:16,def:6,pdefR:.4,mdefR:.5,range:1.9,aspd:.62,speed:7.92,rad:.45,wtype:'dagger',emblem:'dagger',color:0xb070ff,crit:.28,gear:'단검·쌍검 / 가죽 갑옷',
   bonus:'민첩(공격 속도·이동 속도) +45% · 치명타 확률 28%',feature:'높은 민첩, 은신, 치명타 공격과 기습 스킬',
@@ -604,14 +604,14 @@ const CLASSES={
   sk:{atk:{n:'쌍검 난도',d:'두 자루 단검으로 빠르게 벤다',i:'dagger'},
       s1:{n:'그림자 침투',d:'기력 20 · 대상의 배후로 순간 이동해 120% 피해 + 1.5초 침묵 · 3초 은신 · 급소 +1',i:'stealth',cd:14,lv:15,res:20},
       s2:{n:'급소 베기',d:'기력 30 · 150% 연타 + 4초 출혈 (초당 35%) · 등 뒤면 치명타 +20% · 급소 +1',i:'storm',cd:3,lv:35,res:30},
-      s3:{n:'영혼 적출',d:'기력 10 + 급소 전부: 200% + 포인트당 120% (5개 800%) · 대상 체력 30% 이하면 +50%',i:'skull',cd:10,lv:55,res:10},
+      s3:{n:'영혼 적출',d:'기력 10 + 급소 전부: 물리 200% × (1 + 포인트 × 0.6) — 5개 800% · 대상 체력 30% 이하 ×1.5 · 등 뒤 치명타 ×1.85',i:'skull',cd:10,lv:55,res:10},
       ult:{n:'암살',d:'단일 대상 800% 피해, 체력 50% 이하면 두 배',i:'dagger',cd:26,lv:80,mp:150}}},
  shaman:{name:'힐러',role:'원거리 · 신력/성역 공간 제어',hp:165,mp:220,atk:16,def:4,pdefR:.25,mdefR:1,range:9,aspd:1,speed:5.94,rad:.45,wtype:'staff',emblem:'bell',color:0xfff0c0,gear:'성물 방울·신봉 / 신관 로브',
   bonus:'치유량 +30% · 최대 마력 +120%',feature:'강한 자가 치유와 보호막, 빛의 성역으로 버티며 신성 마법으로 싸운다 (언데드·원혼에 강함)',
   blurb:'신의 빛을 다루는 치유 신관. 상처를 메우고 보호막을 두르며, 성역 안에 들어온 적을 신성한 빛으로 태운다.',
   sk:{atk:{n:'신성탄',d:'신성한 빛을 쏜다. 적중하면 체력을 조금 회복한다',i:'orb'},
       s1:{n:'성역 선포',d:'신력 40 · 대상 위치에 반경 8m 성역 8초: 적 초당 45% 신성 피해 + 이동 속도 40%↓ · 안의 아군 초당 15% 보호막',i:'seal',cd:18,lv:15,res:40},
-      s2:{n:'천벌의 심판',d:'신력 35 · 1초 시전 후 성역 중심에 480% 신성 피해 + 1.2초 에어본',i:'beam',cd:10,lv:35,res:35},
+      s2:{n:'천벌의 심판',d:'신력 35 · 1초 시전 후 성역 중심에 마법 480% (마법 피해 70% + 방어 무시 신성 고정 피해 30%) + 1.2초 에어본',i:'beam',cd:10,lv:35,res:35},
       s3:{n:'권능 강림',d:'신력 100 · 10초간 스킬 피해 +30% · 쿨타임 50%↓ · 상태이상 면역 · 성역 범위 2배 (16m)',i:'sun',cd:60,lv:55,res:100},
       ult:{n:'신의 강림',d:'체력 완전 회복 + 30초 변신: 치유량 50%↑, 쿨타임 50%↓, 신성 파동, 쓰러지면 즉시 부활(1회)',i:'heal',cd:120,lv:85,mp:300}}},
 };
@@ -1030,7 +1030,7 @@ function ground(cx,cz,w,d,col,jit,y){
   const fe=!!y,seg=v=>fe?Math.min(40,Math.max(4,Math.ceil(v/1.2))):Math.max(1,Math.ceil(v/5));  // layered patches fade out over ~1.5m at their borders
   const geo=new THREE.PlaneGeometry(w,d,seg(w),seg(d));geo.rotateX(-Math.PI/2);
   if(fe){const p=geo.attributes.position,ed=[],fw=Math.min(1.6,w*.3,d*.3);for(let i=0;i<p.count;i++){const dx=w/2-Math.abs(p.getX(i)),dz=d/2-Math.abs(p.getZ(i));ed.push(Math.min(1,Math.min(dx,dz)/fw));}geo.setAttribute('edge',new THREE.Float32BufferAttribute(ed,1));}
-  const tex=groundTex(groundKind(col));
+  const tex=groundTex(groundKind(col));if(y&&groundKind(col)!=='grass'&&W.noGrass)W.noGrass.push([cx,cz,w/2,d/2]);  // paths / dirt patches stay bare
   const c=new THREE.Color(col);if(tex&&tex.userData&&tex.userData.orig){c.lerpColors(new THREE.Color(0xffffff),new THREE.Color(col),.15);c.multiplyScalar(tex.userData.gain);}else if(tex)c.multiplyScalar(2);  // detail texture averages 0.5
   const cols=[],n=geo.attributes.position.count,j=jit==null?.08:jit;
   for(let i=0;i<n;i++){const f=1+(srand()-.5)*j*2;cols.push(c.r*f,c.g*f,c.b*f);}
@@ -1047,6 +1047,28 @@ function grassTuft(){if(GRASS_G!==null)return GRASS_G;const src=PROPS.meshy_gras
   geo.translate(-c.x,-b.min.y,-c.z);geo.scale(s,s,s);const mt=mesh0.material.clone();mt.side=THREE.DoubleSide;return GRASS_G={geo,mt,tris:(geo.index?geo.index.count:geo.attributes.position.count)/3};}
 /* hand-made Meshy decor: [name, x, z, size(m), collision radius, rotation] */
 function decor(list){list.forEach(([n,x,z,s,r,rot])=>{if(!PROPS[n])return;const g=prop(n,x,z,{fit:s,rot:rot==null?srand()*6.28:rot});if(r)addCircle(x,z,r);return g;});}
+/* grass carpet: light crossed grass cards filling ~80% of the ground around the player (follows the player cell by cell) */
+const GC={im:null,cell:1.3,R:34,cx:1e9,cz:1e9};
+function grassCardTex(){if(GC.tex)return GC.tex;const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
+  for(let i=0;i<42;i++){const x=6+Math.random()*116,h=50+Math.random()*75,lean=(Math.random()-.5)*34,w=2+Math.random()*3,top=128-h;
+    const gr=g.createLinearGradient(0,128,0,top);const L=40+Math.random()*18;gr.addColorStop(0,'hsl(92,40%,'+(L*.78)+'%)');gr.addColorStop(1,'hsl('+(78+Math.random()*25)+',55%,'+L+'%)');g.fillStyle=gr;
+    g.beginPath();g.moveTo(x-w,128);g.quadraticCurveTo(x-w*.5+lean*.3,top+h*.5,x+lean,top);g.quadraticCurveTo(x+w*.5+lean*.3,top+h*.5,x+w,128);g.closePath();g.fill();}
+  const t=new THREE.CanvasTexture(c);t.anisotropy=2;return GC.tex=t;}
+function grassCardGeo(){if(GC.geo)return GC.geo;const W2=1.5,H=.62,pos=[],uv=[],idx=[];
+  for(let k=0;k<3;k++){const a=k*Math.PI/3,cx=Math.cos(a)*W2/2,cz=Math.sin(a)*W2/2,b=pos.length/3;pos.push(-cx,0,-cz,cx,0,cz,cx,H,cz,-cx,H,-cz);uv.push(0,0,1,0,1,1,0,1);idx.push(b,b+1,b+2,b,b+2,b+3,b,b+2,b+1,b,b+3,b+2);}  // both windings, all normals up: no dark back faces
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+  const n=g.attributes.normal;for(let i=0;i<n.count;i++)n.setXYZ(i,0,1,0);return GC.geo=g;}  // normals up: lit like the ground
+function grassCarpet(col){const n=Math.pow(Math.ceil(GC.R*2/GC.cell)+1,2);
+  const mt=new THREE.MeshLambertMaterial({map:grassCardTex(),color:new THREE.Color(col||0x8aa860),alphaTest:.45,side:THREE.FrontSide});
+  const im=new THREE.InstancedMesh(grassCardGeo(),mt,n);im.count=0;im.frustumCulled=false;im.userData.carpet=true;W.root.add(im);GC.im=im;GC.cx=GC.cz=1e9;}
+function updGrassCarpet(){const im=GC.im;if(!im||!P||im.parent!==W.root)return;const C=GC.cell,cx=Math.round(P.pos.x/C),cz=Math.round(P.pos.z/C);if(cx===GC.cx&&cz===GC.cz)return;GC.cx=cx;GC.cz=cz;
+  const k=ZS(W.zone),ng=(W.noGrass||[]).map(r=>[r[0]*k,r[1]*k,r[2]*k,r[3]*k]),bx=W.cols.filter(c=>c.t==='b'&&!c.off),B=W.bounds,m4=new THREE.Matrix4(),q=new THREE.Quaternion(),s=new V(),up=new V(0,1,0),p=new V(),R=GC.R,nr=Math.ceil(R/C);let n=0;
+  const hs=(a,b,o)=>{const v=Math.sin(a*127.1+b*311.7+o*74.7)*43758.5453;return v-Math.floor(v);};
+  for(let i=cx-nr;i<=cx+nr;i++)for(let j=cz-nr;j<=cz+nr;j++){if(hs(i,j,1)<.2)continue;  // ~80% of the cells carry a clump
+    const x=(i+hs(i,j,2)-.5)*C,z=(j+hs(i,j,3)-.5)*C;if(Math.hypot(x-P.pos.x,z-P.pos.z)>R)continue;if(x<B[0]-2||x>B[1]+2||z<B[2]-2||z>B[3]+2)continue;
+    if(ng.some(r=>Math.abs(x-r[0])<r[2]&&Math.abs(z-r[1])<r[3]))continue;if(bx.some(c=>Math.abs(x-c.x)<c.hw&&Math.abs(z-c.z)<c.hd))continue;
+    s.setScalar(.75+hs(i,j,4)*.6);q.setFromAxisAngle(up,hs(i,j,5)*6.28);p.set(x,W.hts.length?groundH(x,z):0,z);m4.compose(p,q,s);im.setMatrixAt(n++,m4);if(n>=im.instanceMatrix.count)break;}
+  im.count=n;im.instanceMatrix.needsUpdate=true;}
 function grass(cx,cz,w,d,n,col){
   n=Math.round(n*ZS(W.zone)*ZS(W.zone)*.6);  // expanded zones: keep the grass reasonably dense
   const tuft=grassTuft();if(tuft){n=Math.max(20,Math.min(n,Math.floor(70000/tuft.tris)));}  // ~45k triangles per field at most
@@ -1934,7 +1956,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   P.maxMp=Math.round(c.mp*(1+.1*(L-1))*(1+.03*(S.lb||0))*(1+.003*G.int)*bl+G.mp);
   P.atk=(c.atk+weaponAtk()*(broken?.5:1))*(1+.09*(L-1))*(S.rune==='fire'?1.12:1)*(1+guildLv()*.01)*(1+.02*st.str)*(1+.002*G.str)*(S.cls==='shaman'?1+.002*G.int:1)*(buffOn('war')?1.15:1)*bl*(inBazaar()?1.15:1)*(P.godT>0?1.2:1)*(1+gp)*(1+.25*rage)+G.atk;
   P.def=c.def*(1+.1*(L-1))*(1+.03*st.def)*(1+armorDef()/60)*bl*(1+gp)*(1+.03*grit())*(1+.03*(P.scaleN||0))*(P.soulT>0?1.15:1)+G.pdef;P.mdef=P.def/(c.pdefR||1)*(c.mdefR||1)+G.mdef;P.dr=G.dr/100;P.range=c.range;P.aspd=c.aspd/(1+Math.min(.3,.01*st.agi)+G.aspd/100+.0015*G.dex);P.speed=c.speed*(P.stealthT>0?1.3:1)*(P.slowT>0&&!(P.ascT>0)?.6:1)*(P.rhasteT>0?1.25:1);if(P.rhasteT>0)P.aspd/=1.25;P.rad=c.rad;
-  P.crit=(c.crit||.12)+G.crit/100+(P.furyT>0?1:0);P.critX=1.6+G.critd/100+(S.cls==='rogue'&&P.set3?.6:0);P.cdr=Math.min(.4,G.cdr/100);P.acc=G.acc;P.rageN=rage;
+  P.crit=(c.crit||.12)+G.crit/100+(P.furyT>0?1:0);P.critX=1.5+G.critd/100+(S.cls==='rogue'&&P.set3?.6:0);P.cdr=Math.min(.4,G.cdr/100);P.acc=G.acc;P.rageN=rage;
   if(isRed())P.def*=.7;  // 붉은 이름: 방어력 -30%
   if(tierOf()===2){P.maxHp=Math.round(P.maxHp*1.1);P.maxMp=Math.round(P.maxMp*1.1);P.atk*=1.1;}
   if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
@@ -2062,7 +2084,7 @@ function clearZone(){
   scene.remove(W.root);
   W.enemies.forEach(e=>e.tag&&e.tag.remove());W.npcs.forEach(n=>n.tag&&n.tag.remove());W.portals.forEach(p=>p.tagEl&&p.tagEl.remove());
   floats.forEach(f=>f.el.remove());floats.length=0;FX.length=0;
-  W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:''};
+  W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:'',noGrass:[]};GC.im=null;
   scene.add(W.root);
 }
 /* outdoor zones are laid out at 2x their original coordinates (4x the area): every placed object moves out, ground,
@@ -2310,7 +2332,7 @@ function buildVillage(){
     prop('meshy_bridge',23.5,12,{fit:10});addBox(23.5,-4,3.2,40);}
   ground(0,-3,54,62,0x46502f,.14,1);
   ground(0,-3,4.2,62,0x6e5c47,.08,2);ground(0,2,44,3.6,0x6e5c47,.08,2);ground(-14,-4,10,3,0x6e5c47,.08,2);
-  grass(0,-3,50,58,420,0x5a6a3a);
+  grass(0,-3,50,58,420,0x5a6a3a);grassCarpet(0x98a870);
   palisade(-26,-30,-3.2,-30);palisade(3.2,-30,26,-30);palisade(-26,27,26,27);palisade(-26,-30,-26,27);palisade(26,-30,26,-17);palisade(26,-10,26,27);
   if(KIT){[-3.4,3.4].forEach(x=>{prop('column',x,-30,{h:4.2});addCircle(x,-30,.6);torch(x+Math.sign(x)*1.2,-28.6,x<0);});
     const mk=(sx)=>{const g=new THREE.Group();g.position.set(sx*2.6,1.4,-29.3);W.root.add(g);const f=prop('fence_wood_straight',0,0,{w:2.8,par:g});if(f)f.position.y=-1.4;return g;};
@@ -2368,7 +2390,7 @@ function buildPlains(){
   ground(0,-80,60,32,0x2a2a24,.2,2);
   ground(0,-50,60,18,0x6a4632,.12,2);
   for(let z=26;z>-100;z-=4){const x=Math.sin(z*.06)*3;const p=ground(x,z,4.2,4.6,0x6e5c47,.06,3);}
-  grass(0,-20,56,90,700,0x5e7440);grass(0,-80,56,30,200,0x3a3a2e);
+  grass(0,-20,56,90,700,0x5e7440);grass(0,-80,56,30,200,0x3a3a2e);grassCarpet(0x9ab070);
   campfire(0,18.5);tentDeco(-6,21,0x8a7a5a);tentDeco(6,22.5,0x7a6a4a);crate(-3,23);crate(-2.2,23.6,.7);barrel(3.4,23);banner(-2.5,16,0x2a4a8a);
   cart(5,-8,.6,true);crate(7.5,-10.5,.8);crate(3,-11,.7);barrel(8.4,-6.5);cart(-8,-18,2.1,false);
   for(let i=0;i<5;i++){rock(-23+srand()*4,-44-i*4,2+srand()*2,0x9a4a32);rock(23-srand()*4,-44-i*4,2+srand()*2,0x9a4a32);}
@@ -2499,7 +2521,7 @@ function buildBeasts(){
   W.bounds=[-38,37,-38,38];
   ground(0,0,440,440,0x3a4a2c,.1);ground(0,0,80,80,0x4a5c33,.14,1);
   for(let x=37;x>-24;x-=4)ground(x,Math.sin(x*.09)*4,4.6,4.4,0x6e5c47,.06,2);
-  grass(0,0,76,76,900,0x5e7440);
+  grass(0,0,76,76,900,0x5e7440);grassCarpet(0x9ab070);
   const SPW=[[22,15],[18,-17],[-6,-20],[-20,14],[-26,-6],[-12,25]];
   for(let i=0;i<46;i++){const a=srand()*6.28,r=34+srand()*12,x=Math.cos(a)*r,z=Math.sin(a)*r;if(x>30&&Math.abs(z)<9)continue;tree(x,z,1+srand()*.7,srand()<.45?'pine':null);}
   for(let i=0;i<24;i++){const x=-30+srand()*56,z=-30+srand()*60;if(Math.abs(z-Math.sin(x*.09)*4)<5||SPW.some(([a,b])=>Math.hypot(x-a,z-b)<10))continue;tree(x,z,.7+srand()*.4,srand()<.45?'pine':null);}
@@ -2747,7 +2769,7 @@ function hitEnemy(e,mult,o){
   if(S.cls==='rogue'&&P.lset&&P.lset.w&&P.stealthT>0&&!o.fixed&&!o.merc){o.crit=true;later(0,()=>{breakStealth();P.rhasteT=5;P.pierceT=P.lset.two?3:0;recalc();floatText(P.pos,'용혈의 습격','crit',3);});}
   let d=o.fixed?P.atk*mult:P.atk*mult*rand(.9,1.1);const crit=o.fixed?false:o.crit||Math.random()<(P.crit||.12)+cA;if(crit)d*=(o.critX||P.critX||1.6)+cX;
   if(o.add)d+=o.add;if(P.ascT>0&&o.skill)d*=1.3;if(S.cls==='warrior'&&P.lset&&P.lset.two&&e.stun>0)d*=1.25;
-  if(e.dr)d*=1-e.dr*(e.defDownT>0?.8:1)*(1-Math.min(1,(o.pierce||0)+(P.pierceT>0?.2:0)+((P.gs&&P.gs.pierce)||0)/100));
+  if(e.def){const pen=Math.min(1,(o.pierce||0)+(P.pierceT>0?.2:0)+((P.gs&&P.gs.pierce)||0)/100),eff=e.def*(e.defDownT>0?.8:1)*(1-pen),tf=S.cls==='shaman'&&!o.merc&&!o.fixed?.3:0;d*=(1-tf)*mitig(eff)+tf;}
   if(e.d.boss&&P.gs&&P.gs.uniq.slayer)d*=1.15;if(S.cls==='shaman'&&P.set3&&!o.merc)d*=1.35;if(e.mark>0)d*=1.3;if(o.undeadX&&isUndead(e))d*=o.undeadX;if(e.seal>0&&S.cls==='shaman'&&isUndead(e))d*=1.1;d=Math.max(1,Math.round(d));
   if(P.godT>0&&!o.holy&&rt-(P.holyT||0)>.45){P.holyT=rt;holyWave(e.pos.clone());}
   let amb=false;if(P.ambush&&!o.merc&&!o.holy&&!o.fixed){d=Math.round(d*3*(crit?1:1.6));amb=true;P.ambush=false;later(0,breakStealth);floatText(e.pos,'기습!','crit',e.tagY+.5);}
@@ -2823,6 +2845,10 @@ function ignisLoot(e){
 function serverNotice(text,r){const el=$('#srvNotice');el.innerHTML='<b>서버 공지</b><span></span>';el.lastChild.textContent=text;el.lastChild.style.color=r===3?'#ff6a5a':r===2?'#ffd060':'';el.hidden=false;el.classList.remove('run');void el.offsetWidth;el.classList.add('run');
   if(AU.ctx&&AU.on){const c=AU.ctx,t=c.currentTime;[72,76,79,84].forEach((m,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(AU.sfx);env(g,t+i*.12,.01,.2,.1,.6);o.start(t+i*.12);o.stop(t+i*.12+1);});}
   clearTimeout(serverNotice.t);serverNotice.t=setTimeout(()=>{el.hidden=true;},9000);}
+const DEF_K=500;
+function mitig(def){return DEF_K/(DEF_K+Math.max(0,def));}  // damage kept after defence: 500 → 50%, 1000 → 33.3%
+/* monsters were tuned for the old curve; this keeps PvE damage at the same level for a character with the class-neutral base defence of its level */
+function pveK(){const ref=12*(1+.1*((S&&S.level||1)-1));return (100/(100+ref*4))/mitig(ref);}
 function hurtPlayer(amount,src,ho){ho=ho||{};
   if(!P||P.dead||CS||paused())return;
   if(P.invulnT>0){floatText(P.pos,'무적','info',2);return;}
@@ -2831,8 +2857,8 @@ function hurtPlayer(amount,src,ho){ho=ho||{};
   if(P.aegisT>0){floatText(P.pos,'용암 보호막','info',2);return;}
   if(src&&src.weakT>0)amount*=.8;
   if(P.dshieldT>0)amount*=.2;  // 신성 방패
-  const magic=!ho.phys;let def=(magic?(P.mdef||P.def):P.def)*(P.shieldT>0?1.5:1)*(1-(src&&src.pr||0))*(ho.ignoreDef?1-ho.ignoreDef:1);
-  let d=amount*(100/(100+def*4))*rand(.9,1.1)*(1-.15*(P.rageN||0))*(1-.03*grit())*(1-(P.dr||0))*(P.immT>0?.5:1);d=Math.max(1,Math.round(d));
+  const magic=!ho.phys,tf=ho.trueFrac||0;let def=(magic?(P.mdef||P.def):P.def)*(P.shieldT>0?1.5:1)*(1-(src&&src.pr||0))*(ho.ignoreDef?1-ho.ignoreDef:1);
+  let d=amount*((1-tf)*mitig(def)+tf)*(src&&!src.pvp?pveK():1)*rand(.9,1.1)*(1-.15*(P.rageN||0))*(1-.03*grit())*(1-(P.dr||0))*(P.immT>0?.5:1);d=Math.max(1,Math.round(d));
   if(ho.fixed)d=Math.round(amount);
   if(S.cls==='rogue'&&P.lset&&P.lset.a&&!magic&&P.phaseT>0){floatText(P.pos,'완전 회피','info',2);return;}
   if(S.cls==='rogue'&&P.lset&&P.lset.a&&!magic&&Math.random()<.15){floatText(P.pos,'회피','info',2);if(rt>=(P.phaseCd||0)){P.phaseCd=rt+30;P.phaseT=3;floatText(P.pos,'그림자 비상 · 3초 완전 회피','crit',3);}return;}
@@ -3297,7 +3323,7 @@ function teleSector(x,z,ang,r,arc){const g=new THREE.Group();g.position.set(x,.0
 function inSector(p,c,ang,r,arc){const dx=p.x-c.x,dz=p.z-c.z,d=Math.hypot(dx,dz);if(d>r)return false;if(d<1.5)return true;let a=Math.atan2(dx,dz)-ang;a=Math.atan2(Math.sin(a),Math.cos(a));return Math.abs(a)<=arc/2;}
 const ccImm=()=>P.ascT>0||P.immT>0;
 function bkName(e,t){e.d=Object.assign({},e.d,{name:'멸세제룡 바라카스 · '+t});}
-function barakasInit(e){Object.assign(e,{ph:1,dr:.35,hpFloor:.7,fightT:0,p2:null,enraged:false,frenzy:false,invuln:false,pat:0,burnT:0,waveT:0,pulseT:15,p3T:0});bkName(e,'1페이즈');}
+function barakasInit(e){Object.assign(e,{ph:1,def:270,hpFloor:.7,fightT:0,p2:null,enraged:false,frenzy:false,invuln:false,pat:0,burnT:0,waveT:0,pulseT:15,p3T:0});bkName(e,'1페이즈');}
 function raidT(txt,hot){const el=$('#raidT');if(!txt){el.hidden=true;return;}el.hidden=false;if(el.textContent!==txt)el.textContent=txt;el.classList.toggle('hot',!!hot);}
 function barakasTick(e,dt){
   if(P.dead||W.zone!=='lair'){if(e.fightT>0)barakasReset(e);return;}
@@ -3372,7 +3398,7 @@ function barakasDoom(e){toast('파멸의 용암 폭발 — 제단 봉인에 실�
   for(let i=0;i<14;i++)burst(rand(-22,22),1,rand(-22,22),0xff6a1a,30,10,1.2,.8,-8);
   later(.3,()=>{if(P.dead)return;P.invulnT=0;P.hp=0;floatText(P.pos,'-999,999','hurt',3);playerDie();});}
 /* phase 3: crash, exposed heart, frenzy, pulses every 15 s, rising lava */
-function barakasP3(e){e.ph=3;e.hpFloor=0;e.frenzy=true;e.dr=.15;e.pulseT=15;e.p3T=0;bkName(e,'3페이즈 · 광란의 혈전');shake(1.2);auRoar(1);
+function barakasP3(e){e.ph=3;e.hpFloor=0;e.frenzy=true;e.def=90;e.pulseT=15;e.p3T=0;bkName(e,'3페이즈 · 광란의 혈전');shake(1.2);auRoar(1);
   toast('바라카스의 가슴에 [용혈 핵]이 드러났습니다! 공격 속도·피해 +50% · 15초마다 용혈의 진동 · 용암이 차오릅니다','bad');
   const h=new THREE.Mesh(new THREE.SphereGeometry(1.3,20,14),glowM(0xff1a1a,.95)),l=new THREE.PointLight(0xff2a1a,2,16,2);h.add(l);W.root.add(h);e.heart=h;
   e.mesh.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=o.material.clone();o.material.emissive.setHex(0x5a0806);o.material.emissiveIntensity=.8;}});}
@@ -3385,7 +3411,7 @@ function heartPulse(e){toast('용혈의 진동!','bad');shake(1);auRoar(.6);
   later(.35,()=>{if(P.dead)return;hurtPlayer(e.atk*1.2,e);P.burnT=5;P.burnAcc=0;floatText(P.pos,'용혈 진동 · 화상 5초','hurt',3);
     if(!ccImm()){const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,L=Math.hypot(dx,dz)||1;P.kb={x:dx/L*20,z:dz/L*20,t:.35};}});}
 /* hard enrage */
-function barakasEnrage(e){e.enraged=true;e.dr=.5;e.burnT=e.fightT>=600?0:30;e.waveT=0;bkName(e,'광폭화 · 멸세의 용강');$('#enrage').hidden=false;
+function barakasEnrage(e){e.enraged=true;e.def=500;e.burnT=e.fightT>=600?0:30;e.waveT=0;bkName(e,'광폭화 · 멸세의 용강');$('#enrage').hidden=false;
   const msg='[시스템] 멸세제룡 바라카스가 폭주합니다! 제단의 모든 것이 용암으로 삼켜집니다!';toast(msg,'bad');mpChatLine('📢',msg,'s');shake(1.5);auRoar(1);
   const fl=new THREE.Mesh(new THREE.CircleGeometry(BK.R,64),new THREE.MeshBasicMaterial({color:0xff2a0a,transparent:true,opacity:.28,depthWrite:false,blending:THREE.AdditiveBlending}));fl.rotation.x=-Math.PI/2;fl.position.y=.12;W.root.add(fl);e.enrFloor=fl;
   e.mesh.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=o.material.clone();o.material.emissive.setHex(0xff1a0a);o.material.emissiveIntensity=1;}});}
@@ -4147,11 +4173,11 @@ function pvpStrike(mult,radius,front,fx,pr){if(!MP.client||!pvpMe()||!S.pkOn||!P
     if(front){if((dx*f.x+dz*f.z)/(d||1)<.3&&d>1.2)continue;if(d<bd){bd=d;best=r;}}else hits.push(r);}
   if(best)hits.push(best);
   hits.forEach(r=>{const crit=Math.random()<(P.crit||.12),dmg=Math.round(P.atk*mult*rand(.9,1.1)*(crit?(P.critX||1.6):1));
-    mpSend({t:'pvp',to:r.id,d:dmg,c:crit?1:0,n:mpMyName(),g:guildKey()||'',lv:S.level,z:W.zone,cls:S.cls,fx:fx||'',pr:pr||0});floatText(r.pos,(crit?'치명 ':'')+'-'+fmt(Math.round(dmg*.5)),crit?'crit':'info',2.2);burst(r.pos.x,1.1,r.pos.z,0xff5a3a,10,3,.6,.3,0);});}
+    mpSend({t:'pvp',to:r.id,d:dmg,c:crit?1:0,n:mpMyName(),g:guildKey()||'',lv:S.level,z:W.zone,cls:S.cls,fx:fx||'',pr:Math.min(.6,(pr||0)+((P.gs&&P.gs.pierce)||0)/100)});floatText(r.pos,(crit?'치명 ':'')+'-'+fmt(Math.round(dmg*.5)),crit?'crit':'info',2.2);burst(r.pos.x,1.1,r.pos.z,0xff5a3a,10,3,.6,.3,0);});}
 function pvpHit(m){if(m.to!==MP.id||!P||P.dead)return;if(!pvpMe()||m.z!==W.zone||(m.lv|0)<PVP_LV||mpFriend(m.id,m.g))return;
   P.lastPvp={id:m.id,n:String(m.n||'?').slice(0,12),t:rt};const ac=String(m.cls||'');let dm=Math.max(1,Math.min(1e6,+m.d||0)*.5);
   if(ADV[ac]===S.cls)dm*=1.25;else if(ADV[S.cls]===ac)dm*=.8;  // 삼각 상성
-  hurtPlayer(dm,{pvp:1,pr:Math.min(.5,+m.pr||0)},{phys:ac!=='shaman'});if(P.dead)return;const imm=P.ascT>0||P.immT>0;
+  hurtPlayer(dm,{pvp:1,pr:Math.min(.6,+m.pr||0)},{phys:ac!=='shaman',trueFrac:ac==='shaman'?.3:0});if(P.dead)return;const imm=P.ascT>0||P.immT>0;
   if(m.fx==='stun'){breakStealth();if(!imm){P.lock=Math.max(P.lock,1.5);P.target=null;P.dest=null;floatText(P.pos,'기절','info',2.8);}}
   else if(m.fx==='silence'&&!imm){P.silT=1.5;floatText(P.pos,'침묵','info',2.8);}
   else if(m.fx==='slow'&&!imm){P.slowT=2;recalc();floatText(P.pos,'둔화','info',2.8);}
@@ -4384,7 +4410,7 @@ function loop(now){
   runTimers();
   const pz=paused();
   if(P&&gameOn&&!pz){
-    updAuto(dt);updPlayer(dt);updMerc(dt);
+    updAuto(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();
     for(let i=W.enemies.length-1;i>=0;i--){const e=W.enemies[i];if(e)updEnemy(e,dt);}
     updProj(dt);updAreas(dt);updSpawners(dt,false);
     // reach goals
@@ -4746,7 +4772,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-18';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-20';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
