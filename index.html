@@ -1250,9 +1250,19 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
     if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
-    if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;
+    // walk/idle blend eases in and out so start/stop never snaps
+    st.mk=(st.mk||0)+((st.mv?1:0)-(st.mk||0))*Math.min(1,dt*4);const mk=st.mk;
+    if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;pose.scale.setScalar(1);
       if(idleN&&!st.mv){pose.position.y=0;return;}
-      if(!runN||!st.mv){pose.position.y=Math.abs(Math.sin(T*(st.mv?9:2)))*(st.mv?.08:.02)*Math.min(3,H);pose.rotation.z=st.mv&&!runN?Math.sin(T*9)*.06:0;}else pose.position.y=0;return;}
+      if(runN&&st.mv){pose.position.y=0;return;}
+      /* procedural gait for models without clips, scaled by body size: small things hop, big things (Ignis) take slow,
+         heavy strides - a soft heave and a forward/back rock instead of a side-to-side waddle */
+      const big=H>=3,f=big?4.2/Math.sqrt(H/2):8;st.ph=(st.ph||0)+dt*f*mk;const s=Math.sin(st.ph),heave=(1-Math.cos(2*st.ph))/2;
+      const breath=Math.sin(T*(big?1.1:2))*(1-mk);
+      pose.position.y=heave*mk*(big?.018*H:.07*Math.min(3,H))+(big?0:Math.abs(breath)*.02*H);
+      pose.rotation.x=s*mk*(big?.022:.03);pose.rotation.z=s*mk*(big?.008:.03);
+      if(big)pose.scale.set(1,1+breath*.012,1+breath*.006);
+      return;}
     st.t+=dt;
     if(st.clip){st.clipLeft-=dt;if(st.clipLeft<=0&&!st.hold&&st.one!=='death')h.release();return;}
     const k=Math.min(1,st.t/st.dur),s=Math.sin(k*Math.PI);
@@ -2895,7 +2905,7 @@ function ignisFade(e,dt){const p=e.parts;
   p.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*(.15+Math.sin(rt*1.6)*.35));}
 function animEnemy(e,dt){
   const sp=e.parts;
-  if(sp.skinned){if(!e.dead){e.mesh.rotation.y=lerpAng(e.mesh.rotation.y,e.face,1-Math.exp(-dt*10));const mv=e.walk!==e._lw;e._lw=e.walk;
+  if(sp.skinned){if(!e.dead){e.mesh.rotation.y=lerpAng(e.mesh.rotation.y,e.face,1-Math.exp(-dt*(e.d.rad>2?2.5:10)));/* huge bosses turn slowly */const mv=e.walk!==e._lw;e._lw=e.walk;
     if(sp.cfg.dormant){if((e.aggro||e.returning)&&!e.woke){e.woke=true;sp.playOnce('Skeletons_Awaken_Floor',1.1);e.stun=Math.max(e.stun,1.1);}else if(!e.aggro&&!e.returning&&e.woke&&!mv){e.woke=false;}}
     sp.setBase(mv?sp.cfg.run:(sp.cfg.dormant&&!e.woke?'Skeletons_Inactive_Floor_Pose':sp.cfg.dormant?'Idle_Combat':sp.cfg.idle));
     if(e.anim&&!e.anim.started){e.anim.started=true;if(e.anim.kind==='rear')sp.playOnce('Spellcast_Summon',1.2);else sp.playOnce(sp.cfg.atk,.55);}if(e.anim){e.anim.t+=dt;if(e.anim.t>=e.anim.dur)e.anim=null;}}
