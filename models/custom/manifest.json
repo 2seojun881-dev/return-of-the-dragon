@@ -1030,34 +1030,6 @@
       "prompt": "blue heraldic banner flag hanging from a wooden pole",
       "meshy_task": "01a0de9a-9160-75c5-89af-0780f53bbca9"
     },
-    "w_tower": {
-      "file": "w_tower.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_tower_A_blue",
-        "building_tower_B_blue"
-      ],
-      "zones": [
-        "citadel",
-        "plains",
-        "title"
-      ],
-      "prompt": "medieval stone watch tower with blue cone roof",
-      "meshy_task": "01a0de9b-12ce-71dc-ae19-4a17f0991be2"
-    },
-    "w_house": {
-      "file": "w_house.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_home_A_red",
-        "building_home_B_red"
-      ],
-      "zones": [
-        "village"
-      ],
-      "prompt": "small medieval timber cottage with red tiled roof",
-      "meshy_task": "01a0de9b-b9a6-7608-9ad7-195cf7e55bfc"
-    },
     "n_aide": {
       "file": "n_aide.glb.txt",
       "kind": "npc",
@@ -1074,19 +1046,6 @@
       "zones": [
         "citadel"
       ]
-    },
-    "w_tavern": {
-      "file": "w_tavern.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_tavern_red"
-      ],
-      "zones": [
-        "citadel",
-        "village"
-      ],
-      "prompt": "two story medieval tavern inn building with red roof and hanging sign",
-      "meshy_task": "01a0de9b-dc45-756d-8b98-817a60109900"
     },
     "w_ruin": {
       "file": "w_ruin.glb.txt",
@@ -1112,19 +1071,6 @@
       ],
       "prompt": "medieval market hall building with blue roof and open stalls",
       "meshy_task": "01a0de9b-e1bb-722a-a100-51cd94c420e1"
-    },
-    "w_church": {
-      "file": "w_church.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_church_blue"
-      ],
-      "zones": [
-        "citadel",
-        "title"
-      ],
-      "prompt": "small medieval stone chapel with blue roof and bell tower",
-      "meshy_task": "01a0de9c-30c5-706d-a43e-6344345848a9"
     },
     "n_sylvia": {
       "file": "n_sylvia.glb.txt",
@@ -1184,19 +1130,6 @@
       ],
       "prompt": "medieval stone castle keep with towers and blue roofs",
       "meshy_task": "01a0de9c-f63c-76e0-8b0d-efd2211abe17"
-    },
-    "w_blacksmith": {
-      "file": "w_blacksmith.glb.txt",
-      "kind": "prop",
-      "replace": [
-        "building_blacksmith_red"
-      ],
-      "zones": [
-        "citadel",
-        "village"
-      ],
-      "prompt": "medieval blacksmith forge building with chimney, anvil and red roof",
-      "meshy_task": "01a0de9d-1fa1-734f-9491-8b2802379fdc"
     },
     "w_well": {
       "file": "w_well.glb.txt",
@@ -1679,6 +1612,120 @@
       "zones": [],
       "prompt": "small tuft of wild green grass blades",
       "meshy_task": "01a0e051-3fc9-7380-8205-5dcb86fb5102"
+    },
+    "u_church": {
+      "file": "u_church.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_church_blue"
+      ],
+      "zones": [
+        "citadel",
+        "title"
+      ],
+      "uniform": true,
+      "userModel": "Church"
+    },
+    "u_cottage_slate": {
+      "file": "u_cottage_slate.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_home_A_red"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "BlueSlateCottage"
+    },
+    "u_cottage_ember": {
+      "file": "u_cottage_ember.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_home_B_red"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "EmberstoneCottage"
+    },
+    "u_tavern": {
+      "file": "u_tavern.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_tavern_red"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "BlueTileCottage"
+    },
+    "u_forge": {
+      "file": "u_forge.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_blacksmith_red"
+      ],
+      "zones": [
+        "citadel",
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "TheVillageForge"
+    },
+    "u_chapel": {
+      "file": "u_chapel.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_tower_A_blue",
+        "building_tower_B_blue"
+      ],
+      "zones": [
+        "citadel",
+        "plains",
+        "title"
+      ],
+      "uniform": true,
+      "userModel": "EmberstoneChapel"
+    },
+    "u_fountain": {
+      "file": "u_fountain.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_fountain"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "Fountain"
+    },
+    "u_throne": {
+      "file": "u_throne.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_throne"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "MoonlitGoldenThrone"
+    },
+    "u_bridge": {
+      "file": "u_bridge.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_bridge"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "StoneBridge"
     }
   }
 }

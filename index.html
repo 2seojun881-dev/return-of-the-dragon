@@ -1026,6 +1026,7 @@ function volcano(x,z,s){
   return g;
 }
 function fountain(x,z){const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);
+  if(PROPS.meshy_fountain){prop('meshy_fountain',0,0,{fit:6.5,par:g});addCircle(x,z,3);return;}
   if(KIT){const ped=prop('pillar_decorated',0,0,{h:2.8,par:g});const st=rigChar('Knight',{keep:['2H_Sword'],tint:0x9aa0aa,cfg:{idle:'Cheer'}});st.mixer.update(.9);st.g.position.y=ped?ped.userData.size.y:2.8;st.g.scale.setScalar(1.25);g.add(st.g);
     [0,1,2,3].forEach(i=>{const a=i/4*6.283+.785;prop('candle_triple',Math.cos(a)*1.9,Math.sin(a)*1.9,{h:.8,par:g});});prop('shrine_candles',0,2.2,{h:1,par:g});addCircle(x,z,1.6);return;}
   mesh(new THREE.CylinderGeometry(4,4.3,.8,16),M(0xd8dce4),0,.4,0,g);
@@ -1250,12 +1251,13 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
         if(he){const y=he.getWorldPosition(new V()).y-bb.min.y;if(y>hh*.4)hh=y/.96;}}
       e.sc=(e.height||2.2)/hh;
       if(e.kind==='prop'&&e.replace){liftProp(g.scene);if(e.tint)g.scene.traverse(o=>{if(o.isMesh)o.material.color.multiply(new THREE.Color(e.tint));});
-        [].concat(e.replace).forEach(r=>{const f=fitToKit(g.scene,bb,PBOX[r]);PROPS[r]=f.obj;PBOX[r]=f.box;CUSTOM.props[r]=e;});}
+        [].concat(e.replace).forEach(r=>{const f=fitToKit(g.scene,bb,PBOX[r],e.uniform);PROPS[r]=f.obj;PBOX[r]=f.box;CUSTOM.props[r]=e;});}
       else if(e.kind==='groundtex')CUSTOM.ground[e.ground]=e;
       else if(e.mob)CUSTOM.mobs[e.mob]=e;else if(e.npc)CUSTOM.npcs[e.npc]=e;else if(e.player)CUSTOM.players[e.player]=e;
       CUSTOM.n++;}).catch(err=>console.warn('custom model failed',k,err));}
 /* scale (and turn) a Meshy prop to the KayKit prop's footprint so every existing layout keeps its sizes */
-function fitToKit(src,mb,kb){if(!kb)return {obj:src,box:mb};const ks=kb.getSize(new V()),ms0=mb.getSize(new V());
+function fitToKit(src,mb,kb,uniform){if(!kb)return {obj:src,box:mb};const ks=kb.getSize(new V()),ms0=mb.getSize(new V());
+  if(uniform){const s=Math.max(ks.x,ks.z)/Math.max(ms0.x,ms0.z,1e-3),w=new THREE.Group();w.add(src.clone());w.scale.setScalar(s);w.updateMatrixWorld(true);return {obj:w,box:new THREE.Box3().setFromObject(w)};}  // hand-made models keep their proportions
   const rot=(ks.x>ks.z*1.3&&ms0.z>ms0.x*1.3)||(ks.z>ks.x*1.3&&ms0.x>ms0.z*1.3),ms=rot?new V(ms0.z,ms0.y,ms0.x):ms0;
   let sx=ks.x/Math.max(ms.x,1e-3),sz=ks.z/Math.max(ms.z,1e-3);const m=(sx+sz)/2;sx=clamp(sx,m*.6,m*1.6);sz=clamp(sz,m*.6,m*1.6);
   const sy=ks.y/Math.max(ms.y,1e-3),w=new THREE.Group(),r=new THREE.Group();r.add(src.clone());if(rot)r.rotation.y=Math.PI/2;w.add(r);w.scale.set(sx,sy,sz);
@@ -2021,6 +2023,10 @@ function buildVillage(){
   setEnv({sky:0x2e2a36,fog:[34,125],ht:0x8898b8,hb:0x2a221e,hi:.5,sun:0xffae78,si:1.05,ash:true});
   W.bounds=[-25,25,-34,26];
   ground(0,0,420,420,0x343a28,.1);
+  if(PROPS.meshy_bridge){  // a stream along the east edge of the village with the old stone bridge over it
+    const wt=new THREE.Mesh(new THREE.PlaneGeometry(6,80),new THREE.MeshStandardMaterial({color:0x2a4a5a,roughness:.15,metalness:.3,transparent:true,opacity:.85}));wt.rotation.x=-Math.PI/2;wt.position.set(23.5,.04,-4);W.root.add(wt);
+    W.anim.push(t=>{wt.material.color.setHSL(.55,.35,.22+Math.sin(t*1.3)*.02);});
+    prop('meshy_bridge',23.5,12,{fit:10});addBox(23.5,-4,3.2,40);}
   ground(0,-3,54,62,0x46502f,.14,1);
   ground(0,-3,4.2,62,0x6e5c47,.08,2);ground(0,2,44,3.6,0x6e5c47,.08,2);ground(-14,-4,10,3,0x6e5c47,.08,2);
   grass(0,-3,50,58,420,0x5a6a3a);
@@ -2151,6 +2157,7 @@ function buildCitadel(){
   volcano(80,-300,1.8);
   if(KIT){[[-29,-28],[29,-28],[-29,28],[29,28]].forEach(([x,z])=>prop('flag_blue',x,z,{h:4,y:14}));prop('crates_stacked',-24,8,{fit:1.8});}
   const fc=(x,z)=>Math.atan2(-x,-z);
+  if(PROPS.meshy_throne){prop('meshy_throne',0,-23.6,{h:3.6});addCircle(0,-23.6,1.2);}
   spawnNpc('eldric',0,-20.7,0);spawnNpc('aide',2.6,-20.4,-.3);
   spawnNpc('aril',-15,13.5,fc(-15,13.5));spawnNpc('mari',-9.5,16,fc(-9.5,16));spawnNpc('varkan',-8,23,fc(-8,23));
   spawnNpc('rowen',15.5,14.4,fc(15.5,14.4));
