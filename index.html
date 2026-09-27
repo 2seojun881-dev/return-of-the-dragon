@@ -1224,7 +1224,10 @@ function loadHeroes(onProgress){
 const CUSTOM={mobs:{},npcs:{},props:{},players:{},ground:{},n:0};
 /* the game moves entities itself: pin the root bone's horizontal drift (root motion) to its first key */
 function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.userData={inPlace:1};
-  clip.tracks.forEach(t=>{if(!/Hips\.position$/.test(t.name))return;const v=t.values,x=v[0],z=v[2];for(let i=0;i<v.length;i+=3){v[i]=x;v[i+2]=z;}});return clip;}
+  // keep bone rotations (+ hips height) only: bone offsets come from the model's own skeleton, so clips made for one rig
+  // play correctly on a re-rigged version of the same character
+  clip.tracks=clip.tracks.filter(t=>/\.quaternion$/.test(t.name)||/^Hips\.position$/.test(t.name));
+  clip.tracks.forEach(t=>{if(!/Hips\.position$/.test(t.name))return;const v=t.values,x=v[0],z=v[2];for(let i=0;i<v.length;i+=3){v[i]=x;v[i+2]=z;}});clip.resetDuration();return clip;}
 /* Meshy models: entries with "zones" load only when a zone that uses them is built (and its neighbours are
    prefetched in the background), so phones don't download every model at startup. */
 let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
@@ -1733,7 +1736,6 @@ function makePlayer(){
   P={mesh:h.g,parts:h,pos:h.g.position,hp:1,maxHp:1,dest:null,target:null,hunt:null,face:Math.PI,atkCd:0,cd:{s1:0,s2:0,s3:0,ult:0},barrier:0,barrierT:0,stealthT:0,godT:0,mercLeft:0,lock:0,shieldT:0,kb:null,dead:false,anim:null,potCd:0,stuck:0,last:new V(),walk:0,isPlayer:true,wmesh:null,y:0};
   const sh=new THREE.Mesh(new THREE.SphereGeometry(1.4,16,12),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}));sh.position.y=1;sh.visible=false;h.g.add(sh);P.shield=sh;
   // keep the player readable on dark maps (altar, graveyard, canyon): a faint self-glow from its own texture + a soft hero light
-  if(h.custom)h.model.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=heroRim(o.material.clone());}});
   const hl=new THREE.PointLight(0xffe6cc,1.2,9,2);hl.position.set(0,3.4,1.2);h.g.add(hl);P.heroLight=hl;
   const fg=new THREE.Mesh(new THREE.CircleGeometry(1.15,32),new THREE.MeshBasicMaterial({map:glowTex(),color:0xffd8a0,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending}));
   fg.rotation.x=-Math.PI/2;fg.position.y=.05;fg.renderOrder=2;h.g.add(fg);  // soft pool of light at the player's feet
