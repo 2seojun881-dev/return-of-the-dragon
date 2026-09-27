@@ -87,6 +87,12 @@ svg{display:block}
 #mmwrap{position:relative;width:132px;height:132px;border-radius:50%;border:2px solid var(--line);overflow:hidden;background:#15110f;box-shadow:0 0 0 3px rgba(0,0,0,.4)}
 #mm{width:100%;height:100%}
 #zname{font:700 12px 'Gowun Batang',serif;color:#f3e3bb;text-shadow:0 1px 2px #000;text-align:right}
+#mpBadge{margin-top:4px;padding:3px 8px;border-radius:10px;background:#1a3a5acc;border:1px solid #6ab8ff;color:#dff0ff;font-size:11px;text-align:right;cursor:pointer;pointer-events:auto;display:inline-block;float:right}
+#mpChat{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 190px);max-width:46vw;pointer-events:none;z-index:6;display:flex;flex-direction:column;gap:2px}
+#mpChat div{font-size:12px;color:#fff;background:#0009;border-radius:6px;padding:2px 7px;text-shadow:0 1px 1px #000;transition:opacity .6s}
+#mpChat b{color:#8fd0ff;font-weight:700}
+.tag.mp .nm{color:#9fdcff}
+.mpcode{font:700 30px/1.2 monospace;letter-spacing:6px;color:#ffe08a;text-align:center;padding:8px;border:1px dashed #8a6a3a;border-radius:8px;margin:6px 0;user-select:all}
 #trbtns{display:flex;gap:6px}
 .rbtn{width:44px;height:44px;border-radius:10px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:#eadcc0;position:relative}
 .rbtn svg{width:22px;height:22px}
@@ -188,6 +194,21 @@ svg{display:block}
 .islot i{position:absolute;font-style:normal;font-size:9px;font-weight:700;text-shadow:0 1px 2px #000}.islot .en,.eslot .en{right:3px;top:1px;color:#ffd070}.islot .lk{left:2px;top:0}.islot .st{left:2px;bottom:1px;color:#ff8a7a}.islot .q{right:3px;bottom:1px;color:#fff}
 .prev{position:relative;text-align:center}.prev canvas{width:100%;max-width:220px;aspect-ratio:220/300;background:radial-gradient(circle at 50% 70%,rgba(255,180,90,.18),transparent 65%);border-radius:8px}
 .pvname{font:700 13px 'Gowun Batang',serif;color:#f5e2b4;margin-top:-6px}
+/* phones in landscape: the whole character + bag fits on one screen (equipment | stats | bag side by side) */
+@media (max-height:600px) and (min-width:640px){
+ #panel{padding:4px 8px}.pcard.wide{width:100%;max-height:calc(100% - 2px)}.pcard header{padding:4px 12px}.pcard h2{font-size:14px}#pbody{padding:6px 10px 8px}
+ .invtop{margin-bottom:4px;font-size:11px;gap:10px}.invtop svg{width:13px;height:13px}
+ .invgrid{grid-template-columns:auto 1fr;gap:10px}
+ .invl{display:grid;grid-template-columns:auto 204px;column-gap:8px;align-items:start;align-content:start}.invl>.eqwrap{grid-row:1/span 8}
+ .eqwrap{grid-template-columns:40px 92px 40px;gap:4px}.eqcol{gap:4px}
+ .eslot,.islot{width:40px;height:40px;border-radius:6px;border-width:1.5px}.eslot svg,.islot svg{width:20px;height:20px}.eslot span{font-size:9px}
+ .prev canvas{max-width:92px}.pvname{font-size:11px;margin-top:-2px}
+ .stbox{margin-top:0;padding:5px 7px;font-size:10.5px;gap:1px 8px}.stbox span,.stbox b{white-space:nowrap}.setline{font-size:10.5px;padding:3px 6px;margin-top:4px}
+ .invl .bbar{flex-wrap:wrap;gap:4px}.bbar .btn.sm{padding:3px 7px;font-size:11px}
+ .invtabs .tabs button{padding:4px 10px;font-size:12px}
+ .igrid{grid-template-columns:repeat(auto-fill,40px);gap:5px;margin-top:5px;max-height:calc(100vh - 150px)}
+ .islot i{font-size:8px}.skd{font-size:12px}
+}
 .stbox{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;margin-top:10px;padding:8px 10px;border:1px solid var(--line2);border-radius:6px;background:rgba(0,0,0,.2);font-size:12px}
 .stbox div{display:flex;justify-content:space-between}.stbox .full{grid-column:1/-1}.stbox span{color:var(--dim)}
 .setline{margin-top:6px;font-size:12px;color:var(--dim);padding:5px 8px;border-radius:5px;border:1px dashed var(--line2)}.setline.on{color:#ffb0a0;border-color:#a0402a}
@@ -402,6 +423,7 @@ body.touch #joy{display:block}
   <div id="tr">
     <div id="mmwrap"><canvas id="mm" width="264" height="264"></canvas></div>
     <div id="zname"></div>
+    <div id="mpBadge" hidden></div>
     <div id="trbtns">
       <button class="rbtn" id="bagBtn" aria-label="가방"></button>
       <button class="rbtn" id="menuBtn" aria-label="메뉴"></button>
@@ -450,7 +472,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-7</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-8</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2138,7 +2160,7 @@ function buildEternal(){buildCitadel();
     if(e.tag)e.tag.innerHTML='영원의 이그니스 <small>Lv.120</small>';};
   const beaten=()=>!W.enemies.some(q=>q.eternal&&!q.dead)&&W.enemies.some(q=>q.eternal);
   portal(0,28.5,'hall',[-7.6,3.2],always,'','진급의 전당으로 돌아가기 ›');
-  portal(0,-27.6,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
+  portal(0,-26.5,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
   later(1.2,()=>toast('영원한 성채 · 성문이 모두 닫혔습니다. 영원의 이그니스를 쓰러뜨리세요','bad'));}
 function buildHall(){
   setEnv({sky:0x0e0a08,fog:[30,70],ht:0xe8d0a8,hb:0x2a1c12,hi:1.15,sun:0xffe0b0,si:1.1,ash:false});
@@ -2306,7 +2328,7 @@ function buildCitadel(){
   ground(0,0,60,60,0x5e636e,.08,1);
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
   const WC=0xa4a8b2;
-  stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,-3.2,-29,8,WC);stoneWall(3.2,-29,30,-29,8,WC);
+  stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,30,-29,8,WC);  // the dragon-altar door stands on the Soul Altar terrace, not in a wall gap
   stoneWall(-30,29,-25,29,8,WC);stoneWall(-19,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
   stoneWall(-30,-29,-30,-3.6,8,WC);stoneWall(-30,3.6,-30,29,8,WC);stoneWall(30,-29,30,-3.6,8,WC);stoneWall(30,3.6,30,29,8,WC);
   tower(-29,-28,12,0xaeb2bc);tower(29,-28,12,0xaeb2bc);tower(-29,28,12,0xaeb2bc);tower(29,28,12,0xaeb2bc);
@@ -2331,11 +2353,11 @@ function buildCitadel(){
     [[-5.6,-17,2.4,.3],[5.6,-17,2.4,.3],[-8,-23,.3,6],[8,-23,.3,6],[-3.4,-15,.2,2],[3.4,-15,.2,2]].forEach(([x,z,hw,hd])=>{addBox(x,z,hw,hd).line=true;});
     // temple set (user Meshy models): stained-glass gothic door = way to the dragon altar, gothic windows, spires, gold-marble columns
     const tp=(n,x,z,o,r)=>{const g=prop(n,x,z,o);if(g&&r)addCircle(x,z,r);return g;};
-    if(PROPS.meshy_t_portal){tp('meshy_t_portal',0,-28.6,{h:9,y:TH});[-1,1].forEach(s=>tp('meshy_t_gothic',s*4.7,-28.7,{h:7.5,y:TH}));}
+    if(PROPS.meshy_t_portal){tp('meshy_t_portal',0,-27.4,{h:9,y:TH});[-1,1].forEach(s=>tp('meshy_t_gothic',s*4.9,-27.9,{h:7.5,y:TH}));}
     [-1,1].forEach(s=>[-17.8,-22.4,-27.6].forEach(z=>tp(PROPS.meshy_t_pedestal?'meshy_t_pedestal':'pillar_decorated',s*7.2,z,{h:5.4,y:TH},.45)));
     // twin knight guardians at the head of the stairs
     [-1,1].forEach(s=>tp('meshy_t_knight',s*4.7,-18.3,{h:6,y:TH,rot:-s*.12},.8));
-    tp('meshy_t_mary',0,-25.4,{h:3.4,y:TH},.5);
+    tp('meshy_t_mary',0,-24.1,{h:3.4,y:TH},.5);
     const colH=4.4;[-1,1].forEach(s=>tp(PROPS.meshy_t_column?'meshy_t_column':'pillar_decorated',s*4.5,-12.6,{h:colH},.4));
     const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0x8ab8ff,transparent:true,opacity:.6,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(0,TH+.14,-22);W.root.add(al);
     const beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,1.3,12,20,1,true),new THREE.MeshBasicMaterial({color:0x5a8aff,transparent:true,opacity:.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(0,TH+6,-22);W.root.add(beam);
@@ -2381,7 +2403,7 @@ function buildCitadel(){
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
   portal(-22,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
   portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
-  portal(0,-27.6,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
+  portal(0,-26.5,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
   portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
 }
 function scatterProps(list,n,x0,x1,z0,z1,avoid){if(!KIT)return;for(let i=0;i<n;i++){const x=x0+srand()*(x1-x0),z=z0+srand()*(z1-z0);if(avoid&&avoid(x,z))continue;const it=list[Math.floor(srand()*list.length)];prop(it[0],x,z,{fit:it[1]*(.8+srand()*.4),rot:srand()*6.28,tint:it[2]});}}
@@ -2786,6 +2808,7 @@ function faceTo(x,z){P.face=Math.atan2(x-P.pos.x,z-P.pos.z);}
 function fwd(){return new V(Math.sin(P.face),0,Math.cos(P.face));}
 function playAnim(kind,dur){P.anim={kind,t:0,dur};}
 function basicAttack(t){
+  if(MP.peer)mpSend({t:'fx',k:'atk'});
   if(P.setFx&&P.setFx.attack)P.setFx.attack();
   const c=S.cls;P.atkCd=P.aspd;faceTo(t.pos.x,t.pos.z);
   const w=S.weapon;if(w&&!w.destroyed&&w.dur>0){w.dur=Math.max(0,w.dur-.08);if(w.dur<=0){recalc();toast('무기가 손상되었습니다! 철화 대장간에서 수리하세요 (공격력 50%)','bad');}else if(Math.abs(w.dur-20)<.05)toast('무기 내구도가 20% 남았습니다.');}
@@ -2851,7 +2874,7 @@ function useSkill(k){
   const ok=SKILLS[S.cls][k]();
   if(ok!==false){P.cd[k]=sk.cd*(P.godT>0?.5:1)*(1-(P.cdr||0));if(typeof setFxSkill==='function')setFxSkill(k);if(sk.gold){S.gold-=sk.gold;floatText(P.pos,'-'+sk.gold+' G','info',2.9);}
     if(P.stealthT>0&&k!=='s2'&&S.cls==='rogue'){}
-    const w=S.weapon;if(S.cls==='shaman'&&w.db&&!w.destroyed&&Math.random()<.15+.02*w.db){floatText(P.pos,'용혈: 마력 소모 0','info',3);const t=autoTarget(14);if(t)later(.5,()=>lavaBurst(t.pos.clone(),w.db));}else P.mp-=cost;
+    const w=S.weapon;if(S.cls==='shaman'&&w.db&&!w.destroyed&&Math.random()<.15+.02*w.db){floatText(P.pos,'용혈: 마력 소모 0','info',3);const t=autoTarget(14);if(t)later(.5,()=>lavaBurst(t.pos.clone(),w.db));}else P.mp-=cost;if(MP.peer)mpSend({t:'fx',k:'skill'});
     if(goalActive('skill','dummy')){const sc=W.enemies.find(e=>e.type==='scarecrow');if(sc&&d2(sc.pos,P.pos)<16)later(.8,()=>progress('skill','dummy'));}}
 }
 /* healer: all self-heals go through here (class bonus, 3-set, god form) */
@@ -2892,7 +2915,7 @@ const SKILLS={
       shake(.6);burst(p.x,1.2,p.z,0x9a5aff,50,7,.7,.5,0);hitEnemy(t,low?16:8,{crit:true,critX:1});if(low)floatText(p,'처형','crit',t.tagY+.4);});}
  },
  shaman:{
-  s1(){healP(P.atk*2.6+P.maxHp*.18);P.hotT=6;P.hotAcc=0;playAnim('cast2',.6);
+  s1(){healP(P.atk*2.6+P.maxHp*.18);mpParty('heal',.2);P.hotT=6;P.hotAcc=0;playAnim('cast2',.6);
     ringFx(P.pos.x,P.pos.z,2.4,0xfff0c0,.6);burst(P.pos.x,.3,P.pos.z,0xfff6d8,30,2,1,.35,3);
     const col=new THREE.Mesh(new THREE.CylinderGeometry(1,1,6,16,1,true),new THREE.MeshBasicMaterial({color:0xfff0c0,transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));col.position.set(P.pos.x,3,P.pos.z);W.root.add(col);addFx(col,.8,k=>{col.material.opacity=.35*(1-k);col.scale.x=col.scale.z=1-k*.5;});},
   s2(){P.barrier=Math.round(P.maxHp*.3);P.barrierT=10;playAnim('cast',.5);P.lock=.3;
@@ -2906,7 +2929,7 @@ const SKILLS={
     areaFx({x:tp.x,z:tp.z,life:6,tick:1,objs:[seal,lt],upd:(a)=>{seal.rotation.z=a.t*.5;seal.material.opacity=a.t<.2?a.t*4.5:.75+Math.sin(a.t*6)*.1;if(Math.random()<.4)burst(tp.x+rand(-r,r)*.6,.3,tp.z+rand(-r,r)*.6,0xfff0a0,2,1,1,.3,3);},
       onTick:()=>{if(d2(P.pos,tp)<r)healP(P.maxHp*.05,true);ringFx(tp.x,tp.z,r,0xffe8a0,.4);
         for(const en of W.enemies){if(en.dead||en.d.static||d2(en.pos,tp)>=r+en.rad*.5)continue;hitEnemy(en,.6,{undeadX:2});if(first&&!en.d.dummy)en.stun=Math.max(en.stun,1);}first=false;}});},
-  ult(){P.godT=P.set5?60:30;P.godRev=true;playAnim('summon',1.2);P.lock=.8;shake(.5);healP(P.maxHp);toast('신의 강림 — 체력 완전 회복 · 30초간 치유량 50%↑ · 쿨타임 50%↓ · 쓰러지면 즉시 부활','gold');
+  ult(){P.godT=P.set5?60:30;P.godRev=true;playAnim('summon',1.2);P.lock=.8;shake(.5);healP(P.maxHp);mpParty('heal',1);toast('신의 강림 — 체력 완전 회복 · 30초간 치유량 50%↑ · 쿨타임 50%↓ · 쓰러지면 즉시 부활','gold');
     const x=P.pos.x,z=P.pos.z;const col=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,30,20,1,true),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));col.position.set(x,15,z);W.root.add(col);addFx(col,1.4,k=>{col.material.opacity=.5*(1-k);col.scale.x=col.scale.z=1+k*2;});
     burst(x,2,z,0xfff0c0,80,8,1.2,.5,-2);ringFx(x,z,6,0xfff0b0,.8);for(const k in P.cd)P.cd[k]*=.5;
     if(!P.aura){const a=new THREE.Group();const r1=new THREE.Mesh(new THREE.RingGeometry(1,1.25,40),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));r1.rotation.x=-Math.PI/2;r1.position.y=.08;a.add(r1);
@@ -3103,7 +3126,7 @@ function oracleForesight(e,A){if(!P||P.dead||e.dead)return;const f=new V(Math.si
     r.rotation.x=-Math.PI/2;r.position.set(x,groundH(x,z)+.08,z);r.renderOrder=11;W.root.add(r);tween(2+A.breath,k=>{r.material.opacity=.85*(1-k*k);r.rotation.z=k*4;},()=>killObj(r));});
   floatText(P.pos,'신탁의 예지','lvl',3);toast('신탁의 예지 · 2초 뒤 브레스! 초록 안전지대로 피하세요','gold');}
 /* 그랜드 오라클 · 신성 방패: the instant the breath starts, 80% damage reduction for its duration */
-function divineShield(t){if(!P||P.dead)return;if(P.mp<30){floatText(P.pos,'마나 부족','info',2);return;}P.mp-=30;P.dshieldT=t;
+function divineShield(t){if(!P||P.dead)return;if(P.mp<30){floatText(P.pos,'마나 부족','info',2);return;}P.mp-=30;P.dshieldT=t;mpParty('shield',t);
   floatText(P.pos,'신성 방패','crit',3);ringFx(P.pos.x,P.pos.z,3,0xfff0b0,.7);burst(P.pos.x,1.4,P.pos.z,0xfff0b0,50,4,1,.5,1);refreshHud();}
 function ignisAirBreath(e,sm){const A=AIRB,faceP=(dt,rate)=>{const want=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z);let d=want-e.face;d=Math.atan2(Math.sin(d),Math.cos(d));e.face+=d*Math.min(1,dt*rate);e.mesh.rotation.y=e.face;};
   e.spCd=A.up+A.charge+A.breath+A.down+A.cd;e.airborne=true;e.parts.airborne=true;
@@ -3444,7 +3467,7 @@ function renderInv(){const box=$('#inv');if(!box)return;const G=P.gs||gearStats(
   if(tab==='all'||tab==='mat')mats.forEach(x=>cells+='<button class="islot r0 cn" data-cn="'+x[0]+'" title="'+x[1]+'">'+x[3]+'<i class="q">'+fmt(x[2])+'</i></button>');
   const empty=Math.max(0,(tab==='all'||tab==='equip'?S.bagMax-S.bag.length:0));for(let i=0;i<Math.min(empty,tab==='all'?10:25);i++)cells+='<div class="islot empty"></div>';
   box.innerHTML='<div class="invtop num"><span>'+ICON.coin+fmt(S.gold)+' G</span><span>'+ICON.coins+'용의 비늘 '+S.scale+'</span><span>'+ICON.seal+'용의 결정 '+S.cryst+'</span></div>'+
-   '<div class="invgrid"><div class="invl"><div class="eqwrap"><div class="eqcol">'+eqL.map(slotHtml).join('')+'</div><div class="prev"><canvas id="invPrev" width="220" height="300"></canvas><div class="pvname">'+S.name+' · '+c.name.replace(/\(.*\)/,'')+'</div></div><div class="eqcol">'+eqR.map(slotHtml).join('')+'</div></div>'+
+   '<div class="invgrid"><div class="invl"><div class="eqwrap"><div class="eqcol">'+eqL.map(slotHtml).join('')+'</div><div class="prev"><canvas id="invPrev" width="220" height="300"></canvas><div class="pvname">'+S.name+' · '+heroClsName().replace(/\(.*\)/,'')+'</div></div><div class="eqcol">'+eqR.map(slotHtml).join('')+'</div></div>'+
    '<div class="stbox num"><div><span>HP</span><b>'+fmt(P.maxHp)+'</b></div><div><span>MP</span><b>'+fmt(P.maxMp)+'</b></div><div><span>공격력</span><b>'+fmt(P.atk)+'</b></div><div><span>방어력</span><b>'+fmt(P.def)+'</b></div>'+
    '<div><span>치명타</span><b>'+(P.crit*100).toFixed(1)+'%</b></div><div><span>치명 피해</span><b>'+Math.round(P.critX*100)+'%</b></div><div><span>공격 속도</span><b>'+(c.aspd/P.aspd*100).toFixed(0)+'%</b></div><div><span>쿨타임 감소</span><b>'+(P.cdr*100).toFixed(1)+'%</b></div><div><span>명중</span><b>+'+(P.acc||0).toFixed(1)+'%</b></div><div class="full"><span>주요 스탯</span><b>힘 '+G.str+' · 민첩 '+G.dex+' · 지능 '+G.int+' · 체력 '+G.vit+'</b></div></div>'+
    (DSET[S.cls]?'<div class="setline'+(G.setN>=3?' on':'')+'">[세트] '+DSET[S.cls].n+' '+G.setN+'/5'+(G.setN>=5?' (5세트 적용 중)':G.setN>=3?' (3세트 적용 중)':'')+'</div>':'')+
@@ -3692,8 +3715,79 @@ function openBless(){const done=S.blessDate===today();
   S.blessDate=today();S.buffs.bless=Date.now()+1800000;recalc();P.hp=P.maxHp;P.mp=P.maxMp;save();refreshHud();
   ringFx(P.pos.x,P.pos.z,5,0xfff4c0,1.2);burst(P.pos.x,2,P.pos.z,0xfff4c0,70,5,1.4,.5,2);
   dialog([['seojun','천명의 빛이 그대를 감싸리라. 반 시진 동안 그대의 힘과 육신과 마력이 모두 차오르리니.'],['sys','[천명의 축복] 30분 동안 공격력·방어력·최대 체력·최대 마력 +10%, 체력과 마력 모두 회복']]);}
+/* =========================================================
+   multiplayer (함께하기): browser-to-browser rooms over WebRTC (PeerJS public signalling, no game server).
+   One player opens a room and shares its code; up to 7 friends join. The host relays every message (star).
+   Shared: position/animation/class/level/zone (8 Hz), chat, attack/skill motions, party heals, Divine Shield.
+   Monsters and loot stay local to each player.
+   ========================================================= */
+const MP={peer:null,host:false,conns:[],code:null,others:{},sendT:0,chat:[],max:7};
+const MP_LIB='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
+function mpLoad(){return window.Peer?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src=MP_LIB;s.onload=ok;s.onerror=()=>no(new Error('lib'));document.head.appendChild(s);});}
+function mpOpts(){return Object.assign({debug:0},window.MP_PEER_OPTS||{});}
+function mpCodeGen(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<5;i++)c+=A[Math.floor(Math.random()*A.length)];return c;}
+function mpMyName(){return S.name||ACCOUNT||'모험가';}
+async function mpHost(){if(MP.peer)return;try{await mpLoad();}catch(err){toast('멀티플레이 모듈을 불러오지 못했습니다 (인터넷 연결 확인)','bad');return;}
+  const code=mpCodeGen(),peer=new Peer('rotd-'+code,mpOpts());MP.peer=peer;MP.host=true;MP.code=code;
+  peer.on('open',()=>{toast('방을 만들었습니다 · 코드 '+code,'gold');mpUi();});
+  peer.on('connection',c=>{if(MP.conns.length>=MP.max){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300);});return;}mpWire(c);});
+  peer.on('error',err=>{if(err.type==='unavailable-id'){mpLeave(true);mpHost();return;}toast('멀티플레이 오류: '+(err.type||err),'bad');if(!MP.conns.length&&err.type!=='peer-unavailable')mpLeave(true);});
+  peer.on('disconnected',()=>{try{peer.reconnect();}catch(e2){}});}
+async function mpJoin(code){code=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length<4){toast('방 코드를 확인하세요','bad');return;}if(MP.peer)mpLeave(true);
+  try{await mpLoad();}catch(err){toast('멀티플레이 모듈을 불러오지 못했습니다 (인터넷 연결 확인)','bad');return;}
+  const peer=new Peer(undefined,mpOpts());MP.peer=peer;MP.host=false;MP.code=code;
+  peer.on('open',()=>{const c=peer.connect('rotd-'+code,{reliable:true});mpWire(c);toast('방 '+code+'에 접속 중…');});
+  peer.on('error',err=>{toast(err.type==='peer-unavailable'?'방을 찾을 수 없습니다 · 코드 '+code:'멀티플레이 오류: '+(err.type||err),'bad');mpLeave(true);});}
+function mpWire(c){c.on('open',()=>{MP.conns.push(c);if(!MP.host)toast('방 '+MP.code+' 입장!','gold');mpSendState(true);mpChatLine(null,(MP.host?'새 동료가 들어왔습니다':'방에 들어왔습니다')+' · 현재 '+(Object.keys(MP.others).length+2)+'명');mpUi();});
+  c.on('data',m=>{if(!m||typeof m!=='object')return;if(m.t==='full'){toast('방이 가득 찼습니다 (최대 8명)','bad');mpLeave(true);return;}
+    if(MP.host&&m.id)MP.conns.forEach(o=>{if(o!==c&&o.open)o.send(m);});  // relay to everyone else
+    if(m.id)c._mpid=m.id;mpRecv(m);});
+  c.on('close',()=>{MP.conns=MP.conns.filter(o=>o!==c);if(c._mpid){mpRemove(c._mpid);if(MP.host)MP.conns.forEach(o=>o.open&&o.send({t:'bye',id:c._mpid}));}
+    if(!MP.host){toast('방이 닫혔습니다','bad');mpLeave(true);}mpUi();});}
+function mpLeave(quiet){MP.conns.forEach(c=>{try{c.close();}catch(e2){}});MP.conns=[];if(MP.peer){try{MP.peer.destroy();}catch(e2){}}MP.peer=null;MP.code=null;
+  Object.keys(MP.others).forEach(mpRemove);if(!quiet)toast('멀티플레이를 종료했습니다');mpUi();}
+function mpSend(m){if(!MP.peer||!MP.conns.length)return;m.id=MP.peer.id;MP.conns.forEach(c=>{if(c.open)c.send(m);});}
+function mpSendState(force){if(!P||!S)return;const mv=!!(P.dest||P.target||P._pw!==P.walk);
+  mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0});P._mpw=P.walk;}
+function mpRecv(m){const id=m.id;
+  if(m.t==='st'){let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
+    r.name=m.n;r.lv=m.lv;r.awk=m.a;r.zone=m.z;r.tgt.set(m.x,m.y||0,m.zz);r.face=m.f;r.moving=!!m.m;r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;r.seen=rt;
+    const lbl=m.n+' <small>Lv.'+m.lv+' '+(m.a&&AWK[m.c]?AWK[m.c].name:(CLASSES[m.c]||{}).name||'')+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}mpUi(true);}
+  else if(m.t==='chat'){const r=MP.others[id];mpChatLine(m.n||'?',m.txt);if(r&&r.h.g.visible)floatText(r.pos,m.txt.slice(0,24),'info',3);}
+  else if(m.t==='fx'){const r=MP.others[id];if(r&&r.h.skinned&&r.h.g.visible)r.h.playOnce(m.k==='skill'?'Spellcast_Shoot':'1H_Melee_Attack_Slice_Diagonal',.5);}
+  else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*m.p);P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+m.n+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
+  else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,m.d);floatText(P.pos,'신성 방패 ('+m.n+')','crit',3);}}
+  else if(m.t==='bye')mpRemove(id);}
+function mpAvatar(id,m){const h=heroModel(m.c);h.g.visible=false;scene.add(h.g);
+  const r={id,cls:m.c,h,parts:h,mesh:h.g,pos:h.g.position,tgt:new V(),face:0,walk:0,y:0,first:true,seen:rt};r.tag=makeTag(r,'npc mp',m.n,2.35);MP.others[id]=r;
+  mpChatLine(null,m.n+' 님이 함께합니다');return r;}
+function mpRemove(id,silent){const r=MP.others[id];if(!r)return;scene.remove(r.h.g);r.tag.remove();delete MP.others[id];if(!silent)mpChatLine(null,(r.name||'동료')+' 님이 나갔습니다');mpUi(true);}
+function mpChatLine(who,txt){let box=$('#mpChat');if(!box){box=document.createElement('div');box.id='mpChat';document.body.appendChild(box);}
+  const d=document.createElement('div');d.innerHTML=(who?'<b>'+who.replace(/[<>&]/g,'')+'</b> ':'')+String(txt).replace(/[<>&]/g,'');box.appendChild(d);while(box.children.length>5)box.firstChild.remove();
+  setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),700);},12000);MP.chat.push([who,txt]);if(MP.chat.length>30)MP.chat.shift();}
+function mpSay(txt){txt=(txt||'').trim().slice(0,80);if(!txt||!MP.peer)return;mpSend({t:'chat',n:mpMyName(),txt});mpChatLine(mpMyName(),txt);if(P)floatText(P.pos,txt.slice(0,24),'info',3);}
+function mpParty(kind,val){if(!MP.peer||!MP.conns.length||!P)return;mpSend({t:kind,n:mpMyName(),z:W.zone,x:P.pos.x,zz:P.pos.z,p:val,d:val});}
+function mpTick(dt){MP.sendT-=dt;if(MP.sendT<=0){MP.sendT=.125;mpSendState();}
+  for(const id in MP.others){const r=MP.others[id];if(rt-r.seen>8){mpRemove(id);continue;}
+    const vis=r.zone===W.zone&&!CS&&W.zone!=='title';r.h.g.visible=vis;if(!vis){r.tag.style.display='none';continue;}
+    const d=r.pos.distanceTo(r.tgt);if(d>12)r.pos.copy(r.tgt);else r.pos.lerp(r.tgt,Math.min(1,dt*10));const mv=r.moving||d>.08;if(mv)r.walk+=dt*6;
+    animHumanoid(r,dt,mv&&!r.dead);placeTag(r.tag,r.pos,r.tagY);}}
+function mpUi(soft){const n=Object.keys(MP.others).length+1,b=$('#mpBadge');if(b){b.hidden=!MP.peer;b.textContent='👥 '+n+'명 · 방 '+(MP.code||'');b.onclick=openMP;}
+  if(!soft&&$('#panel')&&!$('#panel').hidden&&$('#ptl')&&$('#ptl').textContent.startsWith('함께하기'))openMP();}
+function openMP(){const on=!!MP.peer,list=Object.values(MP.others);
+  let h='<div class="sec"><h3>멀티플레이 · 함께하기</h3><p class="note">방을 만들어 코드를 친구에게 알려 주면, 친구가 코드를 입력해 같은 세계에 들어옵니다 (최대 8명). 같은 지역에 있으면 서로의 캐릭터가 보이고 채팅할 수 있으며, 신(그랜드 오라클)의 치유·신성 방패가 파티원에게도 적용됩니다. 몬스터와 전리품은 각자 따로입니다.</p></div>';
+  if(!on)h+='<div class="sec"><button class="btn pri" id="mpNew" style="width:100%">방 만들기</button><div class="row" style="margin-top:8px"><input id="mpCode" maxlength="6" placeholder="방 코드 입력" style="flex:1;font:700 18px monospace;letter-spacing:4px;text-transform:uppercase;padding:8px;border-radius:8px;border:1px solid #6a5a44;background:#1a1410;color:#ffe8b0"><button class="btn sm pri" id="mpGo">참가</button></div></div>';
+  else h+='<div class="sec"><h3>'+(MP.host?'내 방 코드':'참가한 방')+'</h3><div class="mpcode">'+MP.code+'</div>'+(MP.host?'<p class="note">이 코드를 친구에게 보내세요. 방장이 나가면 방이 닫힙니다.</p>':'')+
+    '<div class="row"><div class="l"><b>'+mpMyName()+' (나)</b><small>Lv.'+S.level+' '+heroClsName()+' · '+(ZONES[W.zone]||{}).name+'</small></div></div>'+
+    list.map(r=>'<div class="row"><div class="l"><b>'+(r.name||'?')+'</b><small>Lv.'+(r.lv||1)+' '+(r.awk&&AWK[r.cls]?AWK[r.cls].name:(CLASSES[r.cls]||{}).name||'')+' · '+((ZONES[r.zone]||{}).name||'')+(r.zone===W.zone?' · 같은 지역':'')+'</small></div></div>').join('')+
+    '<div class="row" style="margin-top:8px"><input id="mpMsg" maxlength="80" placeholder="채팅 입력" style="flex:1;padding:8px;border-radius:8px;border:1px solid #6a5a44;background:#1a1410;color:#fff"><button class="btn sm pri" id="mpSend">보내기</button></div>'+
+    '<button class="btn" id="mpQuit" style="width:100%;margin-top:8px">'+(MP.host?'방 닫기':'방 나가기')+'</button></div>';
+  openPanel('함께하기 · 멀티플레이',h);
+  const nb=$('#mpNew');if(nb)nb.onclick=()=>{mpHost();};const gb=$('#mpGo');if(gb)gb.onclick=()=>mpJoin($('#mpCode').value);
+  const sb=$('#mpSend');if(sb){const go=()=>{mpSay($('#mpMsg').value);$('#mpMsg').value='';};sb.onclick=go;$('#mpMsg').onkeydown=ev=>{if(ev.key==='Enter')go();};}
+  const qb=$('#mpQuit');if(qb)qb.onclick=()=>{mpLeave();closePanel();};}
 function openMenu(){
-  openPanel('메뉴','<div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
+  openPanel('메뉴','<div class="sec"><h3>함께하기</h3><div class="row"><div class="l"><b>멀티플레이</b><small>'+(MP.peer?'방 '+MP.code+' · '+(Object.keys(MP.others).length+1)+'명 접속 중':'친구와 방 코드로 같은 세계에서 함께 플레이 (최대 8명)')+'</small></div><button class="btn sm pri" id="mMp">열기</button></div></div><div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
    '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
@@ -3704,7 +3798,7 @@ function openMenu(){
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
-  $('#mSave').onclick=()=>{save();toast('저장되었습니다');};
+  $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
   $('#mOut').onclick=()=>{save();location.reload();};
   if(S.admin){const k=S.cls==='novice'?'warrior':S.cls,give=(g,q)=>{g.lv=Math.min(g.lv,S.level);addGear(g,q);};
     $('#adSet').onclick=()=>{ARMOR_PARTS.forEach(p=>{const g=makeDragonGear('a',k,3);g.part=p;g.name=DSET[k].n+' '+(p==='body'?'갑주':PART_SUF[p]);g.def=Math.round(TIERS[7].def*PART_DEF[p]*RAR[3].m);give(g,true);});toast('['+DSET[k].n+'] 영웅 세트 5부위 지급 · 가방에서 장착하세요','gold');save();};
@@ -3838,7 +3932,7 @@ function loop(now){
     updProj(dt);updAreas(dt);updSpawners(dt,false);
     // reach goals
   }else if(P&&gameOn){animHumanoid(P,dt,P.walk!==P._pw);P._pw=P.walk;}
-  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
+  if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(MP.peer)mpTick(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
   updFx(dt);updFloats(dt);
   W.anim.forEach(f=>f(rt));
   // camera
