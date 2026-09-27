@@ -1416,7 +1416,8 @@
         "building_home_A_red"
       ],
       "zones": [
-        "village"
+        "village",
+        "citadel"
       ],
       "uniform": true,
       "userModel": "BlueSlateCottage"
@@ -1428,7 +1429,8 @@
         "building_home_B_red"
       ],
       "zones": [
-        "village"
+        "village",
+        "citadel"
       ],
       "uniform": true,
       "userModel": "EmberstoneCottage"
@@ -2257,6 +2259,18 @@
       ],
       "uniform": true,
       "userModel": "마을꾸미기 593062476"
+    },
+    "u_autumn": {
+      "file": "u_autumn.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "building_autumn"
+      ],
+      "zones": [
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "AutumnHearthCottage"
     }
   }
 }

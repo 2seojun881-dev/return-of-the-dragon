@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>
+<linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a909e"/><stop offset=".45" stop-color="#3e434d"/><stop offset="1" stop-color="#15171c"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe29a"/><stop offset=".5" stop-color="#c8902a"/><stop offset="1" stop-color="#6a420a"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8342a"/><stop offset=".55" stop-color="#8a1410"/><stop offset="1" stop-color="#3a0604"/></linearGradient>
+<linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a4256"/><stop offset=".5" stop-color="#1e1a26"/><stop offset="1" stop-color="#0a080e"/></linearGradient>
+<linearGradient id="pur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa0"/><stop offset="1" stop-color="#1e0a34"/></linearGradient>
+<linearGradient id="silk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfcbe0"/><stop offset=".4" stop-color="#ffffff"/><stop offset="1" stop-color="#b0aac4"/></linearGradient>
+<linearGradient id="ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#c8bca0"/></linearGradient>
+<radialGradient id="rgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#ffb0a0"/><stop offset=".35" stop-color="#ff2a1a"/><stop offset="1" stop-color="#4a0200"/></radialGradient>
+<radialGradient id="pgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#f0c8ff"/><stop offset=".35" stop-color="#a040ff"/><stop offset="1" stop-color="#20003a"/></radialGradient>
+<radialGradient id="bgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#e8fbff"/><stop offset=".35" stop-color="#4ac8ff"/><stop offset="1" stop-color="#003a5a"/></radialGradient>
+<filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".55"/></filter>
+<filter id="gl"><feGaussianBlur stdDeviation="3"/></filter>
+</defs><g filter="url(#sh)"><g fill="url(#silk)" stroke="#9a94b0" stroke-width="2"><circle cx="206.0" cy="50.0" r="7"/><circle cx="202.2" cy="80.5" r="7"/><circle cx="191.1" cy="108.1" r="7"/><circle cx="173.8" cy="129.9" r="7"/><circle cx="152.1" cy="144.0" r="7"/><circle cx="128.0" cy="148.8" r="7"/><circle cx="103.9" cy="144.0" r="7"/><circle cx="82.2" cy="129.9" r="7"/><circle cx="64.9" cy="108.1" r="7"/><circle cx="53.8" cy="80.5" r="7"/><circle cx="50.0" cy="50.0" r="7"/></g>
+<circle cx="128" cy="184" r="34" fill="url(#gold)" stroke="#5a3a0a" stroke-width="4"/>
+<g stroke="url(#gold)" stroke-width="6" stroke-linecap="round"><path d="M166.0 184.0L178.0 184.0"/><path d="M154.9 210.9L163.4 219.3"/><path d="M128.0 222.0L128.0 234.0"/><path d="M101.2 210.9L92.7 219.4"/><path d="M90.0 184.1L78.0 184.1"/><path d="M101.1 157.2L92.6 148.7"/><path d="M127.9 146.0L127.9 134.0"/><path d="M154.8 157.1L163.3 148.5"/></g>
+<circle cx="128" cy="184" r="16" fill="url(#bgem)" stroke="#fff" stroke-width="2"/><circle cx="128" cy="184" r="40" fill="#4ac8ff" opacity=".2" filter="url(#gl)"/></g></svg>

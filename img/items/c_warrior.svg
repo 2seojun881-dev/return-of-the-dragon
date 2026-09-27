@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>
+<linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a909e"/><stop offset=".45" stop-color="#3e434d"/><stop offset="1" stop-color="#15171c"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe29a"/><stop offset=".5" stop-color="#c8902a"/><stop offset="1" stop-color="#6a420a"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8342a"/><stop offset=".55" stop-color="#8a1410"/><stop offset="1" stop-color="#3a0604"/></linearGradient>
+<linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a4256"/><stop offset=".5" stop-color="#1e1a26"/><stop offset="1" stop-color="#0a080e"/></linearGradient>
+<linearGradient id="pur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3aa0"/><stop offset="1" stop-color="#1e0a34"/></linearGradient>
+<linearGradient id="silk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfcbe0"/><stop offset=".4" stop-color="#ffffff"/><stop offset="1" stop-color="#b0aac4"/></linearGradient>
+<linearGradient id="ivory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#c8bca0"/></linearGradient>
+<radialGradient id="rgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#ffb0a0"/><stop offset=".35" stop-color="#ff2a1a"/><stop offset="1" stop-color="#4a0200"/></radialGradient>
+<radialGradient id="pgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#f0c8ff"/><stop offset=".35" stop-color="#a040ff"/><stop offset="1" stop-color="#20003a"/></radialGradient>
+<radialGradient id="bgem" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#e8fbff"/><stop offset=".35" stop-color="#4ac8ff"/><stop offset="1" stop-color="#003a5a"/></radialGradient>
+<filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".55"/></filter>
+<filter id="gl"><feGaussianBlur stdDeviation="3"/></filter>
+</defs><g filter="url(#sh)"><path d="M70 50h116l24 170c-30 14-60-6-78 6-18-12-50 8-86-6z" fill="url(#red)" stroke="#2a0402" stroke-width="4"/>
+<path d="M96 60l-14 150M128 60v156M160 60l14 150" stroke="#ff6a5a" stroke-width="3" opacity=".25"/>
+<path d="M56 40h144c6 0 10 6 8 12l-6 14H54l-6-14c-2-6 2-12 8-12z" fill="url(#st)" stroke="#0c0d10" stroke-width="4"/>
+<path d="M60 46h136" stroke="url(#gold)" stroke-width="5"/>
+<circle cx="80" cy="54" r="14" fill="url(#gold)" stroke="#3a2404" stroke-width="3"/><circle cx="176" cy="54" r="14" fill="url(#gold)" stroke="#3a2404" stroke-width="3"/>
+<circle cx="80" cy="54" r="6" fill="url(#rgem)"/><circle cx="176" cy="54" r="6" fill="url(#rgem)"/>
+<path d="M60 200c30 16 60-4 68 10 10-14 40 6 72-10" fill="none" stroke="url(#gold)" stroke-width="6"/></g></svg>
