@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-23</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-24</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1431,7 +1431,7 @@ function loadEntry(k,e){if(CUSTOM_LOAD[k])return CUSTOM_LOAD[k];
         if(mt&&mt.side===THREE.DoubleSide){mt.side=THREE.FrontSide;}}});  // Meshy exports: metallic + double-sided (self-shadows to black)
       if(e.player||e.kind==='prop'){const env=ENV();if(env)g.scene.traverse(o=>{const mt=o.material;if(o.isMesh&&mt&&mt.isMeshStandardMaterial&&(e.player||mt.metalnessMap)){mt.envMap=env;mt.envMapIntensity=e.player?1:1.6;if(!e.player)mt.roughness=Math.min(mt.roughness,.75);mt.needsUpdate=true;}});}  // Meshy-viewer look: metal and gold need something to reflect
       if(e.kind==='npc'&&e.static)liftProp(g.scene);  // photo-real Meshy NPCs come out dark in the scene lighting
-      if(e.autoRig==='dragon')rigDragonMesh(g.scene);
+      if(e.autoRig==='dragon')rigDragonMesh(g.scene);if(e.autoRig==='chibi')rigChibiMesh(g.scene);
       g.scene.updateMatrixWorld(true);let bb=new THREE.Box3().setFromObject(g.scene);
       e.skinned=false;g.scene.traverse(o=>{if(o.isSkinnedMesh)e.skinned=true;});
       if(e.skinned){/* rigged exports keep bones in cm under a 0.01 armature: measure the posed, skinned vertices instead */
@@ -1472,6 +1472,35 @@ function rigDragonMesh(root){let src=null;root.updateMatrixWorld(true);root.trav
   geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(si,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sw,4));
   const mat=src.material.clone();mat.skinning=true;const sm=new THREE.SkinnedMesh(geo,mat);sm.name='IgnisBody';sm.add(body);sm.bind(new THREE.Skeleton(bones));
   src.parent.remove(src);root.add(sm);root.userData.dragonBones=true;}
+/* chibi auto-rig: static Meshy character (big head, short limbs) -> hips/spine/head/arms/legs skeleton with region weights,
+   animated procedurally (walk, idle breathing, sword swing, cast, hit) */
+function rigChibiMesh(root){let src=null;root.updateMatrixWorld(true);root.traverse(o=>{if(o.isMesh&&!src)src=o;});if(!src)return;
+  const geo=src.geometry.clone();geo.applyMatrix4(src.matrixWorld);geo.computeBoundingBox();const bb=geo.boundingBox,H=bb.max.y-bb.min.y,y0=bb.min.y,pa=geo.attributes.position;
+  let sx=0,sz=0,n=0;for(let i=0;i<pa.count;i++){const y=(pa.getY(i)-y0)/H;if(y>.55){sx+=pa.getX(i);sz+=pa.getZ(i);n++;}}const cx=sx/Math.max(1,n),cz=sz/Math.max(1,n);  // head centre = body axis
+  let neg=0,pos=0;for(let i=0;i<pa.count;i++){const y=(pa.getY(i)-y0)/H,x=(pa.getX(i)-cx)/H;if(y>.1&&y<.3){if(x<-.2)neg++;else if(x>.2)pos++;}}const swordS=neg>=pos?-1:1;  // the hand holding the sword reaches further out
+  const P=(x,y)=>new V(cx+x*H,y0+y*H,cz);
+  const mk=(nm,p,par)=>{const b=new THREE.Bone();b.name=nm;const wp=p.clone();if(par){par.updateMatrixWorld(true);par.worldToLocal(wp);}b.position.copy(wp);if(par)par.add(b);return b;};
+  const hips=mk('C_hips',P(0,.25)),spine=mk('C_spine',P(0,.33),hips),head=mk('C_head',P(0,.46),spine),
+    armS=mk('C_armS',P(swordS*.1,.42),spine),armO=mk('C_armO',P(-swordS*.1,.42),spine),legS=mk('C_legS',P(swordS*.06,.23),hips),legO=mk('C_legO',P(-swordS*.06,.23),hips);
+  const bones=[hips,spine,head,armS,armO,legS,legO],si=[],sw=[];
+  for(let i=0;i<pa.count;i++){const x=(pa.getX(i)-cx)/H,y=(pa.getY(i)-y0)/H,ax=Math.abs(x),side=x*swordS>0;const w=new Array(7).fill(0);let rest=1;const put=(k,v)=>{v=Math.min(v,rest);w[k]+=v;rest-=v;};
+    put(2,SS(.44,.5,y));
+    const arm=SS(.105,.135,ax)*(1-SS(.41,.46,y))*SS(.05,.1,y);put(side?3:4,arm);
+    const leg=(1-SS(.19,.27,y))*(1-SS(.12,.16,ax));put(side?5:6,leg);
+    put(1,SS(.26,.34,y));w[0]+=rest;
+    const idx=w.map((v,k)=>[v,k]).sort((a,b)=>b[0]-a[0]).slice(0,4),s=idx.reduce((a,b)=>a+b[0],0)||1;idx.forEach(([v,k])=>{si.push(k);sw.push(v/s);});}
+  geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(si,4));geo.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sw,4));
+  const mat=src.material.clone();mat.skinning=true;const sm=new THREE.SkinnedMesh(geo,mat);sm.name='ChibiBody';sm.add(hips);sm.bind(new THREE.Skeleton(bones));
+  src.parent.remove(src);root.add(sm);root.userData.chibiBones=true;}
+function animChibiBones(bn,T,dt,mv,one,k){const s=Math.sin,ph=(bn._ph=(bn._ph||0)+dt*9*Math.max(.15,mv));
+  const walk=s(ph)*mv,br=s(T*2.2)*(1-mv);
+  bn.legS.rotation.x=walk*.7;bn.legO.rotation.x=-walk*.7;
+  bn.armS.rotation.x=-walk*.5;bn.armO.rotation.x=walk*.5;bn.armS.rotation.z=0;bn.armO.rotation.z=0;
+  bn.hips.position.y=bn._hy0+Math.abs(s(ph))*.03*mv;bn.spine.rotation.x=.06*mv+br*.02;bn.head.rotation.x=-br*.03;bn.head.rotation.z=s(T*.9)*.03*(1-mv);bn.spine.rotation.y=0;
+  if(one){const e=s(k*Math.PI);
+    if(one==='attack'){const up=k<.35?k/.35:Math.max(0,1-(k-.35)/.4);bn.armS.rotation.x=-2.6*up;bn.armS.rotation.z=-(bn._sw||1)*.5*e;bn.spine.rotation.y=-.5*e*(bn._sw||1);bn.spine.rotation.x=.18*e;bn.legS.rotation.x=.3*e;bn.legO.rotation.x=-.25*e;}
+    else if(one==='roar'){bn.armS.rotation.x=-2.4*e;bn.armO.rotation.x=-2.4*e;bn.spine.rotation.x=-.2*e;bn.head.rotation.x=-.25*e;}
+    else if(one==='hit'){bn.spine.rotation.x=-.35*e;bn.head.rotation.x=-.3*e;bn.armS.rotation.x=.4*e;bn.armO.rotation.x=.4*e;}}}
 /* per-frame wing/neck/tail motion for the hand-rigged dragon (air = flying, one = current one-shot) */
 function animDragonBones(bn,T,dt,mv,air,one,k){const s=Math.sin;
   const flap=air?s(T*5.5):s(T*1.1)*.25,fold=air?0:.35;
@@ -1525,11 +1554,13 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
   h.release=()=>{const was=st.clip;st.one=null;st.clip=false;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);
     if(was&&base&&cur!==base){const b=base;cur.fadeOut(.15);b.reset();b.fadeIn(.15);b.play();cur=b;}};
   h.resetPose=h.release;h.setWeapon=()=>{};
+  const cbn={};if(e.autoRig==='chibi')model.traverse(o=>{if(o.isBone){const n={C_hips:'hips',C_spine:'spine',C_head:'head',C_armS:'armS',C_armO:'armO',C_legS:'legS',C_legO:'legO'}[o.name];if(n)cbn[n]=o;}});if(cbn.hips){cbn._hy0=cbn.hips.position.y;cbn._sw=1;}
   const dbn={};h.dragonRig=e.autoRig==='dragon';if(e.autoRig==='dragon')model.traverse(o=>{if(o.isBone){const n={D_neck:'neck',D_head:'head',D_tail1:'t1',D_tail2:'t2',D_tail3:'t3',D_wingL1:'wl1',D_wingL2:'wl2',D_wingR1:'wr1',D_wingR2:'wr2'}[o.name];if(n)dbn[n]=o;}});
   h.tick=t=>{const dt=st.last==null?0:Math.min(.1,t-st.last);st.last=t;st.T+=dt;const T=st.T,H=e.height||2.2;
     if(dbn.wl1)animDragonBones(dbn,T,dt,st.mv,!!h.airborne,st.one,st.one?Math.min(1,st.t/st.dur):0);
     // walk/idle blend eases in and out so start/stop never snaps
     st.mk=(st.mk||0)+((st.mv?1:0)-(st.mk||0))*Math.min(1,dt*4);const mk=st.mk;
+    if(cbn.hips)animChibiBones(cbn,T,dt,mk,st.one,st.one?Math.min(1,st.t/st.dur):0);
     if(!st.one){pose.rotation.set(0,0,0);pose.position.z=0;pose.scale.setScalar(1);
       if(idleN&&!st.mv){pose.position.y=0;return;}
       if(runN&&st.mv){pose.position.y=0;return;}
@@ -2327,6 +2358,11 @@ function buildInn(){
   W.bedPos=new V(-5.75,.78,-2.2);
   portal(6.1,0,'village',[-9,26.8],()=>true,'','밖으로 나가기 ›',{door:true,rot:Math.PI/2});
 }
+/* user-supplied Meshy village decor (마을꾸미기): [name, x, z, size, rot, collision r]; coords are pre-expansion; skips spots that sit on an NPC, an entrance or a building */
+function vDeco(list){const bx=W.cols.filter(c=>c.t==='b');list.forEach(([n,x,z,sz,rot,r])=>{if(x*x+z*z<0)return;const key='meshy_v_'+n;if(!PROPS[key]){(W.decoSkip=W.decoSkip||[]).push(n+':noprop');return;}
+  for(let it=0;it<3;it++)for(const c of bx){const dx=x-c.x,dz=z-c.z,px=c.hw+.5-Math.abs(dx),pz=c.hd+.5-Math.abs(dz);if(px>0&&pz>0){if(px<pz)x+=Math.sign(dx||1)*px;else z+=Math.sign(dz||1)*pz;}}  // tuck against the wall instead of inside it
+  const why=W.npcs.some(q=>Math.hypot(q.pos.x-x,q.pos.z-z)<1.6)?'npc':W.portals.some(p=>Math.hypot(p.x-x,p.z-z)<2.4)?'portal':bx.some(c=>Math.abs(x-c.x)<c.hw+.4&&Math.abs(z-c.z)<c.hd+.4)?'bld':'';if(why){(W.decoSkip=W.decoSkip||[]).push(n+'@'+x+','+z+':'+why);return;}
+  const o=typeof sz==='object'?sz:{fit:sz};o.rot=rot||0;prop(key,x,z,o);if(r)addCircle(x,z,r);});}
 function buildVillage(){
   setEnv({sky:0x2e2a36,fog:[34,125],ht:0x8898b8,hb:0x2a221e,hi:.5,sun:0xffae78,si:1.05,ash:true});
   W.bounds=[-25,25,-34,26];
@@ -2362,7 +2398,7 @@ function buildVillage(){
   else{mesh(new THREE.BoxGeometry(1.6,1.2,1.6),M(0x5a5450),-1.5,.6,-1,sm);const coal=mesh(new THREE.BoxGeometry(1.2,.1,1.2),B(0xff6a1a),-1.5,1.22,-1,sm);coal.castShadow=false;
   mesh(new THREE.BoxGeometry(.9,.6,.5),M(0x3a3a40,{metalness:.7}),1,.6,.5,sm);mesh(new THREE.BoxGeometry(.5,.5,.4),M(0x3a3a40),1,.25,.5,sm);}addBox(-17.5,-7,.9,.9);addCircle(-15,-5.5,.6);
   const fl=new THREE.PointLight(0xff7a2a,1.4,10,2);fl.position.set(-1.5,2,-1);sm.add(fl);W.anim.push(t=>{fl.intensity=1.2+Math.sin(t*9)*.3;});
-  if(KIT){prop('building_well_red',0,5,{fit:2.2});addCircle(0,5,1.2);}
+  if(KIT){prop(PROPS.meshy_v_well?'meshy_v_well':'building_well_red',0,5,{fit:PROPS.meshy_v_well?3.2:2.2});addCircle(0,5,1.3);}
   else{const well=new THREE.Group();well.position.set(0,0,5);W.root.add(well);mesh(new THREE.CylinderGeometry(1.1,1.2,.9,10),M(0x8a8680),0,.45,0,well);
   [-1,1].forEach(s=>mesh(new THREE.BoxGeometry(.15,2.2,.15),M(0x4a3222),s*1,1.1,0,well));const wr=mesh(new THREE.ConeGeometry(1.6,.9,4),M(0x6a3424),0,2.6,0,well);wr.rotation.y=Math.PI/4;addCircle(0,5,1.2);}
   [[-22,22],[22,22],[-23,-8],[23,0],[-6,-24],[18,-26],[-21,-27],[21,16],[6,10],[-4,-14]].forEach(([x,z])=>tree(x,z,.9+srand()*.4,'ash'));
@@ -2386,6 +2422,17 @@ function buildVillage(){
     ['meshy_bush',-23,-2,2.2,.8],['meshy_bush',22,-15,2.2,.8],['meshy_bush',-6,24,2.2,.8],['meshy_bush',14,24,2,.8],['meshy_bush',-22,-28,2.4,.8]]);
   portal(0,-33,'plains',[0,23],()=>S.q>qIdx('v4'),'아직 마을을 떠날 수 없습니다. 마을의 위기를 먼저 해결하세요.','바람노래 평원 ›');
   portal(-9,23.6,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
+  vDeco([['dragon',-5,-6,{h:1.6},Math.PI*.25,.8],['bench',-4,4,2.2,Math.PI,0],['bench',4,4.5,2.2,Math.PI,0],
+    ['stall1',8,-4.6,4.2,0,1.6],['stall2',13,-4.6,4.2,0,1.6],['stall3',8,4.8,4.2,Math.PI,1.6],['crates2',15.5,-6.5,1.8,.3,.8],['barrel',10.6,-6.8,1.1,0,.5],
+    ['lamp',2,-10,{h:3.6},0,.3],['lamp',-2,10,{h:3.6},Math.PI,.3],['lamp',2,-20,{h:3.6},0,.3],['lamp2',-2,18,{h:3.6},Math.PI,.3],['lamp',10,2,{h:3.6},0,.3],['lamp2',-10,-2,{h:3.6},0,.3],
+    ['flowers',8,15.4,1.8,Math.PI,0],['flowers',-18,6,1.8,0,0],['flowers',11,-15.6,1.8,0,0],['flowers',-19,-16,1.8,0,0],['flowers',17,6,1.8,-Math.PI/2,0],
+    ['barrel',-17,-11,1.1,0,.5],['rum',-16,-9.2,1.3,.4,.6],['crates',-15.5,-13,2.2,0,1],['crate',-13.6,-10.8,1.1,.5,.5],
+    ['cart',-3,22.5,3,.8,1.2],['barrel',-13,22,1.1,0,.5],['crates2',-5.6,21,1.8,0,.8],
+    ['hay',-18,-12.6,1.8,.4,.8],['hay',-20,-9,1.8,1.2,.8],
+    ['sign',3,2.4,{h:2.4},0,.3],['sign2',3,-28,{h:2.4},0,.3],['banner',-7,-30,{h:3.6},0,.3],['banner',7,-30,{h:3.6},0,.3],
+    ['tent',21,-3,4.2,-Math.PI/2,1.8],['campfire',17.5,1,1.8,0,.8],['tent2',21,5,4.2,-Math.PI/2,1.8],['bench',16,4,2,-Math.PI/2,0],
+    ['board',-4,-20,2.4,0,.8],['statue',-8,12,{h:2.6},Math.PI,.6],
+    ['bush',-22,-2,1.8,0,0],['bush',22,-12,1.8,1,0],['bush',-12,17,1.8,2,0],['bush',12,16,1.8,3,0],['bush',-22,14,1.8,4,0],['bush',20,14,1.8,5,0]]);
 }
 function buildPlains(){
   setEnv({sky:0x3a4450,fog:[34,130],ht:0x9aaac0,hb:0x2a2e22,hi:.52,sun:0xffcf98,si:1.0,ash:true,ashCol:0x9a948c,ashSize:.12});
@@ -2518,6 +2565,15 @@ function buildCitadel(){
   portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
   portal(0,-26.5,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
   portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
+  vDeco([['bench',6.5,-6.5,2.2,Math.PI*.75,0],['bench',-6.5,-6.5,2.2,-Math.PI*.75,0],['bench',6.5,6.5,2.2,Math.PI*.25,0],['bench',-6.5,6.5,2.2,-Math.PI*.25,0],
+    ['stall3',9.5,5.6,4.2,Math.PI,1.6],['stall1',14.5,5.6,4.2,Math.PI,1.6],['crates',12,9,2.2,.2,1],['barrel',8.2,8.6,1.1,0,.5],['rum',16.6,8.4,1.3,.6,.6],
+    ['lamp',4.6,9,{h:4},0,.3],['lamp',-4.6,9,{h:4},0,.3],['lamp2',4.6,-9,{h:4},0,.3],['lamp2',-4.6,-9,{h:4},0,.3],['lamp',4.6,18,{h:4},0,.3],['lamp',-4.6,18,{h:4},0,.3],
+    ['lamp2',9,-4.6,{h:4},0,.3],['lamp2',-9,4.6,{h:4},0,.3],
+    ['banner',-26,4.6,{h:4.4},Math.PI/2,.3],['banner',-26,-4.6,{h:4.4},Math.PI/2,.3],['banner',26,4.6,{h:4.4},-Math.PI/2,.3],['banner',26,-4.6,{h:4.4},-Math.PI/2,.3],
+    ['board2',-11.5,-12,2.6,Math.PI/2,.8],['sign',-6,3.8,{h:2.4},0,.3],
+    ['flowers',-17.2,-4.8,1.8,0,0],['flowers',-13.6,-15.6,1.8,Math.PI,0],['flowers',-12,15,1.8,Math.PI/2,0],['flowers',17,-12,1.8,0,0],
+    ['cart',13,21.5,3,.5,1.2],['hay',25.5,11,1.8,.3,.8],['crates2',25,23,1.8,0,.8],['barrel',-15.5,23.5,1.1,0,.5],
+    ['bush',-8,-11,1.6,0,0],['bush',8,-11,1.6,1,0],['bush',-22,10,1.8,2,0],['bush',22,-8,1.8,3,0]]);
 }
 function scatterProps(list,n,x0,x1,z0,z1,avoid){if(!KIT)return;for(let i=0;i<n;i++){const x=x0+srand()*(x1-x0),z=z0+srand()*(z1-z0);if(avoid&&avoid(x,z))continue;const it=list[Math.floor(srand()*list.length)];prop(it[0],x,z,{fit:it[1]*(.8+srand()*.4),rot:srand()*6.28,tint:it[2]});}}
 const always=()=>true;
@@ -4789,7 +4845,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-23';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-24';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

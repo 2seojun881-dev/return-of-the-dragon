@@ -377,23 +377,14 @@
       "rigged": true
     },
     "p_novice": {
-      "file": "p_novice.glb.txt",
+      "file": "p_novice_chibi.glb.txt",
       "kind": "player",
-      "height": 2.25,
+      "height": 2.1,
       "player": "novice",
-      "prompt": "young novice adventurer in a simple brown linen tunic, leather belt and boots, holding a short sword in the right hand, full body character standing in A-pose, arms held slightly away from the body, legs apart, facing forward",
-      "meshy_task": "01a0de6e-fa1e-762d-8b47-4154c84174ac",
-      "anims": {
-        "walk": "p_novice.walk.glb.txt",
-        "run": "p_novice.run.glb.txt",
-        "idle": "p_novice.idle.glb.txt",
-        "attack": "p_novice.attack.glb.txt",
-        "skill": "p_novice.skill.glb.txt",
-        "cast": "p_novice.cast.glb.txt",
-        "hit": "p_novice.hit.glb.txt",
-        "death": "p_novice.death.glb.txt"
-      },
-      "rigged": true
+      "rigged": true,
+      "autoRig": "chibi",
+      "userModel": "초보자 캐릭터 593062699",
+      "prev": "p_novice.glb.txt"
     },
     "p_shaman": {
       "file": "p_shaman.glb.txt",
@@ -1915,6 +1906,357 @@
       ],
       "autoRig": "dragon",
       "src": "release 바카라스 · Dragon_Meshy_AI_2026-04-10_10a598.glb"
+    },
+    "u_v_well": {
+      "file": "u_v_well.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_well"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593058222"
+    },
+    "u_v_stall1": {
+      "file": "u_v_stall1.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_stall1"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593058572"
+    },
+    "u_v_stall2": {
+      "file": "u_v_stall2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_stall2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593058608"
+    },
+    "u_v_stall3": {
+      "file": "u_v_stall3.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_stall3"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593058720"
+    },
+    "u_v_cart": {
+      "file": "u_v_cart.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_cart"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593058989"
+    },
+    "u_v_cart2": {
+      "file": "u_v_cart2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_cart2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059058"
+    },
+    "u_v_barrel": {
+      "file": "u_v_barrel.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_barrel"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059266"
+    },
+    "u_v_rum": {
+      "file": "u_v_rum.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_rum"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059280"
+    },
+    "u_v_crate": {
+      "file": "u_v_crate.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_crate"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059564"
+    },
+    "u_v_crates": {
+      "file": "u_v_crates.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_crates"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059621"
+    },
+    "u_v_crates2": {
+      "file": "u_v_crates2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_crates2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059746"
+    },
+    "u_v_lamp": {
+      "file": "u_v_lamp.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_lamp"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059864"
+    },
+    "u_v_lamp2": {
+      "file": "u_v_lamp2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_lamp2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593059931"
+    },
+    "u_v_bench": {
+      "file": "u_v_bench.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_bench"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060252"
+    },
+    "u_v_flowers": {
+      "file": "u_v_flowers.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_flowers"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060400"
+    },
+    "u_v_bush": {
+      "file": "u_v_bush.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_bush"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060543"
+    },
+    "u_v_sign": {
+      "file": "u_v_sign.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_sign"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060752"
+    },
+    "u_v_sign2": {
+      "file": "u_v_sign2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_sign2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060806"
+    },
+    "u_v_banner": {
+      "file": "u_v_banner.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_banner"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593060923"
+    },
+    "u_v_campfire": {
+      "file": "u_v_campfire.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_campfire"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593061071"
+    },
+    "u_v_hay": {
+      "file": "u_v_hay.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_hay"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593061195"
+    },
+    "u_v_tent": {
+      "file": "u_v_tent.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_tent"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593061792"
+    },
+    "u_v_tent2": {
+      "file": "u_v_tent2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_tent2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593061828"
+    },
+    "u_v_statue": {
+      "file": "u_v_statue.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_statue"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593062169"
+    },
+    "u_v_dragon": {
+      "file": "u_v_dragon.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_dragon"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593062205"
+    },
+    "u_v_board": {
+      "file": "u_v_board.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_board"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593062443"
+    },
+    "u_v_board2": {
+      "file": "u_v_board2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_v_board2"
+      ],
+      "zones": [
+        "village",
+        "citadel"
+      ],
+      "uniform": true,
+      "userModel": "마을꾸미기 593062476"
     }
   }
 }
