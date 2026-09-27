@@ -492,7 +492,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-15</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-16</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4238,10 +4238,18 @@ const SONGS={
   // dragon raid: ultra-epic boss battle, 155 BPM (phase 2 at 162), D minor — violins, brass fanfare, full choir, battle drums
   raid:{bpm:155,prog:[[50,53,57],[50,53,57],[46,50,53],[48,52,55],[50,53,57],[50,53,57],[43,46,50],[45,49,52]],
     mel:['62 65 69:2','67:.5 65:.5 64 62:2','70 69 65 62','64 67 72:2','74:1.5 72:.5 69 65','67 69 74:2','70 67 62 70','69:2 73:2'].map(NT)}};
+// 천명 성채 (day): cozy Irish-folk town, 95 BPM, D major — guitar, tin whistle, fiddle, harp, tambourine + hand drum
+SONGS.citadel={bpm:95,prog:[[50,54,57],[43,47,50],[45,49,52],[50,54,57],[47,50,54],[43,47,50],[45,49,52],[50,54,57]],
+  mel:['74:.5 76:.5 78 76:.5 74:.5 69','71:.5 74:.5 79 78:.5 76:.5 74','76:.5 78:.5 76:.5 73:.5 69:2','74 78 81:2','83:.5 81:.5 78 81:.5 78:.5 74','79 78:.5 76:.5 74 71','73:.5 74:.5 76 78:.5 76:.5 73','74:3 69'].map(NT)};
+// 진급의 사당 & 성채의 밤: sacred neoclassical ambient, 70 BPM, A major — piano, cello, harp, glockenspiel, string quartet
+SONGS.shrine={bpm:70,prog:[[57,61,64],[54,57,61],[50,54,57],[52,56,59],[57,61,64],[49,52,56],[50,54,57],[52,56,59]],
+  mel:['76:1.5 73:.5 69:2','73 74:.5 76:.5 78:2','81:1.5 78:.5 76 74','76:3 71','76:1.5 81:.5 80 76','80 76 73:2','74 78 81 78','80:2 83:2'].map(NT)};
 SONGS.raid2=Object.assign({},SONGS.raid,{bpm:162});SONGS.boss=SONGS.raid;
 function bgmStyle(z){
   if(z==='altar'||z==='eternal'){const ig=W.enemies&&W.enemies.find(e=>e.type==='ignis'&&!e.dead);if(ig&&ig.aggro)return ig.hp<ig.maxHp*.5?'raid2':'raid';return 'altar';}
   if(['beasts','grave','clock','asura'].includes(z))return z;
+  if(z==='hall')return 'shrine';
+  if(z==='citadel'){const h=new Date().getHours();return h>=19||h<6?'shrine':'citadel';}  // the citadel at night (device clock) plays the sanctuary theme
   return ['village','citadel','hall','inn'].includes(z)?'town':'field';}
 /* instruments */
 function bgmPad(ms,t,d,vol,saw){const c=AU.ctx;ms.forEach(m=>[-6,6].forEach(dt=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=saw?'sawtooth':'triangle';o.frequency.value=hz(m);o.detune.value=dt;
@@ -4275,6 +4283,12 @@ function iPipa(m,t,vol){const n=bOsc('sawtooth',m,t,.01,3600,vol,.002,.22);n.f.f
 function iDistBass(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),ws=c.createWaveShaper(),f=c.createBiquadFilter(),g=c.createGain();if(!AU.distCur){AU.distCur=new Float32Array(257);for(let i=0;i<257;i++){const x=i/128-1;AU.distCur[i]=Math.tanh(x*5);}}ws.curve=AU.distCur;g.gain.value=0;
   o.type='sawtooth';o.frequency.value=hz(m);f.type='lowpass';f.frequency.value=700;o.connect(ws);ws.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.005,vol,d*.6,d*.3);o.start(t);o.stop(t+d+.1);}
 function iViolin(m,t,d,vol){const n=bOsc('sawtooth',m,t,d,3200,vol,.01,.05,4);n.f.Q.value=1.2;}
+function iHarp(m,t,vol){const n=bOsc('triangle',m,t,.01,3000,vol,.003,1.3);}
+function iFiddle(m,t,d,vol){const n=bOsc('sawtooth',m,t,d,2600,vol,.07,.18,3);vib(n.o,t+.12,d,5.6,hz(m)*.009);}
+function iHandDrum(t,vel){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(75,t+.12);o.connect(g);g.connect(AU.bgmG);env(g,t,.002,.3*vel,.02,.2);o.start(t);o.stop(t+.3);}
+function iPiano(m,t,vol){[[1,1,'triangle'],[2,.22,'sine'],[3,.08,'sine']].forEach(([k,v,ty])=>{const c=AU.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=ty;o.frequency.value=hz(m)*k;f.type='lowpass';f.frequency.value=3500;o.connect(f);f.connect(g);g.connect(AU.bgmG);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*v,t+.004);g.gain.exponentialRampToValueAtTime(vol*v*.35,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+2.4);o.start(t);o.stop(t+2.5);});}
+function iGlock(m,t,vol){[[1,1],[2.76,.35],[5.4,.12]].forEach(([k,v])=>{const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=hz(m)*k;o.connect(g);g.connect(AU.bgmG);env(g,t,.001,vol*v,.005,k>1?.4:1.8);o.start(t);o.stop(t+2);});}
 function iSnare(t,vel){const c=AU.ctx,n=nsrc(AU.white,t,.2),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=1800;f.Q.value=.8;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.001,.2*vel,.01,.12);}
 const playMel=(ml,t,B,fn)=>{let x=0;ml.forEach(([m,d])=>{fn(m,t+x*B,d*B);x+=d;});};
 function bgmBar(t,bar,style){const S2=SONGS[style],B=60/S2.bpm,i=bar%S2.prog.length,ch=S2.prog[i],sec=Math.floor(bar/8)%2,ml=S2.mel&&S2.mel[i];
@@ -4282,6 +4296,20 @@ function bgmBar(t,bar,style){const S2=SONGS[style],B=60/S2.bpm,i=bar%S2.prog.len
     for(let k=0;k<8;k++)bgmPluck(ch[[0,1,2,1][k%4]]+12,t+k*B/2,.035);if(bar>=8)ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.05));}
   else if(style==='field'){bgmPad(ch,t,B*4,.014);for(let k=0;k<4;k++){bgmBass(ch[0]-12,t+k*B,B*.9,.11);bgmKick(t+k*B,k%2?.35:.6);bgmHat(t+k*B+B/2,1);}
     for(let k=0;k<8;k++)bgmPluck(ch[[0,2,1,2][k%4]]+12,t+k*B/2,.03);if(bar>=8)ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.045));}
+  else if(style==='citadel'){  // warm strum + harp rolls, tambourine and hand drum, tin whistle tune, fiddle joins in the second half
+    for(let k=0;k<8;k++){const tt=t+k*B/2,dn=k%2===0;[0,1,2].forEach((n,j)=>iGuitar(ch[n]-(dn?12:0),tt+(dn?j:2-j)*.014,dn?.022:.014));}
+    bgmBass(ch[0]-24,t,B*1.8,.12);bgmBass(ch[0]-17,t+B*2,B*1.8,.09);
+    for(let k=0;k<8;k++)iTamb(t+k*B/2,k%4===2?.8:.3);[0,1.5,2,3,3.5].forEach((b,j)=>iHandDrum(t+b*B,j===0||j===3?1:.55));
+    if(i%2===1||bar<4)for(let k=0;k<8;k++)iHarp([ch[0],ch[1],ch[2],ch[0]+12][k%4]+12+(k>3?12:0),t+k*B/2,.03);
+    if(bar>=4)playMel(ml,t,B,(m,tt,d)=>iFlute(m+12,tt,d*.9,.042));
+    if(sec)[[ch[1]+12,0],[ch[2]+12,2]].forEach(([m,b])=>iFiddle(m,t+b*B,B*1.9,.02));}
+  else if(style==='shrine'){  // gentle piano over a flowing left hand, cello, harp, glockenspiel sparkles, soft string quartet
+    [0,7,12,16,19,16,12,7].forEach((iv,k)=>iPiano(ch[0]-12+iv,t+k*B/2,.075));
+    bgmPad(ch,t,B*4,bar<8?.016:.026,true);
+    if(bar>=4)playMel(ml,t,B,(m,tt,d)=>iPiano(m,tt,.15));
+    if(bar>=8){iCello(ch[0]-24,t,B*2,.055);iCello(ch[2]-24,t+B*2,B*2,.048);}
+    if(i%2===0)[2.5,3.25].forEach((b,k)=>iGlock(ch[k+1]+24,t+b*B,.06));
+    if(i===7)for(let k=0;k<8;k++)iHarp(ch[k%3]+12+Math.floor(k/3)*12,t+B*3+k*B/16,.055);}
   else if(style==='beasts'){  // strummed guitar + bass, tambourine, pizzicato answers, flute tune
     for(let k=0;k<8;k++){const tt=t+k*B/2;[0,1,2].forEach((n,j)=>iGuitar(ch[n]-(k%2?0:12)+(j===2&&k%2?12:0),tt+j*.012,k%2?.018:.026));}
     bgmBass(ch[0]-24,t,B*1.8,.13);bgmBass(ch[0]-17,t+B*2,B*1.8,.1);
@@ -4453,7 +4481,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-15';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-16';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

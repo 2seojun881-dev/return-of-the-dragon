@@ -11,7 +11,9 @@
 | `asura.mp3` | 아수라 흑야 협곡 | Oriental Dark Tribal · 142 BPM · F# Minor |
 | `altar.mp3` | 용혈의 제단 (탐험) | Dark Symphonic Epic · 90 BPM · C Minor |
 | `raid.mp3` | 이그니스 레이드 (전투) | Ultra-Epic Boss Battle · 155 BPM · D Minor |
-| `town.mp3` | 마을 · 성채 | |
+| `citadel.mp3` | 천명 성채 (낮) | Cozy Irish Folk Town · 95 BPM · D Major |
+| `shrine.mp3` | 진급의 전당 · 성채의 밤 (19시~6시) | Sacred Neoclassical Ambient · 70 BPM · A Major |
+| `town.mp3` | 잿빛 잎새 마을 · 여관 | |
 | `field.mp3` | 바람노래 평원 | |
 
 Suno / Udio에서 만든 곡은 끝과 시작이 자연스럽게 이어지는(loopable) 버전을 쓰면 좋습니다.
