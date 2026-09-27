@@ -788,13 +788,13 @@
       "meshy_task": "01a0de99-deef-74c3-86e4-eba60b9f6aa6"
     },
     "n_thomas": {
-      "file": "n2_ElvenTownfolkWyrdwoodCreations.glb.txt",
+      "file": "n2_AncientArchmage.glb.txt",
       "kind": "npc",
       "npc": "thomas",
       "zones": [
         "plains"
       ],
-      "height": 2.1,
+      "height": 2.3,
       "static": true,
       "userModel": "ElvenTownfolkWyrdwoodCreations"
     },

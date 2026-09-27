@@ -502,7 +502,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-20</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-21</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2292,7 +2292,7 @@ function buildHall(){
   spawnNpc('dabin',-6,-4.6,0);spawnNpc('taewan',6,-4.6,0);
   const god=spawnNpc('seojun',0,-5.8,0);god.y=1;god.tagY=3.4;
   const halo=new THREE.Mesh(new THREE.TorusGeometry(.5,.05,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=3.2;god.mesh.add(halo);
-  W.anim.push(t=>{god.y=1+Math.sin(t*1.4)*.25;halo.rotation.z=t;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
+  W.anim.push(t=>{god.y=1;halo.rotation.z=t;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
   W.shrine={x:0,z:-3};
   portal(0,7.6,'citadel',[-17,-12.2],()=>true,'','천명 성채로 나가기 ›',{door:true});
   portal(-9.2,3.2,'eternal',[0,24],()=>!!S.awk,'Lv.99 각성자만 들어갈 수 있습니다','영원한 성채 · 각성의 시련 ›',{door:true,rot:Math.PI/2});
@@ -3539,7 +3539,8 @@ function hWay(px,pz,tx,tz){for(const r of W.hts){if(r.ex==null)continue;const in
 function stepToward(tx,tz,dt,stopAt){if(W.hts.length){const w=hWay(P.pos.x,P.pos.z,tx,tz);if(w){tx=w.x;tz=w.z;stopAt=0;}}const dx=tx-P.pos.x,dz=tz-P.pos.z,d=Math.hypot(dx,dz);if(d<=stopAt)return false;const s=Math.min(d-stopAt+.01,P.speed*dt);P.pos.x+=dx/d*s;P.pos.z+=dz/d*s;P.face=Math.atan2(dx,dz);resolve(P.pos,P.rad);P.walk+=s*2.3;return true;}
 function lerpAng(a,b,k){let d=b-a;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return a+d*k;}
 function animHumanoid(ent,dt,moving){
-  const h=ent.parts;ent.mesh.rotation.y=lerpAng(ent.mesh.rotation.y,ent.face,1-Math.exp(-dt*14));
+  const h=ent.parts;
+  if(ent.isNpc&&NPC_FIXED){ent.mesh.rotation.y=ent.face;if(!ent._posed){ent._posed=true;if(h.skinned){if(h.cfg&&h.cfg.idle)h.setBase(h.cfg.idle);h.mixer.update(.4);}}h.b.position.y=ent.y||0;return;}  // one fixed poseent.mesh.rotation.y=lerpAng(ent.mesh.rotation.y,ent.face,1-Math.exp(-dt*14));
   if(h.skinned){
     if(!ent.dead&&!ent.lying)h.setBase(moving?h.cfg.run:h.cfg.idle);
     if(ent.anim){const a=ent.anim;if(!a.started){a.started=true;const m=h.cfg.map[a.kind];if(m)h.playOnce(m[0],m[1]);}a.t+=dt;if(a.t>=a.dur)ent.anim=null;}
@@ -3609,7 +3610,7 @@ function updNpcs(dt){
 function talkTo(n){
   if(n.wander){toast('다른 모험가입니다.');return;}
   const st=curStep(),q=curQ();
-  n.face=Math.atan2(P.pos.x-n.pos.x,P.pos.z-n.pos.z);
+  if(!NPC_FIXED)n.face=Math.atan2(P.pos.x-n.pos.x,P.pos.z-n.pos.z);  // NPCs keep their own facing
   if(st&&st.talk===n.id&&q.zone===W.zone){
     if(st.cs==='eldric'){csEldric();return;}
     dialog(DLG[st.dlg]).then(()=>{if(st.after)AFTER[st.after]();advance();});return;
@@ -4772,7 +4773,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-20';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-21';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
