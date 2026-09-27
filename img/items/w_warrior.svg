@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs>
+ <linearGradient id="bl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16181d"/><stop offset=".45" stop-color="#4a4f5a"/><stop offset=".55" stop-color="#2a2d34"/><stop offset="1" stop-color="#0c0d10"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa3b3"/><stop offset="1" stop-color="#5a6070"/></linearGradient>
+ <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1e6cf"/><stop offset="1" stop-color="#a8977a"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe29a"/><stop offset=".5" stop-color="#c8902a"/><stop offset="1" stop-color="#7a4e10"/></linearGradient>
+ <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="sh"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".6"/></filter>
+</defs>
+<g transform="rotate(45 128 128)" filter="url(#sh)">
+ <!-- blade -->
+ <path d="M128 6 L145 30 L145 168 L111 168 L111 30 Z" fill="url(#bl)"/>
+ <path d="M128 6 L145 30 L145 168 L140 168 L140 32 L128 14 Z" fill="url(#edge)" opacity=".85"/>
+ <path d="M128 6 L111 30 L111 168 L116 168 L116 32 L128 14 Z" fill="#6a7080" opacity=".6"/>
+ <path d="M126 28 L130 28 L130 160 L126 160 Z" fill="#0a0506"/>
+ <g filter="url(#glow)" fill="#ff3a24">
+  <path d="M125 40h6l-3 7z M124 56h8v2h-8z M126 64l4 6-4 6z M123 86l10 4-10 4z M126 104h4v10h-4z M123 124l5-6 5 6-5 6z M125 142h6l-3 8z"/>
+ </g>
+ <!-- crossguard: dragon bone with teeth -->
+ <path d="M72 166 Q128 150 184 166 L178 184 Q128 172 78 184 Z" fill="url(#bone)" stroke="#5a4a36" stroke-width="2"/>
+ <path d="M72 166 L60 158 L70 176 Z M184 166 L196 158 L186 176 Z" fill="url(#bone)" stroke="#5a4a36" stroke-width="1.5"/>
+ <path d="M88 180 l4 10 l4 -9 M104 178 l4 11 l4 -10 M144 178 l4 11 l4 -10 M160 180 l4 10 l4 -9" fill="#efe3c8" stroke="#6a5a40" stroke-width="1.2"/>
+ <circle cx="128" cy="170" r="9" fill="url(#gold)" stroke="#5a3a08" stroke-width="2"/>
+ <circle cx="128" cy="170" r="4.5" fill="#ff2a10" filter="url(#glow)"/>
+ <!-- grip -->
+ <rect x="120" y="184" width="16" height="44" rx="3" fill="#3a1a12"/>
+ <path d="M120 188 l16 6 M120 196 l16 6 M120 204 l16 6 M120 212 l16 6 M120 220 l16 6" stroke="#7a3a22" stroke-width="3"/>
+ <!-- pommel: dragon eye -->
+ <path d="M128 226 L142 236 L128 252 L114 236 Z" fill="url(#gold)" stroke="#5a3a08" stroke-width="2"/>
+ <ellipse cx="128" cy="237" rx="5" ry="3" fill="#ffd23a" filter="url(#glow)"/><rect x="127" y="234" width="2" height="6" fill="#200"/>
+</g>
+</svg>

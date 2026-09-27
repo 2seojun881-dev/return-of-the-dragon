@@ -181,7 +181,7 @@ svg{display:block}
 .eqwrap{display:grid;grid-template-columns:54px 1fr 54px;gap:8px;align-items:center}
 .eqcol{display:flex;flex-direction:column;gap:6px}
 .eslot,.islot{position:relative;width:54px;height:54px;border-radius:7px;border:2px solid #4a3a2c;background:radial-gradient(circle at 50% 35%,#2e2420,#141010 75%);display:grid;place-items:center;color:#e8d8b8;padding:0}
-.eslot svg,.islot svg{width:26px;height:26px}.eslot span{font-size:10px;color:#8a7a68}
+.eslot svg,.islot svg{width:26px;height:26px}.iart{width:92%;height:92%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px #000a)}.ti .iart{width:56px;height:56px}.eslot span{font-size:10px;color:#8a7a68}
 .r0{border-color:#8a8074}.r1{border-color:#4a9aff;box-shadow:0 0 8px rgba(74,154,255,.35)}.r2{border-color:#ffc83a;box-shadow:0 0 10px rgba(255,200,58,.45)}.r3{border-color:#ff3a2a;box-shadow:0 0 12px rgba(255,58,42,.6);animation:heroic 1.6s ease-in-out infinite}
 @keyframes heroic{50%{box-shadow:0 0 18px rgba(255,80,40,.95)}}
 .eslot.sel,.islot.sel{outline:2px solid #fff4d0;outline-offset:1px}.islot.no{opacity:.55}.islot.empty{border-style:dashed;border-color:#3a2e26;background:rgba(0,0,0,.2)}
@@ -450,7 +450,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-6</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-7</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3421,7 +3421,10 @@ function itemPow(g){return g.type==='a'?Math.round(g.def*(g.db?1+.15*(g.db-1):1)
 function itemStat(g){if(g.type==='a')return '방어 +'+itemPow(g);if(g.type==='w')return '공격력 +'+itemPow(g);return g.base?'공격력 +'+g.base:g.hpb?'최대 HP +'+g.hpb:'방어 +'+g.def;}
 function canEquip(g){if((g.lv||1)>S.level)return '착용 레벨이 부족합니다 (Lv.'+g.lv+' 필요, 현재 Lv.'+S.level+')';if(g.cls&&g.cls!=='all'&&g.cls!==S.cls)return '['+clsName(g.cls)+'] 전용 장비라 착용할 수 없습니다 (현재 직업: '+CLASSES[S.cls].name+')';return '';}
 function gearLabel(g){return (g.type==='w'?'무기':g.type==='a'?'방어구 · '+SLOT_KO[g.part||'body']:'장신구 · '+SLOT_KO[g.acc==='ring'?'ring':g.acc])+' · Lv.'+(g.lv||1)+' · '+clsName(g.cls)+(g.cls&&g.cls!=='all'?' 전용':'');}
-function itemIcon(g){if(g.type==='w')return ICON[{warrior:'sword',rogue:'dagger',shaman:'bell'}[g.cls]||'sword'];if(g.type==='a')return ICON[{body:'armor',head:'shield',hands:'hammer',feet:'dash',cape:'banner'}[g.part||'body']];return ICON[{neck:'heal',ring:'orb',belt:'seal'}[g.acc]||'orb'];}
+/* front-view 2D art for each class's weapon and body armor (img/items/*.png, drawn from the art brief) */
+const ITEM_ART={w:['warrior','rogue','shaman'],a:['warrior','rogue','shaman']};
+function itemIcon(g){if(g&&(g.type==='w'||(g.type==='a'&&(g.part||'body')==='body'))&&ITEM_ART[g.type].includes(g.cls))return '<img class="iart" src="img/items/'+g.type+'_'+g.cls+'.png" alt="" draggable="false">';
+  if(g.type==='w')return ICON[{warrior:'sword',rogue:'dagger',shaman:'bell'}[g.cls]||'sword'];if(g.type==='a')return ICON[{body:'armor',head:'shield',hands:'hammer',feet:'dash',cape:'banner'}[g.part||'body']];return ICON[{neck:'heal',ring:'orb',belt:'seal'}[g.acc]||'orb'];}
 function subText(o){if(o.u)return '<span class="uq">★ '+UNIQ[o.u][0]+'</span> <small>'+UNIQ[o.u][1]+'</small>';const d=SUBS[o.k];return d[0]+' +'+(d[1]?o.v.toFixed(1)+'%':fmt(o.v))+' <b class="gr g'+o.g+'">'+o.g+'</b>';}
 function findItem(id){for(const s of EQ_SLOTS){const g=getEq(s);if(g&&g.id===id)return {g,slot:s};}const i=S.bag.findIndex(b=>b.id===id);return i>=0?{g:S.bag[i],idx:i}:null;}
 function equipItem(g){const why=canEquip(g);if(why){toast(why,'bad');return false;}let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';

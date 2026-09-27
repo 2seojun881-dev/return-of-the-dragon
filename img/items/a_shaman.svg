@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs>
+ <linearGradient id="silk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d8d4e4"/><stop offset=".35" stop-color="#ffffff"/><stop offset=".7" stop-color="#f2eef8"/><stop offset="1" stop-color="#b8b2c8"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".5" stop-color="#e0b050"/><stop offset="1" stop-color="#8a6010"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bfe8ff"/><stop offset=".5" stop-color="#3a8ae8"/><stop offset="1" stop-color="#0a2a7a"/></linearGradient>
+ <filter id="aura" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
+ <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".45"/></filter>
+</defs>
+<ellipse cx="128" cy="134" rx="92" ry="104" fill="#fff4c8" opacity=".35" filter="url(#aura)"/>
+<g filter="url(#sh)">
+ <!-- flowing robe -->
+ <path d="M84 64 Q128 50 172 64 L182 150 Q196 214 214 244 Q170 232 128 246 Q86 232 42 244 Q60 214 74 150 Z" fill="url(#silk)" stroke="#8a84a0" stroke-width="2.5"/>
+ <path d="M104 150 Q98 200 84 238 M152 150 Q158 200 172 238 M128 160 L128 244" fill="none" stroke="#c8c2d8" stroke-width="2"/>
+ <!-- royal blue front panel with gold embroidery -->
+ <path d="M112 70 L144 70 L150 244 Q128 250 106 244 Z" fill="#1c3a8a" stroke="url(#gold)" stroke-width="3"/>
+ <g fill="none" stroke="url(#gold)" stroke-width="2.2">
+  <path d="M128 96 l10 12 -10 12 -10 -12z"/><circle cx="128" cy="108" r="3.5" fill="#fff0b8"/>
+  <path d="M128 136 q12 10 0 22 q-12 -12 0 -22z M128 174 l8 10 -8 10 -8 -10z M128 206 q10 8 0 18 q-10 -10 0 -18z"/>
+ </g>
+ <!-- gold sash -->
+ <path d="M80 138 Q128 156 176 138 L178 152 Q128 170 78 152 Z" fill="url(#gold)" stroke="#7a5410" stroke-width="1.5"/>
+ <circle cx="128" cy="154" r="8" fill="url(#blue)" stroke="#fff0b8" stroke-width="2" filter="url(#glow)"/>
+ <!-- collar -->
+ <path d="M96 58 Q128 76 160 58 L154 74 Q128 90 102 74 Z" fill="url(#gold)" stroke="#7a5410" stroke-width="1.5"/>
+ <!-- crystal pauldrons -->
+ <g id="pp"><path d="M84 62 Q52 58 44 90 Q64 84 80 94 Z" fill="url(#gold)" stroke="#7a5410" stroke-width="2"/>
+  <path d="M58 60 L50 36 L66 50 L68 30 L76 58 Z" fill="url(#blue)" stroke="#dff4ff" stroke-width="1.2" filter="url(#glow)"/>
+  <path d="M50 88 Q62 80 78 88" fill="none" stroke="#fff0b8" stroke-width="2"/></g>
+ <use href="#pp" transform="translate(256 0) scale(-1 1)"/>
+ <!-- neck jewel -->
+ <path d="M128 76 L136 86 L128 98 L120 86 Z" fill="url(#blue)" stroke="#fff0b8" stroke-width="1.5" filter="url(#glow)"/>
+</g>
+<g fill="#fff8d8" filter="url(#glow)" opacity=".9"><circle cx="40" cy="120" r="2"/><circle cx="218" cy="104" r="2.4"/><circle cx="206" cy="190" r="1.8"/><circle cx="52" cy="200" r="1.6"/></g>
+</svg>
