@@ -203,7 +203,7 @@ svg{display:block}
  .eqwrap{grid-template-columns:40px 92px 40px;gap:4px}.eqcol{gap:4px}
  .eslot,.islot{width:40px;height:40px;border-radius:6px;border-width:1.5px}.eslot svg,.islot svg{width:20px;height:20px}.eslot span{font-size:9px}
  .prev canvas{max-width:92px}.pvname{font-size:11px;margin-top:-2px}
- .stbox{margin-top:0;padding:5px 7px;font-size:10.5px;gap:1px 8px}.stbox span,.stbox b{white-space:nowrap}.setline{font-size:10.5px;padding:3px 6px;margin-top:4px}
+ .stbox{margin-top:0;padding:5px 7px;font-size:10.5px;gap:1px 8px}.stbox span,.stbox b{white-space:nowrap}.stbox .full b{white-space:normal;text-align:right;font-size:10px}.setline{font-size:10.5px;padding:3px 6px;margin-top:4px}
  .invl .bbar{flex-wrap:wrap;gap:4px}.bbar .btn.sm{padding:3px 7px;font-size:11px}
  .invtabs .tabs button{padding:4px 10px;font-size:12px}
  .igrid{grid-template-columns:repeat(auto-fill,40px);gap:5px;margin-top:5px;max-height:calc(100vh - 150px)}
@@ -472,7 +472,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-8</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-9</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3445,8 +3445,9 @@ function itemStat(g){if(g.type==='a')return '방어 +'+itemPow(g);if(g.type==='w
 function canEquip(g){if((g.lv||1)>S.level)return '착용 레벨이 부족합니다 (Lv.'+g.lv+' 필요, 현재 Lv.'+S.level+')';if(g.cls&&g.cls!=='all'&&g.cls!==S.cls)return '['+clsName(g.cls)+'] 전용 장비라 착용할 수 없습니다 (현재 직업: '+CLASSES[S.cls].name+')';return '';}
 function gearLabel(g){return (g.type==='w'?'무기':g.type==='a'?'방어구 · '+SLOT_KO[g.part||'body']:'장신구 · '+SLOT_KO[g.acc==='ring'?'ring':g.acc])+' · Lv.'+(g.lv||1)+' · '+clsName(g.cls)+(g.cls&&g.cls!=='all'?' 전용':'');}
 /* front-view 2D art for each class's weapon and body armor (img/items/*.png, drawn from the art brief) */
-const ITEM_ART={w:['warrior','rogue','shaman'],a:['warrior','rogue','shaman']};
-function itemIcon(g){if(g&&(g.type==='w'||(g.type==='a'&&(g.part||'body')==='body'))&&ITEM_ART[g.type].includes(g.cls))return '<img class="iart" src="img/items/'+g.type+'_'+g.cls+'.png" alt="" draggable="false">';
+const ART_CLS=['warrior','rogue','shaman'],ART_KEY={weapon:'w',body:'a',head:'h',hands:'g',ring:'r',belt:'b'};
+function itemIcon(g){const k=g&&ART_KEY[itemSlot(g)],c=g&&(ART_CLS.includes(g.cls)?g.cls:ART_CLS.includes(S.cls)?S.cls:null);  // class-neutral items take the wearer's style
+  if(k&&c)return '<img class="iart" src="img/items/'+k+'_'+c+'.png" alt="" draggable="false">';
   if(g.type==='w')return ICON[{warrior:'sword',rogue:'dagger',shaman:'bell'}[g.cls]||'sword'];if(g.type==='a')return ICON[{body:'armor',head:'shield',hands:'hammer',feet:'dash',cape:'banner'}[g.part||'body']];return ICON[{neck:'heal',ring:'orb',belt:'seal'}[g.acc]||'orb'];}
 function subText(o){if(o.u)return '<span class="uq">★ '+UNIQ[o.u][0]+'</span> <small>'+UNIQ[o.u][1]+'</small>';const d=SUBS[o.k];return d[0]+' +'+(d[1]?o.v.toFixed(1)+'%':fmt(o.v))+' <b class="gr g'+o.g+'">'+o.g+'</b>';}
 function findItem(id){for(const s of EQ_SLOTS){const g=getEq(s);if(g&&g.id===id)return {g,slot:s};}const i=S.bag.findIndex(b=>b.id===id);return i>=0?{g:S.bag[i],idx:i}:null;}

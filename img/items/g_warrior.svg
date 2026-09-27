@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>
+ <linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a707e"/><stop offset=".45" stop-color="#2e323b"/><stop offset="1" stop-color="#101216"/></linearGradient>
+ <linearGradient id="st2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#555b67"/><stop offset="1" stop-color="#16181d"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe29a"/><stop offset=".5" stop-color="#c8902a"/><stop offset="1" stop-color="#6a420a"/></linearGradient>
+ <linearGradient id="cgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4c8"/><stop offset=".5" stop-color="#e2b85a"/><stop offset="1" stop-color="#8a6010"/></linearGradient>
+ <linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3e3848"/><stop offset=".5" stop-color="#1a1620"/><stop offset="1" stop-color="#08060c"/></linearGradient>
+ <linearGradient id="pur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1e58"/><stop offset="1" stop-color="#0e0618"/></linearGradient>
+ <linearGradient id="silk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d4d0e2"/><stop offset=".4" stop-color="#ffffff"/><stop offset="1" stop-color="#b8b2c8"/></linearGradient>
+ <linearGradient id="dsil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c8c4d8"/><stop offset=".5" stop-color="#5a566a"/><stop offset="1" stop-color="#1e1c28"/></linearGradient>
+ <radialGradient id="ruby" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ffb0a0"/><stop offset=".4" stop-color="#e01a10"/><stop offset="1" stop-color="#4a0404"/></radialGradient>
+ <radialGradient id="ame" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#f0c8ff"/><stop offset=".4" stop-color="#9a3aff"/><stop offset="1" stop-color="#2a0650"/></radialGradient>
+ <radialGradient id="sap" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#8ad4ff"/><stop offset=".8" stop-color="#1a5ad0"/><stop offset="1" stop-color="#0a1e5a"/></radialGradient>
+ <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="aura" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+ <filter id="sh"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".6"/></filter>
+</defs><g filter="url(#sh)" transform="rotate(-8 128 128)">
+ <path d="M70 150 L186 150 L196 236 L60 236 Z" fill="url(#st)" stroke="#08090b" stroke-width="3"/>
+ <path d="M64 200 L192 200 M62 220 L194 220" stroke="url(#gold)" stroke-width="4"/>
+ <path d="M72 100 Q128 84 186 100 L186 156 L72 156 Z" fill="url(#st2)" stroke="#08090b" stroke-width="3"/>
+ <g stroke="#08090b" stroke-width="3" fill="url(#st)">
+  <path d="M76 100 L78 44 Q88 34 98 44 L98 98 Z"/><path d="M102 96 L104 28 Q116 18 126 28 L126 94 Z"/><path d="M130 94 L132 30 Q144 20 154 30 L152 96 Z"/><path d="M156 98 L160 50 Q170 42 180 52 L178 102 Z"/>
+ </g>
+ <path d="M78 70 L98 70 M104 56 L126 56 M132 58 L154 58 M160 74 L180 74" stroke="#08090b" stroke-width="3"/>
+ <path d="M188 150 Q226 140 222 104 Q206 118 190 116 Z" fill="url(#st)" stroke="#08090b" stroke-width="3"/>
+ <path d="M84 102 L88 88 L94 102 M112 98 L116 82 L122 98 M140 98 L144 82 L150 98 M166 102 L170 88 L176 102" fill="url(#gold)" stroke="#5a3a08" stroke-width="1.5"/>
+ <circle cx="128" cy="126" r="12" fill="url(#gold)" stroke="#5a3a08" stroke-width="2"/><circle cx="128" cy="126" r="6" fill="url(#ruby)" filter="url(#glow)"/>
+ <path d="M86 176 l10 -8 l6 12 M150 176 v12 M166 172 l8 6 l-8 6" fill="none" stroke="#c8e0ff" stroke-width="2" filter="url(#glow)"/>
+</g></svg>
