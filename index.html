@@ -112,7 +112,8 @@ svg{display:block}
 .rbtn.pulse::after{content:'';position:absolute;inset:-4px;border:2px solid var(--gold);border-radius:12px;animation:ring 1s ease-out infinite}
 @keyframes ring{from{opacity:1;transform:scale(.9)}to{opacity:0;transform:scale(1.25)}}
 
-#skills{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));width:290px;height:220px}
+#skills{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));width:290px;height:220px;pointer-events:none}#skills button{pointer-events:auto}  /* the empty box must not swallow taps meant for the bag/menu */
+@media (max-height:380px){#skills{transform:scale(.62)!important;transform-origin:right bottom}#mmwrap{width:84px!important;height:84px!important}}
 .sk{position:absolute;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4b3a2e,#1b1412 70%);border:2px solid var(--line);display:grid;place-items:center;color:#f4e2bb;box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 0 12px rgba(0,0,0,.6);overflow:hidden}
 .sk svg{width:44%;height:44%;position:relative;z-index:1}
 .sk:active{transform:scale(.94)}
@@ -502,7 +503,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-21</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-22</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3429,7 +3430,8 @@ function barakasLoot(e){$('#enrage').hidden=true;raidT(null);if(e.p2)e.p2.sh.for
   S.bkKills=(S.bkKills||0)+1;const cls=S.cls==='novice'?PROMO[Math.floor(Math.random()*3)]:S.cls,first=Math.random()<.5?'w':'a',kinds=[first];if(Math.random()<.25)kinds.push(first==='w'?'a':'w');
   kinds.forEach(k=>{const g=makeLegend(cls,k);addGear(g,true);toast('[용혈 전설] '+g.name+' 획득!','gold');serverNotice('['+S.name+'] 님이 멸세제룡 바라카스를 쓰러뜨리고 [용혈 전설] '+g.name+'을(를) 획득했습니다!',3);});
   const sc=Math.floor(rand(12,20)),cr=Math.floor(rand(2,5));S.scale+=sc;S.cryst+=cr;toast('[용의 비늘] ×'+sc+' · [용의 결정] ×'+cr+' 획득','gold');S.dheart=(S.dheart||0)+1;toast('[드래곤하트] 획득','gold');
-  announce(S.name+'님이 멸세제룡 바라카스를 토벌했습니다! ('+Math.floor(e.fightT/60)+'분 '+Math.floor(e.fightT%60)+'초)');save();}
+  announce(S.name+'님이 멸세제룡 바라카스를 토벌했습니다! ('+Math.floor(e.fightT/60)+'분 '+Math.floor(e.fightT%60)+'초)');save();
+  toast('8초 뒤 천명 성채로 귀환합니다','gold');later(8,()=>{if(W.zone==='lair'&&P&&!P.dead)gotoZone('citadel',[0,5]);});}
 /* Ignis air breath: takeoff -> aim/charge -> fire breath sweeping onto the ground -> landing shockwave -> cooldown.
    Mirrors unity/Scripts/Boss/BossDragonAI.cs. While airborne the Meshy "flying" model (ignisFly) is shown if present. */
 const AIRB={h:6.5,up:1.2,charge:1.5,breath:2.6,down:.9,cd:8,L:20,W:8};
@@ -4773,7 +4775,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-21';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-22';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
