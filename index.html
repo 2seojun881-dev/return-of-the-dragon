@@ -355,6 +355,9 @@ body.cine #hud>*{pointer-events:none}
 #csInfo li>b{color:var(--gold);font-weight:500}
 #csInfo li span b{color:#f1e8d6;font-weight:500}
 #csName[readonly]{opacity:.85;border-color:var(--gold)}
+.mkgrid{display:grid;grid-template-columns:repeat(auto-fill,54px);gap:6px;margin-bottom:8px}.mkgrid .islot{width:54px;height:54px;cursor:pointer}.mkst{font-size:11px;line-height:1.15;color:#e8d8b8}.mkst span{padding:0 3px;word-break:keep-all;margin-bottom:8px}.mkst .en{top:auto!important;bottom:2px}
+.mkform{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px;border:1px solid #6a5a44;border-radius:8px;background:rgba(0,0,0,.25)}.mkform .l{flex:1 1 140px;display:flex;flex-direction:column}.mkform small{color:var(--dim)}.mkform label{font-size:12px;color:#e8dcc4;display:flex;align-items:center;gap:4px}
+.mkform input{width:110px;padding:7px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#ffe8b0;font-size:16px}#mkQty{width:64px}
 .cs-name.login{display:flex;flex-direction:column;gap:3px}.cs-name.login span{font-size:11px}.cs-name.login input{font-size:16px;padding:7px 9px}
 .pcard.login{width:min(360px,100%)}.pcard.login header{padding:8px 14px}.pcard.login h2{font-size:15px}.pcard.login #pbody{padding:10px 14px 12px}.pcard.login .sec{margin-bottom:8px}.pcard.login .note{font-size:11px;margin:6px 0 0;line-height:1.45}.pcard.login .row{padding:5px 0}
 .lgf{display:grid;gap:6px}
@@ -489,7 +492,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-14</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-15</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1910,12 +1913,14 @@ function setWeaponModel(){
 /* =========================================================
    entities: npc / enemy
    ========================================================= */
+const NPC_K=1.25,BOSS_K=1.4,IGNIS_K=2;  // NPCs and bosses stand taller than players; Ignis towers over everyone
 function spawnNpc(id,x,z,face){
   const d=NPCS[id],h=npcModel(id)||humanoid(d.look);h.g.position.set(x,0,z);h.g.rotation.y=face==null?0:face;W.root.add(h.g);
-  const n={id,d,mesh:h.g,parts:h,pos:h.g.position,isNpc:true,rad:.5,face:h.g.rotation.y,home:new V(x,0,z)};
+  h.g.scale.multiplyScalar(NPC_K);
+  const n={id,d,mesh:h.g,parts:h,pos:h.g.position,isNpc:true,rad:.5*NPC_K,face:h.g.rotation.y,home:new V(x,0,z)};
   h.g.traverse(o=>o.userData.ent=n);
-  n.tag=makeTag(n,'npc',d.name+(d.sub?'<span class="sub">&lt;'+d.sub+'&gt;</span>':''),2.35);
-  n.col=addCircle(x,z,.45);
+  n.tag=makeTag(n,'npc',d.name+(d.sub?'<span class="sub">&lt;'+d.sub+'&gt;</span>':''),2.35*NPC_K);
+  n.col=addCircle(x,z,.45*NPC_K);
   W.npcs.push(n);return n;
 }
 function spawnWanderer(x,z){
@@ -1926,7 +1931,8 @@ function spawnWanderer(x,z){
   W.npcs.push(n);return n;
 }
 function spawnEnemy(type,x,z,sp){
-  const d=MOBS[type],m=enemyModel(d,type);m.g.position.set(x,0,z);W.root.add(m.g);
+  let d=MOBS[type];const m=enemyModel(d,type),K=type==='ignis'?IGNIS_K:d.boss?BOSS_K:1;m.g.position.set(x,0,z);W.root.add(m.g);
+  if(K!==1){m.g.scale.multiplyScalar(K);d=Object.assign({},d,{range:d.range*(1+(K-1)*.7),rad:(d.rad||.5)*K});}
   const lr=(sp&&sp.lvr)||d.lvr,lv=lr?Math.floor(rand(lr[0],lr[1]+1)):d.lv,rl=d.role||1;
   const bm=d.bm||{hp:1,exp:1,gold:1};
   const hp0=lr?Math.round((7*Math.pow(lv,1.35)*rl+30)*bm.hp):d.hp,atk0=lr?Math.round((4+1.6*Math.pow(lv,1.3))*rl):d.atk;
@@ -1934,7 +1940,7 @@ function spawnEnemy(type,x,z,sp){
     stun:0,freeze:0,air:0,airT:1,slowT:0,slow:0,dead:false,gone:false,sp,rad:d.rad||.5,wait:rand(1,4),wdest:null,anim:null,cast:null,flashT:0,skin:null,walk:0,pat:0,dash:null};
   m.g.rotation.y=e.face;m.g.traverse(o=>o.userData.ent=e);
   const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
-  e.tag=makeTag(e,'en'+(d.boss?' boss show':'')+(d.static||d.dummy?' show':''),d.name+(lv?' <small>Lv.'+lv+'</small>':''),h);
+  e.tag=makeTag(e,'en'+(d.boss?' boss show':'')+(d.static||d.dummy?' show':''),d.name+(lv?' <small>Lv.'+lv+'</small>':''),h*K);
   if(d.static)e.col=addCircle(x,z,d.rad*.8);
   if(d.dummy)e.col=addCircle(x,z,.4);
   W.enemies.push(e);if(sp)sp.list.push(e);return e;
@@ -2187,7 +2193,7 @@ function buildEternal(){buildCitadel();
   const sp=spawner('ignis',0,-4,0,1,99999,always);sp.onSpawn=e=>{e.hp=e.maxHp=Math.round(e.maxHp*3);e.atk=Math.round(e.atk*1.5);e.eternal=true;e.lv=120;e.aggro=true;e.d=Object.assign({},e.d,{name:'영원의 이그니스'});
     if(e.tag)e.tag.innerHTML='영원의 이그니스 <small>Lv.120</small>';};
   const beaten=()=>!W.enemies.some(q=>q.eternal&&!q.dead)&&W.enemies.some(q=>q.eternal);
-  portal(0,28.5,'hall',[-7.6,3.2],always,'','진급의 전당으로 돌아가기 ›');
+  portal(0,28.5,'hall',[-4.6,3.2],always,'','진급의 전당으로 돌아가기 ›');
   portal(0,-26.5,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
   later(1.2,()=>toast('영원한 성채 · 성문이 모두 닫혔습니다. 영원의 이그니스를 쓰러뜨리세요','bad'));}
 function buildHall(){
@@ -3664,19 +3670,28 @@ function mkRecv(tp,buf){const lid=tp[3];if(tp[2]==='mk'){if(!buf.length){delete 
   if(tp[2]==='pay'&&tp[3]===acctKey()&&buf.length){try{const m=JSON.parse(buf.toString()),pay=Math.floor((+m.price||0)*(1-MK.fee));if(pay>0&&S){S.gold+=pay;save();refreshHud();toast('거래소 · ['+String(m.name||'').slice(0,30)+'] 판매 대금 '+fmt(pay)+' G 입금 (수수료 5%)','gold');mpChatLine(null,'['+String(m.buyer||'?').slice(0,12)+'] 님이 ['+String(m.name||'').slice(0,30)+'] 구매 · '+fmt(pay)+' G','s');}}catch(e){}
     try{MP.client.publish(tp.join('/'),'',{retain:true,qos:1});}catch(e){}}}
 function mkOpenNow(){return !$('#panel').hidden&&$('#ptl').textContent.startsWith('거래소');}
-function openMarket(){if(!MP.client||!MP.client.connected){openPanel('거래소','<p class="note">서버에 연결되어 있어야 거래소를 쓸 수 있습니다.</p>');return;}openPanel('거래소 · 경매인 실비아','');renderMarket();}
+function openMarket(){if(!MP.client||!MP.client.connected){openPanel('거래소','<p class="note">서버에 연결되어 있어야 거래소를 쓸 수 있습니다.</p>');return;}MK.sel=null;openPanel('거래소 · 경매인 실비아','');renderMarket();}
 function renderMarket(){const L=Object.values(MK.list).sort((a,b)=>b.t-a.t),me=acctKey(),tab=MK.tab;
   let h='<div class="tabs">'+[['buy','구매'],['sell','판매 등록'],['mine','내 등록']].map(t=>'<button data-mt="'+t[0]+'" class="'+(tab===t[0]?'on':'')+'">'+t[1]+'</button>').join('')+'</div><p class="note num">보유 골드 '+fmt(S.gold)+' G · 같은 서버의 플레이어가 올린 물건입니다. 판매 대금은 수수료 5%를 떼고 판매자가 접속할 때 입금됩니다.</p>';
   if(tab==='buy'){const rows=L.filter(m=>m.sk!==me);h+=rows.length?rows.slice(0,60).map(m=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center">'+(m.item.kind==='gear'?'<div class="islot r'+((m.item.g||{}).rar||0)+'" style="flex:none">'+itemIcon(m.item.g)+((m.item.g||{}).enh?'<i class="en">+'+m.item.g.enh+'</i>':'')+'</div>':'')+'<div><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>판매자 '+String(m.n||'?').slice(0,12).replace(/[<>&]/g,'')+(m.item.kind==='gear'?' · Lv.'+((m.item.g||{}).lv|0)+' · '+clsName((m.item.g||{}).cls):'')+'</small></div></div><button class="btn sm pri" data-buy="'+m.lid+'"'+(S.gold<m.price?' disabled':'')+'>'+fmt(m.price)+' G</button></div>').join(''):'<p class="note">등록된 물건이 없습니다. 첫 판매자가 되어 보세요!</p>';}
   else if(tab==='mine'){const rows=L.filter(m=>m.sk===me);h+=rows.length?rows.map(m=>'<div class="row"><div class="l"><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>'+fmt(m.price)+' G · 판매 중</small></div><button class="btn sm" data-cancel="'+m.lid+'">등록 취소</button></div>').join(''):'<p class="note">판매 중인 물건이 없습니다.</p>';}
-  else{h+='<div class="row"><div class="l"><b>판매 가격</b><small>골드</small></div><input id="mkPrice" type="number" min="1" max="999999999" value="10000" style="width:130px;padding:6px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#ffe8b0"></div>';
-    h+='<h3 style="margin:8px 0 4px">장비</h3>'+(S.bag.filter(g=>!g.lock).map(g=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center"><div class="islot r'+(g.rar||0)+'" style="flex:none">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+'</div><div><b>'+g.name+'</b><small>Lv.'+g.lv+' · '+clsName(g.cls)+'</small></div></div><button class="btn sm pri" data-sellg="'+g.id+'">등록</button></div>').join('')||'<p class="note">가방에 장비가 없습니다 (잠긴 장비는 제외).</p>');
-    h+='<h3 style="margin:8px 0 4px">재료 · 소비</h3>'+MK_STACK.filter(s=>s[2]()>0).map(s=>'<div class="row"><div class="l"><b>'+s[1]+'</b><small>보유 '+s[2]()+'</small></div><input type="number" min="1" max="'+s[2]()+'" value="1" data-qty="'+s[0]+'" style="width:60px;padding:5px;border-radius:6px;border:1px solid #6a5a44;background:#1a1410;color:#fff"><button class="btn sm pri" data-sells="'+s[0]+'">등록</button></div>').join('');}
+  else{const gs=S.bag.filter(g=>!g.lock),ss=MK_STACK.filter(s=>s[2]()>0),sel=MK.sel;
+    const sg=sel&&sel.k==='g'?gs.find(g=>g.id===sel.id):null,sst=sel&&sel.k==='s'?ss.find(s=>s[0]===sel.id):null;
+    h+='<p class="note" style="margin:0 0 6px">① 판매할 아이템을 누르고 ② 판매 금액을 적은 뒤 ③ 판매 등록을 누르세요.</p><div class="mkgrid">'+
+      gs.map(g=>'<button class="islot r'+(g.rar||0)+(sg===g?' sel':'')+'" data-pick="g:'+g.id+'" title="'+g.name+'">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+'</button>').join('')+
+      ss.map(s=>'<button class="islot mkst'+(sst===s?' sel':'')+'" data-pick="s:'+s[0]+'"><span>'+s[1].replace(/\(.*\)/,'').slice(0,6)+'</span><i class="en">'+s[2]()+'</i></button>').join('')+
+      (gs.length||ss.length?'':'<p class="note">판매할 아이템이 없습니다 (잠긴 장비는 제외).</p>')+'</div>';
+    if(sg||sst){h+='<div class="mkform"><div class="l"><b>'+(sg?(sg.enh?'+'+sg.enh+' ':'')+sg.name:sst[1])+'</b><small>'+(sg?'Lv.'+sg.lv+' · '+clsName(sg.cls):'보유 '+sst[2]()+'개')+'</small></div>'+
+      (sst?'<label>수량 <input id="mkQty" type="number" inputmode="numeric" min="1" max="'+sst[2]()+'" value="1"></label>':'')+
+      '<label>판매 금액 <input id="mkPrice" type="number" inputmode="numeric" min="1" max="999999999" placeholder="금액 입력"> G</label><button class="btn pri" id="mkReg">판매 등록</button></div>';}
+    else if(gs.length||ss.length)h+='<p class="note">위에서 아이템을 먼저 누르세요.</p>';}
   $('#pbody').innerHTML=h;
   document.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{MK.tab=b.dataset.mt;renderMarket();});
   const price=()=>Math.max(1,Math.min(999999999,Math.floor(+($('#mkPrice')||{}).value||0)));
-  document.querySelectorAll('[data-sellg]').forEach(b=>b.onclick=()=>{const g=S.bag.find(x=>x.id===b.dataset.sellg);if(!g)return;const p=price();S.bag=S.bag.filter(x=>x!==g);mkList({kind:'gear',g},p);});
-  document.querySelectorAll('[data-sells]').forEach(b=>b.onclick=()=>{const s=MK_STACK.find(x=>x[0]===b.dataset.sells),q=Math.max(1,Math.min(s[2](),Math.floor(+document.querySelector('[data-qty="'+s[0]+'"]').value||1)));if(!(q>0))return;s[3](-q);mkList({kind:'stack',id:s[0],n:q},price());});
+  document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.pick.split(':');MK.sel={k,id};renderMarket();const pi=$('#mkPrice');if(pi)pi.focus();});
+  const rg=$('#mkReg');if(rg)rg.onclick=()=>{const raw=Math.floor(+($('#mkPrice')||{}).value||0);if(!(raw>0))return toast('판매 금액을 적어 주세요','bad');const p=price(),sel=MK.sel;MK.sel=null;
+    if(sel.k==='g'){const g=S.bag.find(x=>x.id===sel.id);if(!g)return renderMarket();S.bag=S.bag.filter(x=>x!==g);mkList({kind:'gear',g},p);}
+    else{const s=MK_STACK.find(x=>x[0]===sel.id);if(!s)return renderMarket();const q=Math.max(1,Math.min(s[2](),Math.floor(+($('#mkQty')||{}).value||1)));if(!(q>0))return;s[3](-q);mkList({kind:'stack',id:s[0],n:q},p);}};
   document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>mkBuy(b.dataset.buy));
   document.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>mkCancel(b.dataset.cancel));}
 function mkGive(it){if(it.kind==='gear'){it.g.id=newId();addGear(it.g,true);}else{const s=MK_STACK.find(x=>x[0]===it.id);if(s)s[3](it.n|0);}}
@@ -4114,7 +4129,7 @@ function loop(now){
   W.anim.forEach(f=>f(rt));
   // camera
   if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
-    const ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34),zf=ab?(ab.airborne?1.6:1.35):1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
+    const ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34),zf=ab?(ab.airborne?1.8:1.6):1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
     const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
@@ -4198,12 +4213,37 @@ function auStartMusic(){
   AU.next=c.currentTime+.15;AU.bar=0;AU.loops=0;
   AU.timer=setInterval(()=>{while(AU.next<AU.ctx.currentTime+1.2){scheduleBar(AU.next,AU.bar,AU.loops===0);AU.bar++;if(AU.bar%8===0)AU.loops++;AU.next+=BAR;}},250);
 }
-/* ---------- in-game background music: one generated piece per area (town / field / boss), crossfaded on zone change ---------- */
+/* ---------- in-game background music: one piece per area, crossfaded on zone change ----------
+   Each hunting ground follows its own brief (tempo, key, instruments). If an MP3 is uploaded as music/<style>.mp3
+   (e.g. a Suno / Udio render) it plays instead of the built-in arrangement. */
+const NT=(s)=>s.split(' ').map(x=>{const [m,d]=x.split(':');return [+m,+(d||1)];});  // "74:1 71:.5" → [[74,1],[71,.5]]
 const SONGS={
   town:{bpm:72,prog:[[48,52,55],[45,48,52],[41,45,48],[43,47,50],[48,52,55],[45,48,52],[41,45,48],[43,47,50]],mel:[[64,67],[69,67],[65,64],[62],[64,60],[57,60],[65,69],[67]]},
   field:{bpm:94,prog:[[45,48,52],[41,45,48],[48,52,55],[43,47,50],[45,48,52],[41,45,48],[43,47,50],[40,44,47]],mel:[[69,72],[72,69],[67,64],[67],[69,76],[77,76],[74,71],[68]]},
-  boss:{bpm:132,prog:[[50,53,57],[50,53,57],[46,50,53],[48,52,55],[50,53,57],[50,53,57],[46,50,53],[45,49,52]],mel:null}};
-function bgmStyle(z){return z==='altar'||z==='eternal'?'boss':['village','citadel','hall','inn'].includes(z)?'town':'field';}
+  // 1. 야수 서식지: acoustic folk, 112 BPM, G major — guitar, wooden flute, tambourine, violin pizzicato
+  beasts:{bpm:112,prog:[[55,59,62],[50,54,57],[52,55,59],[48,52,55],[55,59,62],[50,54,57],[48,52,55],[50,54,57]],
+    mel:['74 71:.5 74:.5 76 74','72:.5 74:.5 69:1.5 66:.5 69','71 67:.5 71:.5 74:1.5 72:.5','72 76 74 72','74:.5 76:.5 79 78:.5 76:.5 74','78 76:.5 74:.5 69:2','76 74:.5 72:.5 71 69','66 69 74:2'].map(NT)},
+  // 2. 원혼의 묘지: gothic dark orchestra, 78 BPM, D minor — music box, pipe organ, cello, choir
+  grave:{bpm:78,prog:[[50,53,57],[46,50,53],[43,46,50],[45,49,52],[50,53,57],[41,45,48],[43,46,50],[45,49,52]],
+    mel:['81 77 74 76','77:1.5 74:.5 70:2','79 77 74 70','73:2 76:2','81:.5 82:.5 81 77 74','72 77 81:2','79 74 70 67','69 73 76:2'].map(NT)},
+  // 3. 태엽 미로: steampunk clockwork, 132 BPM, A minor — clock ticks, analog synth arps, brass, xylophone
+  clock:{bpm:132,prog:[[45,48,52],[45,48,52],[41,45,48],[43,47,50],[45,48,52],[40,44,47],[41,45,48],[40,44,47]],
+    mel:['76:.5 77:.5 76:.5 72:.5 69 72','71:.5 72:.5 74:.5 76:.5 72:2','77 76:.5 74:.5 72 69','71 74 79:2','81:.5 79:.5 76:.5 72:.5 74 76','80 76 71 68','69:.5 72:.5 77 76:.5 74:.5 72','71:2 68:2'].map(NT)},
+  // 4. 아수라 흑야 협곡: oriental dark tribal, 142 BPM, F# minor — taiko, haegeum, pipa, chant, distorted bass
+  asura:{bpm:142,prog:[[42,45,49],[42,45,49],[38,42,45],[40,44,47],[42,45,49],[42,45,49],[38,42,45],[37,41,44]],
+    mel:['73:1.5 76:.5 78 76:.5 73:.5','71:.5 73:.5 69 66:2','74 73:.5 71:.5 69 71','68 71 76:2','78 81:.5 78:.5 76 73','76:.5 78:.5 76:.5 73:.5 71:2','69 74 73 71','73:2 77:2'].map(NT)},
+  // 용혈의 제단 field: dark symphonic, 90 BPM, C minor — contrabass, tuba/trombone, male latin choir, timpani
+  altar:{bpm:90,prog:[[48,51,55],[44,48,51],[41,44,48],[43,47,50],[48,51,55],[44,48,51],[37,41,44],[43,47,50]],
+    mel:['48:2 51 50','48:2 44:2','53:1.5 51:.5 48:2','47:2 50:2','55:2 56 55','51:2 48:2','49:2 53:2','50:2 47:2'].map(NT)},
+  // dragon raid: ultra-epic boss battle, 155 BPM (phase 2 at 162), D minor — violins, brass fanfare, full choir, battle drums
+  raid:{bpm:155,prog:[[50,53,57],[50,53,57],[46,50,53],[48,52,55],[50,53,57],[50,53,57],[43,46,50],[45,49,52]],
+    mel:['62 65 69:2','67:.5 65:.5 64 62:2','70 69 65 62','64 67 72:2','74:1.5 72:.5 69 65','67 69 74:2','70 67 62 70','69:2 73:2'].map(NT)}};
+SONGS.raid2=Object.assign({},SONGS.raid,{bpm:162});SONGS.boss=SONGS.raid;
+function bgmStyle(z){
+  if(z==='altar'||z==='eternal'){const ig=W.enemies&&W.enemies.find(e=>e.type==='ignis'&&!e.dead);if(ig&&ig.aggro)return ig.hp<ig.maxHp*.5?'raid2':'raid';return 'altar';}
+  if(['beasts','grave','clock','asura'].includes(z))return z;
+  return ['village','citadel','hall','inn'].includes(z)?'town':'field';}
+/* instruments */
 function bgmPad(ms,t,d,vol,saw){const c=AU.ctx;ms.forEach(m=>[-6,6].forEach(dt=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=saw?'sawtooth':'triangle';o.frequency.value=hz(m);o.detune.value=dt;
   f.type='lowpass';f.frequency.value=saw?1400:2200;o.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,Math.min(.6,d*.25),vol,d*.55,d*.4);o.start(t);o.stop(t+d+.2);}));}
 function bgmPluck(m,t,vol){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(AU.bgmG);env(g,t,.006,vol,.02,.9);o.start(t);o.stop(t+1);}
@@ -4212,19 +4252,86 @@ function bgmLead(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),v=c.createOsci
 function bgmBass(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=hz(m);o.connect(g);g.connect(AU.bgmG);env(g,t,.01,vol,d*.5,d*.4);o.start(t);o.stop(t+d+.1);}
 function bgmKick(t,vel){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(42,t+.14);o.connect(g);g.connect(AU.bgmG);env(g,t,.003,.5*vel,.02,.25);o.start(t);o.stop(t+.35);}
 function bgmHat(t,vel){const c=AU.ctx,n=nsrc(AU.white,t,.06),f=c.createBiquadFilter(),g=c.createGain();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.001,.06*vel,.005,.04);}
-function bgmBar(t,bar,style){const S2=SONGS[style],B=60/S2.bpm,i=bar%S2.prog.length,ch=S2.prog[i];
-  if(style==='town'){bgmPad(ch,t,B*4,.018);bgmBass(ch[0]-12,t,B*2,.12);bgmBass(ch[0]-12,t+B*2,B*2,.09);
-    for(let k=0;k<8;k++)bgmPluck(ch[[0,1,2,1][k%4]]+12,t+k*B/2,.035);if(bar>=8){const ml=S2.mel[i];ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.05));}}
-  else if(style==='field'){bgmPad(ch,t,B*4,.014);for(let k=0;k<4;k++){bgmBass(ch[0]-12,t+k*B,B*.9,.11);bgmKick(t+k*B,k%2?.35:.6);bgmHat(t+k*B+B/2,1);}
-    for(let k=0;k<8;k++)bgmPluck(ch[[0,2,1,2][k%4]]+12,t+k*B/2,.03);if(bar>=8){const ml=S2.mel[i];ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.045));}}
-  else{bgmPad(ch.map(m=>m-12),t,B*4,.022,true);for(let k=0;k<8;k++){bgmBass(ch[0]-24,t+k*B/2,B*.45,.14);bgmHat(t+k*B/2+B/4,.8);}
-    for(let k=0;k<4;k++)bgmKick(t+k*B,1);if(i===7){[0,1,2,3].forEach(k=>timpTo(t+k*B,38+k,.6));}}}
 function timpTo(t,m,vel){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(hz(m)*1.7,t);o.frequency.exponentialRampToValueAtTime(hz(m),t+.12);o.connect(g);g.connect(AU.bgmG);env(g,t,.005,.4*vel,.02,1);o.start(t);o.stop(t+1.2);}
-function bgmUpdate(){if(!AU.ctx||!AU.on||!gameOn)return;if(!AU.bgmG){AU.bgmG=AU.ctx.createGain();AU.bgmG.gain.value=0;AU.bgmG.connect(AU.master);AU.bgmG.connect(AU.rv);}
-  const want=bgmStyle(W.zone),c=AU.ctx;if(c.state==='suspended')c.resume();
+const bOsc=(type,m,t,d,f0,vol,a,rel,det)=>{const c=AU.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=type;o.frequency.value=hz(m);if(det)o.detune.value=det;f.type='lowpass';f.frequency.value=f0;o.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,a,vol,Math.max(0,d-a),rel);o.start(t);o.stop(t+d+rel+.05);return {o,f,g};};
+const vib=(o,t,d,rate,depth)=>{const c=AU.ctx,v=c.createOscillator(),vg=c.createGain();v.frequency.value=rate;vg.gain.value=depth;v.connect(vg);vg.connect(o.frequency);v.start(t);v.stop(t+d+.3);};
+function iGuitar(m,t,vol){const n=bOsc('sawtooth',m,t,.02,2400,vol,.004,.7);n.f.frequency.setValueAtTime(3200,t);n.f.frequency.exponentialRampToValueAtTime(700,t+.4);}
+function iFlute(m,t,d,vol){const n=bOsc('sine',m,t,d,3000,vol,.06,.12);vib(n.o,t,d,5.2,hz(m)*.006);const c=AU.ctx,b=nsrc(AU.white,t,d),bf=c.createBiquadFilter(),bg=c.createGain();bf.type='bandpass';bf.frequency.value=hz(m)*2;bf.Q.value=3;b.connect(bf);bf.connect(bg);bg.connect(AU.bgmG);env(bg,t,.04,vol*.25,Math.max(0,d-.1),.08);}
+function iPizz(m,t,vol){bOsc('triangle',m,t,.01,2000,vol,.003,.18);}
+function iTamb(t,vel){const c=AU.ctx,n=nsrc(AU.white,t,.12),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=9000;f.Q.value=1.5;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.002,.09*vel,.02,.08);}
+function iBox(m,t,vol){[[1,1],[4.2,.25]].forEach(([k,v])=>{const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=hz(m)*k;o.connect(g);g.connect(AU.bgmG);env(g,t,.002,vol*v,.01,k>1?.3:1.6);o.start(t);o.stop(t+1.8);});}
+function iOrgan(ms,t,d,vol){ms.forEach(m=>[[0,1],[12,.5],[19,.3],[24,.22]].forEach(([iv,v])=>bOsc('sine',m+iv,t,d,4000,vol*v,.12,.4)));}
+function iCello(m,t,d,vol){const n=bOsc('sawtooth',m,t,d,900,vol,.25,.35);vib(n.o,t+.2,d,4.6,hz(m)*.008);}
+function iChoir(ms,t,d,vol,male){const c=AU.ctx,F=male?[[500,6],[900,8]]:[[800,6],[1200,8]];ms.forEach(m=>[-9,9].forEach(dt=>{const o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.value=hz(m);o.detune.value=dt;vib(o,t,d,4.8,hz(m)*.005);
+  F.forEach(([fq,q])=>{const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=fq;f.Q.value=q;o.connect(f);f.connect(g);});g.connect(AU.bgmG);env(g,t,Math.min(.5,d*.3),vol,d*.5,d*.35);o.start(t);o.stop(t+d+.2);}));}
+function iTick(t,hi){const c=AU.ctx,n=nsrc(AU.white,t,.03),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=hi?5200:3100;f.Q.value=12;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.001,hi?.22:.16,.004,.025);}
+function iArp(m,t,d,vol){const n=bOsc('square',m,t,d*.8,900,vol,.003,.06);n.f.Q.value=6;n.f.frequency.setValueAtTime(2600,t);n.f.frequency.exponentialRampToValueAtTime(600,t+d);}
+function iBrass(ms,t,d,vol){ms.forEach(m=>[-7,7].forEach(dt=>{const n=bOsc('sawtooth',m,t,d,500,vol,.05,.15,dt);n.f.frequency.setValueAtTime(400,t);n.f.frequency.linearRampToValueAtTime(2200,t+.08);n.f.frequency.linearRampToValueAtTime(1300,t+d);}));}
+function iXylo(m,t,vol){[[1,1],[3,.3]].forEach(([k,v])=>{const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=hz(m)*k;o.connect(g);g.connect(AU.bgmG);env(g,t,.001,vol*v,.005,k>1?.08:.35);o.start(t);o.stop(t+.45);});}
+function iTaiko(t,vel,low){const c=AU.ctx,o=c.createOscillator(),g=c.createGain(),f0=low?70:110;o.frequency.setValueAtTime(f0*1.6,t);o.frequency.exponentialRampToValueAtTime(f0*.6,t+.3);o.connect(g);g.connect(AU.bgmG);env(g,t,.002,.6*vel,.03,.5);o.start(t);o.stop(t+.7);
+  const n=nsrc(AU.white,t,.15),nf=c.createBiquadFilter(),ng=c.createGain();nf.type='lowpass';nf.frequency.value=900;n.connect(nf);nf.connect(ng);ng.connect(AU.bgmG);env(ng,t,.001,.25*vel,.01,.1);}
+function iHaegeum(m,t,d,vol,from){const n=bOsc('sawtooth',m,t,d,2400,vol,.06,.15);n.f.type='bandpass';n.f.Q.value=1.4;n.f.frequency.value=hz(m)*3;if(from){n.o.frequency.setValueAtTime(hz(from),t);n.o.frequency.exponentialRampToValueAtTime(hz(m),t+Math.min(.12,d*.3));}vib(n.o,t+.1,d,6.2,hz(m)*.018);}
+function iPipa(m,t,vol){const n=bOsc('sawtooth',m,t,.01,3600,vol,.002,.22);n.f.frequency.setValueAtTime(4200,t);n.f.frequency.exponentialRampToValueAtTime(900,t+.15);}
+function iDistBass(m,t,d,vol){const c=AU.ctx,o=c.createOscillator(),ws=c.createWaveShaper(),f=c.createBiquadFilter(),g=c.createGain();if(!AU.distCur){AU.distCur=new Float32Array(257);for(let i=0;i<257;i++){const x=i/128-1;AU.distCur[i]=Math.tanh(x*5);}}ws.curve=AU.distCur;g.gain.value=0;
+  o.type='sawtooth';o.frequency.value=hz(m);f.type='lowpass';f.frequency.value=700;o.connect(ws);ws.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.005,vol,d*.6,d*.3);o.start(t);o.stop(t+d+.1);}
+function iViolin(m,t,d,vol){const n=bOsc('sawtooth',m,t,d,3200,vol,.01,.05,4);n.f.Q.value=1.2;}
+function iSnare(t,vel){const c=AU.ctx,n=nsrc(AU.white,t,.2),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.frequency.value=1800;f.Q.value=.8;n.connect(f);f.connect(g);g.connect(AU.bgmG);env(g,t,.001,.2*vel,.01,.12);}
+const playMel=(ml,t,B,fn)=>{let x=0;ml.forEach(([m,d])=>{fn(m,t+x*B,d*B);x+=d;});};
+function bgmBar(t,bar,style){const S2=SONGS[style],B=60/S2.bpm,i=bar%S2.prog.length,ch=S2.prog[i],sec=Math.floor(bar/8)%2,ml=S2.mel&&S2.mel[i];
+  if(style==='town'){bgmPad(ch,t,B*4,.018);bgmBass(ch[0]-12,t,B*2,.12);bgmBass(ch[0]-12,t+B*2,B*2,.09);
+    for(let k=0;k<8;k++)bgmPluck(ch[[0,1,2,1][k%4]]+12,t+k*B/2,.035);if(bar>=8)ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.05));}
+  else if(style==='field'){bgmPad(ch,t,B*4,.014);for(let k=0;k<4;k++){bgmBass(ch[0]-12,t+k*B,B*.9,.11);bgmKick(t+k*B,k%2?.35:.6);bgmHat(t+k*B+B/2,1);}
+    for(let k=0;k<8;k++)bgmPluck(ch[[0,2,1,2][k%4]]+12,t+k*B/2,.03);if(bar>=8)ml.forEach((m,j)=>bgmLead(m,t+j*B*4/ml.length,B*4/ml.length,.045));}
+  else if(style==='beasts'){  // strummed guitar + bass, tambourine, pizzicato answers, flute tune
+    for(let k=0;k<8;k++){const tt=t+k*B/2;[0,1,2].forEach((n,j)=>iGuitar(ch[n]-(k%2?0:12)+(j===2&&k%2?12:0),tt+j*.012,k%2?.018:.026));}
+    bgmBass(ch[0]-24,t,B*1.8,.13);bgmBass(ch[0]-17,t+B*2,B*1.8,.1);
+    for(let k=0;k<8;k++)iTamb(t+k*B/2,k%4===2?1:.45);bgmKick(t,.35);bgmKick(t+B*2,.25);
+    if(sec||bar<8){[1.5,3.5].forEach((b,j)=>iPizz(ch[j+1]+12,t+b*B,.05));}
+    if(bar>=4)playMel(ml,t,B,(m,tt,d)=>iFlute(m+(sec?12:0),tt,d*.92,.05));}
+  else if(style==='grave'){  // music box alone, then organ, cello and choir pile up
+    playMel(ml,t,B,(m,tt,d)=>iBox(m+12,tt,.075));if(bar%2===0)iBox(ch[0]+24,t+B*2.5,.025);
+    iOrgan(ch.map(m=>m-12),t,B*4,bar<8?.006:.012);
+    if(bar>=8){playMel(ml,t,B,(m,tt,d)=>iCello(m-24,tt,d,.05));iChoir(ch,t,B*4,.02);bgmBass(ch[0]-24,t,B*4,.1);if(i%4===3)timpTo(t+B*3,38,.5);}
+    else bgmBass(ch[0]-24,t,B*4,.06);}
+  else if(style==='clock'){  // tick-tock over everything, 16th synth arps, brass stabs, xylophone
+    for(let k=0;k<8;k++)iTick(t+k*B/2,k%2===0);
+    for(let k=0;k<16;k++)iArp(ch[k%3]+12+(k%6>2?12:0),t+k*B/4,B/4,.018);
+    for(let k=0;k<4;k++){bgmKick(t+k*B,k===0?.8:.5);iDistBass(ch[0]-12,t+k*B,B*.45,.035);iDistBass(ch[0]-12,t+k*B+B/2,B*.4,.028);}
+    iBrass(ch,t,B*.6,.018);iBrass(ch,t+B*2.5,B*.4,.014);if(i===7){iBrass(ch.map(m=>m+12),t+B*3,B,.016);}
+    if(bar>=8||bar>=4&&sec===0)playMel(ml,t,B,(m,tt,d)=>{iXylo(m+12,tt,.07);if(d>=1)iXylo(m+12,tt+B/2,.04);});}
+  else if(style==='asura'){  // taiko barrage, distorted bass, pipa tremolo, haegeum lead with slides, low chant
+    [[0,1,1],[.75,.5],[1.5,.7],[2,1,1],[2.5,.5],[3,.8],[3.5,.6],[3.75,.5]].forEach(([b,v,l])=>iTaiko(t+b*B,v*.6,l));if(i===7)[3,3.25,3.5,3.75].forEach(b=>iTaiko(t+b*B,.55));
+    for(let k=0;k<8;k++)iDistBass(ch[0]-12,t+k*B/2,B*.42,.045);
+    for(let k=0;k<16;k++)if(k%4<3)iPipa(ch[(k>>2)%3]+12,t+k*B/4,.02);
+    iChoir(ch.map(m=>m-12),t,B*4,.014,true);
+    if(bar>=4){let prev=null;playMel(ml,t,B,(m,tt,d)=>{iHaegeum(m,tt,d*.95,.035,prev&&Math.abs(prev-m)<=3?prev:null);prev=m;});}}
+  else if(style==='altar'){  // vast low brass, contrabass drone, male choir, slow timpani
+    bgmBass(ch[0]-24,t,B*4,.14);iCello(ch[0]-24,t,B*4,.03);iChoir(ch,t,B*4,.022,true);
+    timpTo(t,ch[0]-12,.7);if(i%2===1)timpTo(t+B*2,ch[0]-12,.45);if(i===7)[2,2.5,3,3.5].forEach((b,k)=>timpTo(t+b*B,ch[0]-12+k,.35+k*.1));
+    if(bar>=4)playMel(ml,t,B,(m,tt,d)=>iBrass([m],tt,d*.95,.03));if(bar>=12)playMel(ml,t,B,(m,tt,d)=>iBrass([m+12],tt,d*.95,.012));}
+  else{  // raid / raid2: violin ostinato, brass fanfare, full choir, relentless drums
+    const hot=style==='raid2';const osti=[ch[0]+12,ch[2],ch[1]+12,ch[2]];for(let k=0;k<16;k++)iViolin(osti[k%4]+12,t+k*B/4,B/4*.9,hot?.02:.016);
+    for(let k=0;k<8;k++){bgmKick(t+k*B/2,k%2?.45:1);bgmBass(ch[0]-24,t+k*B/2,B*.45,.13);}iSnare(t+B,1);iSnare(t+B*3,1);if(hot){iSnare(t+B*3.5,.7);iSnare(t+B*3.75,.8);}
+    if(i===7)[0,1,2,3].forEach(k=>timpTo(t+k*B,38+k,.6));
+    playMel(ml,t,B,(m,tt,d)=>iBrass([m,m-12],tt,d*.92,hot?.024:.02));
+    if(hot||sec)iChoir(ch,t,B*4,hot?.03:.02);else iChoir(ch,t,B*4,.012,true);}}
+/* uploaded MP3s (music/<style>.mp3) take over from the built-in arrangement */
+const BGM_FILE={};
+function bgmFile(style){const k=style==='raid2'?'raid':style;if(BGM_FILE[k]!==undefined)return BGM_FILE[k];BGM_FILE[k]=null;
+  if(!/^https?:/.test(location.protocol))return null;
+  fetch('music/'+k+'.mp3',{method:'HEAD'}).then(r=>{if(r.ok){const a=new Audio('music/'+k+'.mp3');a.loop=true;a.preload='auto';BGM_FILE[k]={a,src:null};if(AU.bgmStyle===style||AU.bgmStyle===k)bgmSwap(true);}}).catch(()=>{});return null;}
+function bgmFileStop(){if(AU.bgmEl){try{AU.bgmEl.a.pause();}catch(e){}AU.bgmEl=null;}}
+function bgmFileStart(style){const f=bgmFile(style);if(!f)return false;const c=AU.ctx;if(!f.src){try{f.src=c.createMediaElementSource(f.a);f.src.connect(AU.bgmG);}catch(e){BGM_FILE[style==='raid2'?'raid':style]=null;return false;}}
+  if(AU.bgmEl!==f){bgmFileStop();AU.bgmEl=f;try{f.a.currentTime=0;}catch(e){}f.a.play().catch(()=>{});}return true;}
+function bgmSwap(){AU.bgmStyle=null;}  // re-enter through the normal crossfade so an uploaded file replaces the synth
+function bgmUpdate(){if(!AU.ctx||!AU.on||!gameOn){if(AU.bgmEl&&(!AU.on||!gameOn))bgmFileStop();return;}if(!AU.bgmG){AU.bgmG=AU.ctx.createGain();AU.bgmG.gain.value=0;AU.bgmG.connect(AU.master);AU.bgmG.connect(AU.rv);}
+  const want=bgmStyle(W.zone),c=AU.ctx;if(c.state==='suspended')c.resume();bgmFile(want);
+  if(AU.bgmStyle&&AU.bgmStyle!==want&&!AU.bgmFading&&/raid/.test(AU.bgmStyle)&&/raid/.test(want)){AU.bgmStyle=want;}  // phase 2 speeds the raid music up without a fade
   if(AU.bgmStyle!==want&&!AU.bgmFading){AU.bgmFading=true;const t=c.currentTime;AU.bgmG.gain.cancelScheduledValues(t);AU.bgmG.gain.setValueAtTime(AU.bgmG.gain.value,t);AU.bgmG.gain.linearRampToValueAtTime(0,t+1.2);
-    setTimeout(()=>{AU.bgmStyle=want;AU.bgmBarN=0;AU.bgmNext=c.currentTime+.1;const t2=c.currentTime;AU.bgmG.gain.cancelScheduledValues(t2);AU.bgmG.gain.setValueAtTime(0,t2);AU.bgmG.gain.linearRampToValueAtTime(want==='boss'?.8:.7,t2+2.5);AU.bgmFading=false;},1300);return;}
-  if(!AU.bgmStyle||AU.bgmFading)return;const B=60/SONGS[AU.bgmStyle].bpm*4;while(AU.bgmNext<c.currentTime+1.2){bgmBar(AU.bgmNext,AU.bgmBarN,AU.bgmStyle);AU.bgmBarN++;AU.bgmNext+=B;}}
+    setTimeout(()=>{const same=AU.bgmEl&&(want==='raid2'||want==='raid')&&(AU.bgmStyle==='raid'||AU.bgmStyle==='raid2');AU.bgmStyle=want;AU.bgmBarN=0;AU.bgmNext=c.currentTime+.1;
+      AU.bgmUseFile=same||bgmFileStart(want);if(!AU.bgmUseFile)bgmFileStop();
+      const t2=c.currentTime;AU.bgmG.gain.cancelScheduledValues(t2);AU.bgmG.gain.setValueAtTime(0,t2);AU.bgmG.gain.linearRampToValueAtTime(/raid/.test(want)?.8:.7,t2+2.5);AU.bgmFading=false;},1300);return;}
+  if(!AU.bgmStyle||AU.bgmFading||AU.bgmUseFile)return;const B=60/SONGS[AU.bgmStyle].bpm*4;while(AU.bgmNext<c.currentTime+1.2){bgmBar(AU.bgmNext,AU.bgmBarN,AU.bgmStyle);AU.bgmBarN++;AU.bgmNext+=B;}}
 setInterval(()=>{try{bgmUpdate();}catch(err){}},300);
 function auStopMusic(sec){if(!AU.ctx)return;const c=AU.ctx,t=c.currentTime;[AU.music,AU.amb].forEach(g=>{g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+(sec||2));});
   setTimeout(()=>{if(AU.music.gain.value<.02){clearInterval(AU.timer);AU.timer=null;}},(sec||2)*1000+200);}
@@ -4346,7 +4453,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-14';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-15';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
