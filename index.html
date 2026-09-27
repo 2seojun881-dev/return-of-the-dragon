@@ -502,7 +502,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-17</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-18</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -930,7 +930,7 @@ addEventListener('resize',resize);
    where locking isn't possible (iPhone Safari) a "rotate your phone" screen covers the game in portrait. */
 const TOUCH=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
 function isFull(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
-function goLandscapeFull(){if(!TOUCH)return;const d=document.documentElement,rq=d.requestFullscreen||d.webkitRequestFullscreen;
+function goLandscapeFull(ev){if(!TOUCH)return;if(ev&&ev.target&&ev.target.closest&&ev.target.closest('button,input,textarea,select,a,label,#panel,#trbtns,#chat'))return;const d=document.documentElement,rq=d.requestFullscreen||d.webkitRequestFullscreen;
   const lock=()=>{try{const p=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(p&&p.catch)p.catch(()=>{});}catch(err){}};
   if(!isFull()&&rq){try{const p=rq.call(d,{navigationUI:'hide'});if(p&&p.then)p.then(lock,lock);else lock();}catch(err){lock();}}else lock();}
 function updRotate(){$('#rotate').hidden=!(TOUCH&&innerHeight>innerWidth);}
@@ -2298,7 +2298,7 @@ function buildInn(){
   [[-3.6,2.2,-3.6,0xffa050,1.3],[4.8,2.2,-1.6,0xffa050,1.1],[1.6,2.4,-.4,0xffc080,.8]].forEach(([x,y,z,c,i])=>{const l=new THREE.PointLight(c,i,9,2);l.position.set(x,y,z);W.root.add(l);W.anim.push(t=>{l.intensity=i*(.9+Math.sin(t*9+x)*.1);});});
   const wlt=new THREE.PointLight(0x8aa8ff,.9,8,2);wlt.position.set(-5,2.4,0);W.root.add(wlt);
   W.bedPos=new V(-5.75,.78,-2.2);
-  portal(6.1,0,'village',[-9,13.6],()=>true,'','밖으로 나가기 ›',{door:true,rot:Math.PI/2});
+  portal(6.1,0,'village',[-9,26.8],()=>true,'','밖으로 나가기 ›',{door:true,rot:Math.PI/2});
 }
 function buildVillage(){
   setEnv({sky:0x2e2a36,fog:[34,125],ht:0x8898b8,hb:0x2a221e,hi:.5,sun:0xffae78,si:1.05,ash:true});
@@ -2358,7 +2358,7 @@ function buildVillage(){
   decor([['meshy_sakura',14,-3,6.5,.8],['meshy_dog',3.2,6.2,1.2,.4,-.6],['meshy_supplies',4.5,14.5,2.4,.9,0],['meshy_supplies',-14,-10,2.4,.9,1.2],
     ['meshy_bush',-23,-2,2.2,.8],['meshy_bush',22,-15,2.2,.8],['meshy_bush',-6,24,2.2,.8],['meshy_bush',14,24,2,.8],['meshy_bush',-22,-28,2.4,.8]]);
   portal(0,-33,'plains',[0,23],()=>S.q>qIdx('v4'),'아직 마을을 떠날 수 없습니다. 마을의 위기를 먼저 해결하세요.','바람노래 평원 ›');
-  portal(-9,16.4,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
+  portal(-9,23.6,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
 }
 function buildPlains(){
   setEnv({sky:0x3a4450,fog:[34,130],ht:0x9aaac0,hb:0x2a2e22,hi:.52,sun:0xffcf98,si:1.0,ash:true,ashCol:0x9a948c,ashSize:.12});
@@ -3786,8 +3786,8 @@ function renderInv(){const box=$('#inv');if(!box)return;const G=P.gs||gearStats(
    '<div class="igrid">'+cells+'</div><div class="bbar"><button class="btn sm" id="bSort">자동 정렬</button><button class="btn sm" id="bSalv">일괄 분해</button><button class="btn sm" id="bSell">일괄 판매</button></div><div id="itip"></div></div></div>'+
    '<details class="skd"><summary>스킬 보기</summary>'+['atk'].concat(SKEYS).filter(k=>c.sk[k]).map(k=>{const q=c.sk[k];return '<div class="row"><div class="l"><b>'+(k==='atk'?'':'Lv.'+q.lv+' · ')+q.n+(q.passive?' <small>(패시브)</small>':'')+(k!=='atk'&&!skOk(k)?' <small>(잠김)</small>':'')+'</b><small>'+q.d+(q.mp?' · MP '+q.mp:'')+(q.cd?' · 재사용 '+q.cd+'초':'')+'</small></div></div>';}).join('')+'</details>';
   box.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{INV.tab=b.dataset.tb;renderInv();});
-  box.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{INV.sel=b.dataset.it;INV.locks=[];renderInv();});
-  box.querySelectorAll('[data-es]').forEach(b=>b.onclick=()=>{const g=getEq(b.dataset.es);if(g){INV.sel=g.id;INV.locks=[];renderInv();}});
+  box.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{INV.sel=b.dataset.it;INV.locks=[];INV.jump=true;renderInv();});
+  box.querySelectorAll('[data-es]').forEach(b=>b.onclick=()=>{const g=getEq(b.dataset.es);if(g){INV.sel=g.id;INV.locks=[];INV.jump=true;renderInv();}});
   box.querySelectorAll('[data-cn]').forEach(b=>b.onclick=()=>{INV.sel=null;$('#itip').innerHTML='<div class="tipc"><b>'+b.title+'</b><p class="note">'+(b.dataset.cn==='potion'?'최대 체력 40% 회복 (H)':b.dataset.cn==='mpot'?'최대 마력 45% 회복 (M)':b.dataset.cn==='scale'?'이그니스가 매번 떨어뜨립니다. 용혈 제련·옵션 재설정에 사용':b.dataset.cn==='cryst'?'용혈 제련·옵션 잠금에 사용':'재료 · 소모품')+'</p></div>';});
   box.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>presetUse(+b.dataset.pre));
   box.querySelectorAll('[data-pres]').forEach(b=>b.onclick=()=>{const i=+b.dataset.pres,o={};EQ_SLOTS.forEach(s=>{const g=getEq(s);if(g)o[s]=g.id;});S.presets[i]=o;save();toast('프리셋 '+(i+1)+'에 현재 장비를 저장했습니다.');renderInv();});
@@ -3812,6 +3812,8 @@ function renderTip(){const f=findItem(INV.sel),tip=$('#itip');if(!f){INV.sel=nul
     (rr?'<p class="note num">재설정 비용: 용의 비늘 '+rr.sc+' · '+fmt(rr.g)+' G'+(INV.locks.length?' · 용의 결정 '+rr.cr+' (잠금 '+INV.locks.length+'줄)':'')+'</p>':'')+'</div>';
   tip.querySelectorAll('[data-lk]').forEach(c=>c.onchange=()=>{const i=+c.dataset.lk;if(c.checked){if(INV.locks.length>=2){c.checked=false;return toast('옵션은 최대 2줄까지 잠글 수 있습니다.');}INV.locks.push(i);}else INV.locks=INV.locks.filter(x=>x!==i);renderTip();});
   const on=(id,fn)=>{const b=$(id);if(b)b.onclick=fn;};
+  {const bb=tip.querySelector('.bbar'),hd=tip.querySelector('.tiph');if(bb&&hd)hd.after(bb);}
+  if(INV.jump){INV.jump=false;const pb=$('#pbody'),dy=tip.getBoundingClientRect().top-pb.getBoundingClientRect().top;if(dy>pb.clientHeight*.45||dy<0)pb.scrollTop+=dy-6;}
   on('#tEq',()=>{if(equipItem(g))renderInv();});on('#tUn',()=>{unequip(f.slot);renderInv();});
   on('#tLk',()=>{g.lock=!g.lock;save();renderInv();});
   on('#tSell',function(){if(g.lock)return toast('잠긴 장비는 판매할 수 없습니다.');if((g.rar||0)>=2&&!this.dataset.ok){this.dataset.ok=1;this.textContent='정말 판매?';return;}S.bag.splice(S.bag.indexOf(g),1);const v=gearValue(g);S.gold+=v;INV.sel=null;toast('['+g.name+'] 판매 +'+fmt(v)+' G');save();refreshHud();renderInv();});
@@ -4359,7 +4361,7 @@ btnDown('#b-atk',()=>{ATK_HOLD=true;pressAttack();});
 btnDown('#b-s1',()=>useSkill('s1'));btnDown('#b-s2',()=>useSkill('s2'));btnDown('#b-s3',()=>useSkill('s3'));btnDown('#b-ult',()=>useSkill('ult'));
 btnDown('#b-pot',usePotion);btnDown('#b-mpot',useMpPotion);
 $('#bagBtn').innerHTML=ICON.bag;$('#menuBtn').innerHTML=ICON.menu;
-$('#bagBtn').onclick=()=>{if(!paused())openBag();};$('#menuBtn').onclick=()=>{if(!paused())openMenu();};
+[['#bagBtn',()=>openBag()],['#menuBtn',()=>openMenu()]].forEach(([sel,fn])=>{const b=$(sel);let t0=0;b.style.touchAction='manipulation';b.addEventListener('pointerdown',ev=>{ev.stopPropagation();if(DL||CS||transitioning||!gameOn)return;t0=performance.now();if(panelOpen){const same=$('#ptl').textContent.startsWith(sel==='#bagBtn'?'캐릭터':'메뉴');closePanel();if(same)return;}fn();});b.addEventListener('click',()=>{if(performance.now()-t0<600)return;if(!paused())fn();});});
 let QMIN=false;try{QMIN=localStorage.getItem('ignis.qmin')==='1';}catch(err){}
 const qMin=v=>{QMIN=v;$('#qtrack').classList.toggle('min',v);$('#qtog').textContent=v?'▸':'▾';$('#qtog').setAttribute('aria-label',v?'퀘스트 창 열기':'퀘스트 창 접기');try{localStorage.setItem('ignis.qmin',v?'1':'0');}catch(err){}};qMin(QMIN);
 $('#qtog').addEventListener('click',ev=>{ev.stopPropagation();qMin(!QMIN);});
@@ -4744,7 +4746,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-17';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.27-18';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
