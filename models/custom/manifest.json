@@ -2496,6 +2496,18 @@
       ],
       "uniform": true,
       "userModel": "Twilight Sovereign"
+    },
+    "s_arcgate": {
+      "file": "s_arcgate.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_arcgate"
+      ],
+      "zones": [
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Arcane Circle Gate"
     }
   }
 }
