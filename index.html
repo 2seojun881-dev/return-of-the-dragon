@@ -511,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -755,7 +755,7 @@ const MOBS={
  // --- dungeon bosses (one per hunting ground; respawn 3 min) ---
  beastsBoss:{name:'고목의 파수꾼 베르단',lvr:[16,16],role:1.5,bm:{hp:14,exp:6,gold:15},spd:2.6,range:2.8,aspd:1.8,aggr:true,sight:14,model:'goblin',rad:1.3,boss:true,special:'slam',spcd:6,junk:'고목의 심장',drop:{low:1,mid:.35}},
  graveBoss:{name:'진홍의 망령기사',lvr:[41,41],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.2,range:2.6,aspd:1.5,aggr:true,sight:14,model:'goblin',rad:1.1,boss:true,special:'whirl',spcd:7,junk:'망령기사의 투구',drop:{mid:1,high:.12}},
- clockBoss:{name:'황금 태엽 세라프',lvr:[71,71],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.4,range:2.6,aspd:1.5,aggr:true,sight:14,model:'goblin',rad:1.1,boss:true,special:'wolf',spcd:5,junk:'황금 태엽 날개',drop:{mid:1,high:.2}},
+ clockBoss:{name:'황혼의 여제',lvr:[71,71],role:1.5,bm:{hp:14,exp:6,gold:15},spd:2.6,range:9,aspd:1.7,aggr:true,sight:16,model:'goblin',rad:1.1,boss:true,ranged:true,bolt:0xb04aff,special:'arcane',spcd:6,junk:'황금 태엽 날개',drop:{mid:1,high:.2}},
  asuraBoss:{name:'강철턱 도깨비 대장',lvr:[98,98],role:1.5,bm:{hp:14,exp:6,gold:15},spd:3.3,range:2.8,aspd:1.6,aggr:true,sight:14,model:'goblin',rad:1.2,boss:true,special:'whirl',spcd:6,junk:'강철 턱뼈',drop:{high:1,top:.05}},
  graveLord:{name:'진홍 군주',lvr:[45,45],role:1.8,bm:{hp:22,exp:9,gold:22},spd:3.3,range:3,aspd:1.4,aggr:true,sight:15,model:'goblin',rad:1.3,boss:true,special:'slam',spcd:5,junk:'진홍 군주의 룬검',drop:{mid:1,high:.25}},
  asuraGate:{name:'지옥 룬검 군주',lvr:[97,97],role:1.9,bm:{hp:24,exp:9,gold:24},spd:3.4,range:3.2,aspd:1.3,aggr:true,sight:15,model:'goblin',rad:1.4,boss:true,special:'whirl',spcd:5,junk:'지옥의 룬 파편',drop:{high:1,top:.1}},
@@ -1884,7 +1884,7 @@ function kitIgnis(){
   h.tick=t=>{ticks.forEach(f=>f(t));aura.rotation.z=t*.4;aura.material.opacity=.28+Math.sin(t*3)*.08;};
   return Object.assign(h,{wings,head:new THREE.Group(),ignis:true});
 }
-function enemyModel(d,type){if(CUSTOM.mobs[type]){const h=customRig(CUSTOM.mobs[type]);return type==='ignis'||type==='barakas'?Object.assign(h,{wings:[],head:new THREE.Group(),ignis:true}):h;}if(d.model==='ignis')return makeIgnis();if(d.model==='kraken')return makeKraken();if(d.model==='arm')return makeArm();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
+function enemyModel(d,type){if(CUSTOM.mobs[type]){const h=customRig(CUSTOM.mobs[type]);return type==='ignis'||type==='barakas'?Object.assign(h,{wings:[],head:new THREE.Group(),ignis:true}):h;}if(type==='clockBoss'&&PROPS.meshy_clockboss)return casterModel('meshy_clockboss',3.3);if(d.model==='ignis')return makeIgnis();if(d.model==='kraken')return makeKraken();if(d.model==='arm')return makeArm();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
 
 /* ---------- labels ---------- */
 const tagsEl=$('#tags');
@@ -3400,8 +3400,20 @@ function enemyAttack(e){
     const from=e.pos.clone().add(new V(0,1.3,0)),dir=new V(P.pos.x-from.x,0,P.pos.z-from.z).normalize();projectile({mesh:m,from,dir,speed:14,life:1,enemy:true,onHit:()=>hurtPlayer(e.atk*sealMul(e),e,{phys:1})});});}
   else later(.25,()=>{if(e.dead||e.gone||e.stun>0||e.freeze>0)return;if(d2(e.pos,P.pos)<e.d.range+P.rad+e.rad+.6)hurtPlayer(e.atk*specMul(e)*sealMul(e)*(e.frenzy?1.5:1),e,{phys:1,ignoreDef:e.frenzy?.3:0});});
 }
+/* an unrigged Meshy model used as a floating caster: a glow at the staff head and a rune circle at her feet */
+function casterModel(name,h){const g=new THREE.Group(),b=new THREE.Group();g.add(b);prop(name,0,0,{h,par:b});
+  const orb=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshBasicMaterial({color:0x9a5aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));orb.position.set(-.53*h/1.9,.944*h,.467*h/1.9);orb.scale.setScalar(.7);  // the staff's gem (measured on the model)b.add(orb);
+  const l=new THREE.PointLight(0xa05aff,1.2,7,2);l.position.copy(orb.position);b.add(l);
+  const rc=new THREE.Mesh(new THREE.RingGeometry(1.1,1.35,40),new THREE.MeshBasicMaterial({color:0xa05aff,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false}));rc.rotation.x=-Math.PI/2;rc.position.y=.05;g.add(rc);
+  W.anim.push(t=>{rc.rotation.z=t*.8;});return {g,b,caster:true,orb};}
+/* 황혼의 여제: three rune circles on and around the player, then a burst of twilight */
+function arcaneBarrage(e){e.spCd=rand(6,8);e.anim={t:0,dur:1.5};floatText(e.pos,'황혼의 룬','crit',e.tagY);
+  const pts=[P.pos.clone(),P.pos.clone().add(new V(rand(-4,4),0,rand(-4,4))),P.pos.clone().add(new V(rand(-4,4),0,rand(-4,4)))],tel=pts.map(q=>teleCircle(q.x,q.z,2.4));e.extraTele=tel;
+  e.cast={t:0,dur:1.5,upd:(dt,c)=>{tel.forEach(q=>q.userData.set(Math.min(1,c.t/1.5)));const o=e.parts.orb;if(o&&Math.random()<.5){const w=o.getWorldPosition(new V());burst(w.x,w.y,w.z,0xb06aff,2,1.5,.4,.3,0);}},
+    end:()=>{tel.forEach(killObj);e.extraTele=null;pts.forEach(q=>{burst(q.x,.6,q.z,0xb06aff,30,6,.7,.5,-2);ringFx(q.x,q.z,2.4,0xd0a0ff,.5);});shake(.4);
+      if(!P.dead&&pts.some(q=>d2(q,P.pos)<2.4+P.rad))hurtPlayer(e.atk*1.7,e);}};return true;}
 function startSpecial(e,dP){
-  const t=e.d.special;
+  const t=e.d.special;if(t==='arcane')return arcaneBarrage(e);
   if(t==='barakas')return barakasSkill(e,dP);
   if(t==='wolf'){e.spCd=5.5;e.pat=(e.pat+1)%2;
     if(e.pat===0){const r=4.5;e.cast={t:0,dur:1.2,tele:teleCircle(e.pos.x,e.pos.z,r),end:()=>{shake(.5);ringFx(e.pos.x,e.pos.z,r,0xff6a3a,.5);burst(e.pos.x,.4,e.pos.z,0x3a2a2a,40,6,.8,.7);if(d2(e.pos,P.pos)<r+P.rad)hurtPlayer(e.atk*2.3,e);}};e.anim={t:0,dur:1.2,kind:'rear'};}
@@ -3981,6 +3993,9 @@ function animEnemy(e,dt){
     if(p.skinned){if(!e.dead)p.setBase(e.walk!==e._lw?'Walking_A':'Idle_Combat');e._lw=e.walk;if(e.anim&&!e.anim.started&&!e.dead){e.anim.started=true;p.playOnce(e.anim.dur>1?'Spellcast_Long':'Spellcast_Shoot',e.anim.dur);}p.mixer.update(dt);p.tick(rt);}
     p.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*(.15+Math.sin(rt*1.6)*.35));const tgt=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z)-e.mesh.rotation.y;p.head.rotation.y=clamp(Math.atan2(Math.sin(tgt),Math.cos(tgt)),-.6,.6);
     if(e.anim){e.anim.t+=dt;const k=e.anim.t/e.anim.dur;p.head.rotation.x=-Math.sin(Math.min(1,k)*Math.PI)*.4;if(k>=1)e.anim=null;}return;}
+  if(p.caster){const b=p.b;b.position.y=.35+Math.sin(rt*1.8+e.pos.x)*.18;let tilt=0,lift=0;  // hovering sorceress: leans back and lifts her staff while casting
+    if(e.anim){e.anim.t+=dt;const k=Math.min(1,e.anim.t/e.anim.dur);tilt=-Math.sin(k*Math.PI)*.22;lift=Math.sin(k*Math.PI)*.35;if(k>=1)e.anim=null;}
+    b.rotation.x+=(tilt-b.rotation.x)*Math.min(1,dt*10);b.position.y+=lift;p.orb.material.opacity=.55+Math.sin(rt*5)*.25+lift;return;}
   if(!p.legs&&!p.legL)return;
   const moving=e.walk!==e._lw;e._lw=e.walk;
   if(p.quad){const sw=moving?Math.sin(e.walk*1.6)*.6:0;p.legs.forEach((l,i)=>l.rotation.x=(i===0||i===3?sw:-sw));
@@ -4456,7 +4471,7 @@ function openGuide(){const lv=S.level;
 function openPromo(k,nid){const c=CLASSES[k],mine=S.cls===k,nov=S.cls==='novice',can=nov&&S.level>=15;
   let h='<div class="sec"><h3>'+c.name+' · '+c.role+'</h3><p class="note">'+c.blurb+'</p><div class="grid2"><div class="chip">주무기 / 방어구<b>'+c.gear+'</b></div><div class="chip">진급 보너스<b>'+c.bonus+'</b></div></div><p class="note">대표 특징: '+c.feature+'</p></div>';
   h+='<div class="sec"><h3>직업 스킬</h3>'+SKEYS.map(s=>{const q=c.sk[s];return '<div class="row"><div class="l"><b>Lv.'+q.lv+' · '+q.n+(q.passive?' <small>(패시브)</small>':'')+'</b><small>'+q.d+(q.mp?' · MP '+q.mp:'')+(q.gold?' + '+q.gold+'골드':'')+(q.cd?' · 재사용 '+q.cd+'초':'')+'</small></div></div>';}).join('')+'</div>';
-  const TN=TIER_NAMES[k],t=mine?tierOf():0;if(TN)h+='<div class="sec"><h3>2차 진급 · '+TN[1]+' <small>Lv.50 · 각성의 돌 1개</small></h3><p class="note">레벨 50 구간 보스(태엽 미로 · 황금 태엽 세라프)가 떨어뜨리는 [각성의 돌]과 레벨 50이 필요합니다. 2차 진급하면 레벨 80 스킬 ['+(CLASSES[k].sk.ult?CLASSES[k].sk.ult.n:'')+']을 바로 배웁니다. 공격력·체력·마력 +10%.</p>'+
+  const TN=TIER_NAMES[k],t=mine?tierOf():0;if(TN)h+='<div class="sec"><h3>2차 진급 · '+TN[1]+' <small>Lv.50 · 각성의 돌 1개</small></h3><p class="note">레벨 50 구간 보스(태엽 미로 · 황혼의 여제)가 떨어뜨리는 [각성의 돌]과 레벨 50이 필요합니다. 2차 진급하면 레벨 80 스킬 ['+(CLASSES[k].sk.ult?CLASSES[k].sk.ult.n:'')+']을 바로 배웁니다. 공격력·체력·마력 +10%.</p>'+
     (mine&&t>=2?'<p class="note" style="color:var(--gold)">이미 '+TN[1]+'(으)로 진급했습니다.</p>':mine&&t===1?'<button class="btn'+(S.level>=50&&(S.stoneAwk||0)>0?' pri':'')+'" id="pr2" style="width:100%"'+(S.level>=50&&(S.stoneAwk||0)>0?'':' disabled')+'>'+TN[1]+'(으)로 2차 진급 (Lv.'+S.level+'/50 · 각성의 돌 '+(S.stoneAwk||0)+'/1)</button>':'')+'</div>';
   const aw=AWK[k];if(aw)h+='<div class="sec"><h3>3차 진급 · '+aw.name+' <small>Lv.99 · 드래곤하트 1개</small></h3><p class="note">이그니스를 쓰러뜨리면 일정 확률로 얻는 [드래곤하트]를 바칩니다.</p><div class="row"><div class="l"><b>'+aw.skill+'</b><small>'+aw.d+'</small></div></div><p class="note">각성 보너스: 공격력·최대 체력·최대 마력 +20% · 각성자 전용 [영원한 성채 · 각성의 시련] 입장</p>'+
     (mine&&t>=3?'<p class="note" style="color:var(--gold)">이미 '+aw.name+'(으)로 진급했습니다.</p>':mine&&t===2?'<button class="btn'+(S.level>=99&&(S.dheart||0)>0?' pri':'')+'" id="awGo" style="width:100%"'+(S.level>=99&&(S.dheart||0)>0?'':' disabled')+'>'+aw.name+'(으)로 3차 진급 (Lv.'+S.level+'/99 · 드래곤하트 '+(S.dheart||0)+'/1)</button>':mine?'<p class="note">2차 진급 후 도전할 수 있습니다.</p>':'')+'</div>';
@@ -5216,7 +5231,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.29-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-4';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

@@ -307,25 +307,6 @@
         "grave"
       ]
     },
-    "mob_clockBoss": {
-      "file": "m_GildedSeraph.glb.txt",
-      "kind": "boss",
-      "height": 3.8,
-      "mob": "clockBoss",
-      "imported": true,
-      "anims": {
-        "walk": "m_GildedSeraph.walk.glb.txt",
-        "run": "m_GildedSeraph.run.glb.txt",
-        "idle": "m_GildedSeraph.idle.glb.txt",
-        "attack": "m_GildedSeraph.attack.glb.txt",
-        "hit": "m_GildedSeraph.hit.glb.txt",
-        "death": "m_GildedSeraph.death.glb.txt"
-      },
-      "rigged": true,
-      "zones": [
-        "clock"
-      ]
-    },
     "mob_asuraBoss": {
       "file": "m_IronjawGoblinWarlord.glb.txt",
       "kind": "boss",
@@ -2503,6 +2484,18 @@
       ],
       "uniform": true,
       "userModel": "Meshy ocean"
+    },
+    "b_twilight": {
+      "file": "b_twilight.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_clockboss"
+      ],
+      "zones": [
+        "clock"
+      ],
+      "uniform": true,
+      "userModel": "Twilight Sovereign"
     }
   }
 }
