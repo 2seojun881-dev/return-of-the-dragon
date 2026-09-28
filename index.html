@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1745,9 +1745,7 @@ function heroRim(m){m.emissive.setHex(0x2a2218);m.emissiveMap=null;m.customProgr
 /* player action -> clip on a Meshy-rigged hero (attack / skill / cast from Meshy's animation library) */
 const MESHY_ACT={swing:['attack',.6],dash:['skill',.5],cast:['cast',.6],cast2:['cast',.7],cast3:['skill',1],summon:['cast',1.2],leap:['skill',1],spin:['skill',1.6],ult:['skill',.8],throw:['attack',.5],banner:['cast',1],bow:['attack',.5]};
 function meshyHero(cls){const e=CUSTOM.players[cls],h=customRig(e);
-  if(e.yawFix==null){e.yawFix=0;try{const ra=h.acts.run||h.acts.walk||h.acts.idle;if(ra){ra.play();h.mixer.update(.3);}h.g.updateMatrixWorld(true);let hb=null;h.model.traverse(o=>{if(o.isBone&&o.name==='Hips'&&!hb)hb=o;});
-    if(hb){const f=new V(0,0,1).applyQuaternion(hb.getWorldQuaternion(new THREE.Quaternion())),y=Math.atan2(f.x,f.z);if(Math.abs(y)>.2)e.yawFix=-y;}h.mixer.stopAllAction();}catch(err){}}
-  if(e.yawFix){const w=new THREE.Group();h.model.parent.add(w);w.add(h.model);w.rotation.y=e.yawFix;}h.cfg={idle:'Idle',run:'Running_A',map:MESHY_ACT};h.hero=true;return h;}
+  h.cfg={idle:'Idle',run:'Running_A',map:MESHY_ACT};h.hero=true;return h;}
 function heroModel(cls){if(CUSTOM.players[cls]&&CUSTOM.players[cls].rigged)return meshyHero(cls);return GLB[cls]&&HERO_CFG[cls]?skinnedHero(cls):procHero(PROC_OF[cls]||cls);}
 
 function attachHeroWeapon(h,cls,enh){if(h.skinned){h.setWeapon(enh);return null;}const pc=PROC_OF[cls]||cls,c={wtype:pc==='ranger'?'bow':pc==='sorcerer'?'staff':'sword'},w=weaponModel(c.wtype,enh);(c.wtype==='bow'?h.armL:h.armR).userData.hand.add(w);return w;}
@@ -4517,7 +4515,8 @@ function loop(now){
   W.anim.forEach(f=>f(rt));
   // camera
   if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
-    const ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34),zf=ab?(ab.airborne?1.8:1.6):1,lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
+    let ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34);let zf=ab?(ab.airborne?1.8:1.6):1;const lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
+    if(ab&&ab.type==='barakas'){lk.set(P.pos.x,1,P.pos.z);zf=1.15;}  // Barakas in the air: the altars are the job, keep the camera on the player
     const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
@@ -4879,7 +4878,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-4';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
