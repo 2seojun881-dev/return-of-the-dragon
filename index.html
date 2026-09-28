@@ -511,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-5</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-6</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3575,7 +3575,7 @@ function krakenInit(e){Object.assign(e,{invuln:true,surf:0,face:0,def:220});e.me
 function krakenDamage(e,pct,why){if(!e||e.dead)return;const d=Math.round(e.maxHp*pct);e.hp-=d;e.flashT=.12;floatText(e.pos,why+' '+fmt(d),'crit',e.tagY*.6);if(e.hp<=0)killEnemy(e);}
 function krakenTick(e,dt){e.face=0;
   const p=e.parts;if(!p.arms||!p.arms.length){p.b.rotation.z=Math.sin(rt*.8)*.06;p.b.rotation.x=Math.sin(rt*.6)*.04;}  // the mermaid sways in the swellif(p.arms)p.arms.forEach((a,i)=>a.segs.forEach((s,k)=>{s.rotation.x=Math.sin(rt*1.3+a.ph+k*.45)*.22-.05;s.rotation.y=Math.cos(rt*.9+a.ph+k*.3)*.12;}));
-  const big=!!PROPS.meshy_kraken;if(e.surf){const ty=SEA.lunge>0?(big?-8.5:-1.2):(big?-11:-3.4);e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
+  const big=!!PROPS.meshy_kraken;if(e.surf){const ty=SEA.lunge>0?(big?-8.4:-1.2):(big?-10.5:-3.4);e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
   const tz=SEA.lunge>0?(big?-15.5:-15.2):(big?-19.5:-27);e.pos.z+=(tz-e.pos.z)*Math.min(1,dt*(SEA.lunge>0?4:1.2));}
 function krakenArmTick(e,dt){e.life-=dt;const c=e.parts.crystal;if(c){c.rotation.y+=dt*2;c.position.y=1.3+Math.sin(rt*3)*.15;}
   if(e.life<=0&&!e.dead){shipHit(4,'해일 결정');floatText(e.pos,'해일 결정이 방주를 잠식합니다!','hurt',2);removeEnemy(e);}}
@@ -3625,7 +3625,7 @@ function seaTick(dt){if(SEA.done)return;SEA.t+=dt;const k=SEA.k;
   const s=Math.floor(SEA.t);raidT('방주 호위전 '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+(SEA.ph>=2?' · 세이렌 '+Math.ceil(k&&!k.dead?k.hp/k.maxHp*100:0)+'%':' · 습격 '+SEA.wave+'파')+(SEA.t>420?' · 대폭풍 '+Math.max(0,Math.ceil(480-SEA.t))+'초':''),SEA.hp<30||SEA.t>420);
   const h=$('#shipHud');if(h&&!h.hidden){h.querySelector('.sh-t').textContent='영원의 방주 내구도 '+Math.ceil(SEA.hp)+'%'+(SEA.bar>0?' · 신성 결계 '+SEA.bar.toFixed(0)+'%':'');h.querySelector('.hp').style.width=SEA.hp+'%';h.querySelector('.bar').style.width=Math.min(100,SEA.bar/30*100)+'%';}}
 function cannonFire(c){const k=SEA.k;if(!k||k.dead)return;auRoar(.3);shake(.5);burst(c.x,1.2,c.z-1.2,0xffa040,24,6,.5,.4,0);
-  const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),B(0x1a1a1a));W.root.add(ball);const a=new V(c.x,1.2,c.z-1),b=new V(k.pos.x,k.mesh.position.y+(PROPS.meshy_kraken?16:5),k.pos.z);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),B(0x1a1a1a));W.root.add(ball);const a=new V(c.x,1.2,c.z-1),b=new V(k.pos.x,k.mesh.position.y+(PROPS.meshy_kraken?14:5),k.pos.z);
   tween(.7,t=>{ball.position.lerpVectors(a,b,t);ball.position.y+=Math.sin(t*Math.PI)*4;},()=>{killObj(ball);burst(b.x,b.y,b.z,0xff7a2a,40,8,.8,.6,0);ringFx(b.x,b.z,4,0xffa040,.5);
     krakenDamage(k,S.cls==='rogue'?.1:.05,S.cls==='rogue'?'포술 명중!':'포격!');},x=>x);}
 /* ---------- 신대륙 「용의 바다」 · 잊혀진 산호 항구 ---------- */
@@ -4873,7 +4873,7 @@ function loop(now){
   if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
     let ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34);let zf=ab?(ab.airborne?1.8:1.6):1;const lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
     if(ab&&ab.type==='barakas'){lk.set(P.pos.x,1,P.pos.z);zf=1.15;}
-    if(W.zone==='sea'&&typeof SEA!=='undefined'&&SEA.k&&SEA.k.surf&&!SEA.k.dead){lk.set(P.pos.x*.6,5.5,P.pos.z+(SEA.k.pos.z-P.pos.z)*.55);zf=1.9;}  // frame the deck and the Siren rising off the bow  // Barakas in the air: the altars are the job, keep the camera on the player
+    if(W.zone==='sea'&&typeof SEA!=='undefined'&&SEA.k&&SEA.k.surf&&!SEA.k.dead){lk.set(P.pos.x*.6,7,P.pos.z+(SEA.k.pos.z-P.pos.z)*.55);zf=2;}  // frame the deck and the Siren rising off the bow  // Barakas in the air: the altars are the job, keep the camera on the player
     const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab||W.zone==='sea'?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
@@ -5237,7 +5237,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.29-5';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-6';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
