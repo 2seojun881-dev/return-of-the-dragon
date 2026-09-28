@@ -1,12 +1,12 @@
 // 용의 귀환 · 게임 서버 (MQTT over WebSocket)
-// 서버(채널)마다 최대 100명. 게임은 ?broker=wss://<이 서버 주소> 로 접속하면 이 서버를 씁니다.
+// 서버(채널)마다 최대 200명. 게임은 ?broker=wss://<이 서버 주소> 로 접속하면 이 서버를 씁니다.
 // 실행: npm install && PORT=8080 node broker.js
 const aedes = require('aedes')();
 const { createServer } = require('aedes-server-factory');
 
 const PORT = +process.env.PORT || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
-const MAX_PER_SERVER = +process.env.MAX_PER_SERVER || 100;
+const MAX_PER_SERVER = +process.env.MAX_PER_SERVER || 200;
 const MAX_PAYLOAD = 2048;                       // 상태/채팅 메시지는 몇백 바이트면 충분
 const perServer = new Map();                    // 서버 번호 → 접속자 수
 

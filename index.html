@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4192,7 +4192,7 @@ function openBless(){const done=S.blessDate===today();
      rotd1/<srv>/chat      server chat        rotd1/<srv>/hb   presence (who is online, player count)
    Monsters and loot stay local to each player.
    ========================================================= */
-const NET_LIB='https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',NET_MAX=100;
+const NET_LIB='https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',NET_MAX=200;
 const NET_BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
 const MP={client:null,srv:0,id:Math.random().toString(36).slice(2,12),others:{},sendT:0,hbT:0,chat:[],pop:{},subZone:null,off:false,full:false,bi:0,peer:null};
 function netSrv(){return 0;}  // single server (이그니스)
@@ -4854,7 +4854,7 @@ $('#tNotice').onclick=e=>{e.stopPropagation();openNotice();};
 $('#tAccount').onclick=e=>{e.stopPropagation();openPanel('계정 연동','<div class="sec"><h3>현재 계정</h3><div class="row"><div class="l"><b>게스트</b><small>진행 상황은 이 기기의 이 브라우저에만 저장됩니다. 브라우저 데이터를 지우면 사라집니다.</small></div></div></div><div class="sec"><h3>연동</h3><div class="row"><div class="l"><b>Google 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div><div class="row"><div class="l"><b>Apple 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div></div>');};
 const SERVERS=[['01. 이그니스']];  // one server for now
 /* live status from the presence channel: 원활 < 60 ≤ 혼잡 < 100 = 가득 (unknown until the first heartbeat arrives) */
-function srvState(i){const on=MP.client&&MP.client.connected,n=netCount(i)+(on&&i===MP.srv?0:0);if(!on)return ['확인 중','#9a9a9a',n];return n>=NET_MAX?['가득',"#d9544a",n]:n>=60?['혼잡','#e0c040',n]:['원활','#6fdc6a',n];}
+function srvState(i){const on=MP.client&&MP.client.connected,n=netCount(i)+(on&&i===MP.srv?0:0);if(!on)return ['확인 중','#9a9a9a',n];return n>=NET_MAX?['가득',"#d9544a",n]:n>=120?['혼잡','#e0c040',n]:['원활','#6fdc6a',n];}
 function srvLabel(){let i=0;const sv=SERVERS[i]||SERVERS[0],st=srvState(i);$('#tSrvName').textContent=sv[0];$('#tServer i').style.background=st[1];$('#tServer i').style.boxShadow='0 0 6px '+st[1];}
 function openNotice(){const n=MP.notice,adm=S&&S.admin;
   let h='<div class="sec">'+(n&&n.txt?'<h3>'+String(n.title||'공지').replace(/[<>&]/g,'')+'</h3><p style="white-space:pre-wrap;line-height:1.6">'+String(n.txt).replace(/[<>&]/g,'')+'</p><p class="note">'+new Date(n.t||0).toLocaleString('ko-KR')+'</p>':'<p class="note">등록된 공지사항이 없습니다.</p>')+'</div>';
@@ -4868,7 +4868,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
