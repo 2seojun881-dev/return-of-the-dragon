@@ -2489,6 +2489,20 @@
       ],
       "uniform": true,
       "userModel": "Pirate Ship (Meshy)"
+    },
+    "s_ocean": {
+      "file": "s_ocean.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_ocean"
+      ],
+      "zones": [
+        "port",
+        "sea",
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Meshy ocean"
     }
   }
 }

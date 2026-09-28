@@ -511,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2068,7 +2068,7 @@ function spawnEnemy(type,x,z,sp){
   const e={type,d,lv,atk:atk0,exp:lr?Math.round(9*Math.pow(lv,1.5)*rl*bm.exp):d.exp,goldR:lr?[lv*6*bm.gold,lv*11*bm.gold]:d.gold,mesh:m.g,parts:m,pos:m.g.position,hp:hp0,maxHp:hp0,home:new V(x,0,z),face:rand(0,6.28),aggro:false,atkCd:rand(.5,1.5),spCd:d.spcd||5,
     stun:0,freeze:0,air:0,airT:1,slowT:0,slow:0,dead:false,gone:false,sp,rad:d.rad||.5,wait:rand(1,4),wdest:null,anim:null,cast:null,flashT:0,skin:null,walk:0,pat:0,dash:null};
   e.sizeK=K;m.g.rotation.y=e.face;m.g.traverse(o=>o.userData.ent=e);
-  const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='kraken'?9:d.model==='arm'?1.8:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
+  const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='kraken'?(PROPS.meshy_kraken?17:9):d.model==='arm'?1.8:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
   e.tag=makeTag(e,'en'+(d.boss?' boss show':'')+(d.static||d.dummy?' show':''),d.name+(lv?' <small>Lv.'+lv+'</small>':''),h*K);
   if(d.static)e.col=addCircle(x,z,d.rad*.8);
   if(d.dummy)e.col=addCircle(x,z,.4);
@@ -3466,15 +3466,19 @@ function makeShip(o){o=o||{};const g=new THREE.Group();
   [-1,1].forEach(s=>{const l=new THREE.PointLight(0xffc070,.9,10,2);l.position.set(s*3.6,2.2,-2);g.add(l);mesh(new THREE.SphereGeometry(.22,8,6),glowM(0xffd080),s*3.9,1.5,-2,g);});
   if(o.sea)g.traverse(q=>{if(q.isMesh&&q.position.y>2.6){q.material=q.material.clone();q.material.transparent=true;q.material.opacity=.2;q.material.depthWrite=false;q.castShadow=false;}});  // on the raid deck the rigging must not hide the fight
   g.userData.sails=[s1,s2];return g;}
+/* the user's Meshy ocean slab, tiled 5x5 (40 m each) around the play area; waves ~85% up the slab sit at the water line */
+function oceanTiles(cx,cz,y,n,T){if(!PROPS.meshy_ocean)return;const g=new THREE.Group();W.root.add(g);n=n||5;T=T||40;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const t=prop('meshy_ocean',cx+(i-(n-1)/2)*T,cz+(j-(n-1)/2)*T,{fit:T*1.03,rot:((i*7+j*3)%4)*Math.PI/2,par:g});if(t)t.position.y=y-t.userData.size.y*.85;}
+  W.anim.push(t=>{g.position.y=Math.sin(t*1.1)*.12;});return g;}
 function seaPlane(col,y,x0){const m=new THREE.Mesh(new THREE.PlaneGeometry(600,600,1,1),new THREE.MeshStandardMaterial({color:col,roughness:.12,metalness:.35,transparent:true,opacity:.92}));
   m.rotation.x=-Math.PI/2;m.position.set((x0||0)+300*(x0!=null?1:0),y,0);W.root.add(m);const c0=new THREE.Color(col);W.anim.push(t=>{m.material.color.copy(c0).multiplyScalar(.92+Math.sin(t*.9)*.08);m.position.y=y+Math.sin(t*1.1)*.06;});return m;}
 /* ---------- 천명 항구 (성채 동문 밖) ---------- */
 function buildPort(){
   setEnv({sky:0x3a4a62,fog:[30,140],ht:0xb8c8e0,hb:0x2a2a30,hi:.62,sun:0xffc890,si:1.05,ash:false});
   W.bounds=[-22,18,-14,14];
-  ground(0,0,440,440,0x1c3444,.02);
+  ground(PROPS.meshy_ocean?-216:0,0,440,440,0x1c3444,.02);  // land only, so the sea shows between the waves
   ground(-9,0,26,28,0x6a6a70,.06,1);ground(-9,0,6,28,0x7a7a82,.05,2);ground(-9,0,26,5,0x7a7a82,.05,2);
-  seaPlane(0x1e5a70,.04,4);
+  seaPlane(PROPS.meshy_ocean?0x1a5aa0:0x1e5a70,PROPS.meshy_ocean?-.6:.04,4);oceanTiles(104,0,-.3);
   for(let z=-13;z<=13;z+=2.4){mesh(new THREE.BoxGeometry(1,1.2,2.3),M(0x8a8a90,{roughness:.9}),4.5,-.1,z,W.root);}  // quay edge
   const pier=new THREE.Group();W.root.add(pier);mesh(new THREE.BoxGeometry(14,.3,3.4),M(0x7a5a38,{roughness:.9}),11,.05,-1.5,pier);
   for(let x=5;x<=18;x+=2.6)[-3,0].forEach(z=>mesh(new THREE.CylinderGeometry(.18,.2,2,6),M(0x4a3222),x,-.8,z,pier));
@@ -3509,7 +3513,7 @@ const SEA={};
 function buildSea(){
   setEnv({sky:0x141c28,fog:[18,95],ht:0x8aa0c0,hb:0x10141c,hi:.55,sun:0xa8c0ff,si:.75,ash:true,ashCol:0xa8c8f0,ashSize:.07});
   W.bounds=[-3.8,3.8,-12,9.2];
-  seaPlane(0x16303e,-2.4);
+  seaPlane(PROPS.meshy_ocean?0x163a70:0x16303e,PROPS.meshy_ocean?-3:-2.4);oceanTiles(0,0,-2.4);
   const ship=makeShip({sea:true});W.root.add(ship);SEA.ship=ship;
   [[0,-6],[0,5]].forEach(([x,z])=>{const l=new THREE.PointLight(0xffd8a0,1.3,16,1.6);l.position.set(x,5,z);W.root.add(l);});  // deck lanterns
   // waves rolling past
@@ -3538,7 +3542,7 @@ function seaFail(){if(SEA.done)return;SEA.done=true;toast('영원의 방주가 �
 function swimmers(cx,cz,R,n){if(!PROPS.meshy_ichthyo)return;for(let i=0;i<n;i++){const g=prop('meshy_ichthyo',0,0,{fit:11});if(!g)return;const ph=i*Math.PI;
   W.anim.push(t=>{const a=t*.22+ph,x=cx+Math.cos(a)*R,z=cz+Math.sin(a)*R*1.1;g.position.set(x,-2.2+Math.sin(t*1.6+ph)*.5,z);g.rotation.y=Math.atan2(-Math.sin(a)*R,Math.cos(a)*R*1.1);});}}
 function makeKraken(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);
-  if(PROPS.meshy_kraken){prop('meshy_kraken',0,0,{h:14,par:b});return {g,b,kraken:true,arms:[]};}
+  if(PROPS.meshy_kraken){prop('meshy_kraken',0,0,{h:26,par:b});return {g,b,kraken:true,arms:[]};}
   const skin=M(0x5a1e3a,{roughness:.55,emissive:0x1a0410}),under=M(0xb8686a,{roughness:.6});
   const head=mesh(new THREE.SphereGeometry(4.2,24,18),skin,0,5,0,b);head.scale.set(1,1.35,1.1);
   for(let i=0;i<14;i++){const a=Math.random()*6.28,y=Math.random()*1.2;mesh(new THREE.SphereGeometry(rand(.3,.7),8,6),skin,Math.cos(a)*3.8,5+y*3,Math.sin(a)*3.8,b);}
@@ -3551,14 +3555,14 @@ function makeArm(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const 
   for(let k=0;k<9;k++){const r=.75*(1-k/11),m=mesh(new THREE.CylinderGeometry(r*.85,r,1.05,8),k%2?under:skin,-4.2+k*1,r*.8,0,b);m.rotation.z=Math.PI/2;
     if(k%2)for(const s of[-1,1])mesh(new THREE.SphereGeometry(r*.3,6,5),under,-4.2+k*1,.1,s*r*.6,b);}
   return {g,b,arm:true};}
-function krakenInit(e){Object.assign(e,{invuln:true,surf:0,face:0,def:220});e.mesh.position.y=-14;e.tag.style.display='none';SEA.k=e;
+function krakenInit(e){Object.assign(e,{invuln:true,surf:0,face:0,def:220});e.mesh.position.y=PROPS.meshy_kraken?-42:-14;e.tag.style.display='none';SEA.k=e;
   e.onDie=()=>{SEA.done=true;raidT(null);shipHud(false);S.coralOpen=true;S.stones.top=(S.stones.top||0)+1;save();toast('심해의 인어 괴물 세이렌 격퇴! · [최상급 강화석] 획득','big');mpChatLine('🌊','[영원의 방주] 세이렌이 심해로 가라앉았습니다 — 폭풍 너머로 신대륙이 보입니다','s');
-    tween(4,k=>{e.mesh.position.y=-k*16;},()=>{},x=>x);later(2.5,()=>dialog([['haram','해냈군! 폭풍이 걷힌다… 저기 보이나? 산호로 뒤덮인 항구… 신대륙 「용의 바다」일세!']]).then(()=>{if(W.zone==='sea')gotoZone('coral',[26,0]);}));};}
+    const y0=e.mesh.position.y;tween(4,k=>{e.mesh.position.y=y0-k*(PROPS.meshy_kraken?34:16);},()=>{},x=>x);later(2.5,()=>dialog([['haram','해냈군! 폭풍이 걷힌다… 저기 보이나? 산호로 뒤덮인 항구… 신대륙 「용의 바다」일세!']]).then(()=>{if(W.zone==='sea')gotoZone('coral',[26,0]);}));};}
 function krakenDamage(e,pct,why){if(!e||e.dead)return;const d=Math.round(e.maxHp*pct);e.hp-=d;e.flashT=.12;floatText(e.pos,why+' '+fmt(d),'crit',e.tagY*.6);if(e.hp<=0)killEnemy(e);}
 function krakenTick(e,dt){e.face=0;
   const p=e.parts;if(!p.arms||!p.arms.length){p.b.rotation.z=Math.sin(rt*.8)*.06;p.b.rotation.x=Math.sin(rt*.6)*.04;}  // the mermaid sways in the swellif(p.arms)p.arms.forEach((a,i)=>a.segs.forEach((s,k)=>{s.rotation.x=Math.sin(rt*1.3+a.ph+k*.45)*.22-.05;s.rotation.y=Math.cos(rt*.9+a.ph+k*.3)*.12;}));
-  if(e.surf){const ty=SEA.lunge>0?-1.2:-3.4;e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
-  const tz=SEA.lunge>0?-15.2:-27;e.pos.z+=(tz-e.pos.z)*Math.min(1,dt*(SEA.lunge>0?4:1.2));}
+  const big=!!PROPS.meshy_kraken;if(e.surf){const ty=SEA.lunge>0?(big?-9:-1.2):(big?-13:-3.4);e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
+  const tz=SEA.lunge>0?(big?-17.5:-15.2):(big?-34:-27);e.pos.z+=(tz-e.pos.z)*Math.min(1,dt*(SEA.lunge>0?4:1.2));}
 function krakenArmTick(e,dt){e.face=Math.PI/2*0;e.life-=dt;if(e.parts.b)e.parts.b.children.forEach((m,k)=>m.position.y=Math.max(.2,m.position.y)+Math.sin(rt*6+k)*.004);
   if(e.life<=0&&!e.dead){shipHit(4,'촉수 조이기');floatText(e.pos,'촉수가 방주를 조입니다!','hurt',2);removeEnemy(e);}}
 function seaSlam(){const s=Math.random()<.5?-1:1,z=rand(-9.5,7),len=8.4,tele=teleRect(s*4.2,z,s>0?-Math.PI/2:Math.PI/2,len,2.6);
@@ -3607,7 +3611,7 @@ function seaTick(dt){if(SEA.done)return;SEA.t+=dt;const k=SEA.k;
   const s=Math.floor(SEA.t);raidT('방주 호위전 '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+(SEA.ph>=2?' · 세이렌 '+Math.ceil(k&&!k.dead?k.hp/k.maxHp*100:0)+'%':' · 습격 '+SEA.wave+'파')+(SEA.t>420?' · 대폭풍 '+Math.max(0,Math.ceil(480-SEA.t))+'초':''),SEA.hp<30||SEA.t>420);
   const h=$('#shipHud');if(h&&!h.hidden){h.querySelector('.sh-t').textContent='영원의 방주 내구도 '+Math.ceil(SEA.hp)+'%'+(SEA.bar>0?' · 신성 결계 '+SEA.bar.toFixed(0)+'%':'');h.querySelector('.hp').style.width=SEA.hp+'%';h.querySelector('.bar').style.width=Math.min(100,SEA.bar/30*100)+'%';}}
 function cannonFire(c){const k=SEA.k;if(!k||k.dead)return;auRoar(.3);shake(.5);burst(c.x,1.2,c.z-1.2,0xffa040,24,6,.5,.4,0);
-  const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),B(0x1a1a1a));W.root.add(ball);const a=new V(c.x,1.2,c.z-1),b=new V(k.pos.x,k.mesh.position.y+5,k.pos.z);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),B(0x1a1a1a));W.root.add(ball);const a=new V(c.x,1.2,c.z-1),b=new V(k.pos.x,k.mesh.position.y+(PROPS.meshy_kraken?24:5),k.pos.z);
   tween(.7,t=>{ball.position.lerpVectors(a,b,t);ball.position.y+=Math.sin(t*Math.PI)*4;},()=>{killObj(ball);burst(b.x,b.y,b.z,0xff7a2a,40,8,.8,.6,0);ringFx(b.x,b.z,4,0xffa040,.5);
     krakenDamage(k,S.cls==='rogue'?.1:.05,S.cls==='rogue'?'포술 명중!':'포격!');},x=>x);}
 /* ---------- 신대륙 「용의 바다」 · 잊혀진 산호 항구 ---------- */
@@ -3625,8 +3629,8 @@ function dragonFossil(x,z,rot,s){const g=new THREE.Group();g.position.set(x,0,z)
 function buildCoral(){
   setEnv({sky:0x0c2626,fog:[22,110],ht:0x7ad8c8,hb:0x0a1a18,hi:.6,sun:0xffe0a8,si:.8,ash:true,ashCol:0x6affe0,ashUp:true,ashSize:.1});
   W.bounds=[-38,30,-28,28];
-  ground(0,0,440,440,0x0e2a2a,.04);ground(-6,0,70,58,0x2a3a34,.14,1);ground(8,0,48,4.4,0x4a5448,.06,2);ground(-10,-10,4.4,30,0x4a5448,.06,2);
-  seaPlane(0x0e4a44,.04,31);
+  ground(PROPS.meshy_ocean?-189:0,0,440,440,0x0e2a2a,.04);ground(-6,0,70,58,0x2a3a34,.14,1);ground(8,0,48,4.4,0x4a5448,.06,2);ground(-10,-10,4.4,30,0x4a5448,.06,2);
+  seaPlane(PROPS.meshy_ocean?0x1a5aa0:0x0e4a44,PROPS.meshy_ocean?-.6:.04,31);oceanTiles(131,0,-.3);
   const pier=new THREE.Group();W.root.add(pier);for(let x=24;x<40;x+=1.6)mesh(new THREE.BoxGeometry(1.4,.25,3.4),M(0x3a4a42,{roughness:.9}),x,srand()*.1,rand(-.2,.2),pier).rotation.y=(srand()-.5)*.12;
   const ship=makeShip();ship.position.set(40,0,-9);ship.rotation.y=-Math.PI/2;W.root.add(ship);W.anim.push(t=>{ship.position.y=Math.sin(t*.8)*.12;});addBox(40,-9,14,5.4);
   const cols=[0xff5a8a,0x3affd8,0x9a6aff,0xffa04a,0x5ac8ff];
@@ -5212,7 +5216,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.29-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
