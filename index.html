@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-8</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-9</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -781,7 +781,7 @@ const NPCS={
  dabin:{name:'전사 길드장 다빈',sub:'전사 진급',service:'promo',cls:'warrior',svc:'train',look:{body:0x6a5a4a,helm:0x8a939c},idle:['레벨 15를 넘겼나? 그럼 대검을 들어라. 전사의 길은 가장 앞에서 시작된다.','검은 팔이 아니라 허리로 휘두르는 거다! 한 판 수련하고 가겠나?','전사는 물러서는 법을 배우지 않는다. 버티는 법을 배울 뿐이지.','땀 흘린 만큼 칼끝이 무거워진다. 수련하면 한동안 공격력이 오를 거다.']},
  taewan:{name:'도적 길드장 태완',sub:'도적 진급',service:'promo',cls:'rogue',svc:'guide',look:{body:0x2a2a30,hood:0x1a1a22},idle:['그림자에 발을 들일 셈이야? 레벨 15면 자격은 충분해. 쌍검은 내가 가르쳐 주지.','쉿. 어디 가고 싶은데? 골드만 주면 사냥터 입구까지 지름길로 모셔다 드리지.','요즘 서문 늑대들이 부쩍 사나워졌더군. 이건 공짜 정보야.','북문 너머 협곡? 목숨이 두 개면 가 보라고. 아니면 레벨부터 올려.']},
  dongjun:{name:'잡화상 동준',sub:'잡화점',service:'shop',look:{body:0x8a6a2a,hair:0x3a2a1a,belt:0x5a3a1a},idle:['어서 옵쇼! 물약, 마나 물약, 무엇이든! 잡템도 제값 쳐 드립니다요.','천명 성채 최저가! 안 사면 손해, 사면 이득!','오늘 들어온 물약은 신선합니다요. 흔들어 보세요, 반짝반짝하지요?']},
- seojun:{name:'천명의 신 서준',sub:'치유 신관 진급 · 축복',service:'promo',cls:'shaman',svc:'bless',look:{body:0xf0e8d0,robe:true,hair:0xfff4d0},idle:['상처 입은 자를 일으키는 빛, 치유 신관의 길을 레벨 15에 이른 자에게 열어 주겠노라.','나는 천명(天命)을 지키는 자. 필멸자여, 하루 한 번 내 축복을 받아 가라.','용의 불꽃은 하늘의 뜻을 태우려 한다. 그대의 칼이 하늘의 뜻을 대신하리라.','두려워 말라. 그대가 쓰러질 때마다 이 성채의 빛이 그대를 다시 일으키리니.']},
+ seojun:{talkR:3.3,name:'천명의 신 서준',sub:'치유 신관 진급 · 축복',service:'promo',cls:'shaman',svc:'bless',look:{body:0xf0e8d0,robe:true,hair:0xfff4d0},idle:['상처 입은 자를 일으키는 빛, 치유 신관의 길을 레벨 15에 이른 자에게 열어 주겠노라.','나는 천명(天命)을 지키는 자. 필멸자여, 하루 한 번 내 축복을 받아 가라.','용의 불꽃은 하늘의 뜻을 태우려 한다. 그대의 칼이 하늘의 뜻을 대신하리라.','두려워 말라. 그대가 쓰러질 때마다 이 성채의 빛이 그대를 다시 일으키리니.']},
 };
 const WANDER_NAMES=['은빛검객','달빛궁수','불꽃술사','잿빛방패','북부늑대','새벽바람','용사냥꾼'];
 
@@ -2321,6 +2321,7 @@ function buildHall(){
     if(PROPS.meshy_h_alcove)prop('meshy_h_alcove',0,-10.6,{fit:7});
     if(PROPS.meshy_h_throne)[-5.4,5.4].forEach(x=>prop('meshy_h_throne',x,-5.6,{h:2.8,y:.07,rot:-x*.06}));
     if(PROPS.meshy_s_rug)propWD('meshy_s_rug',0,2.4,2.8,8,{rot:Math.PI/2,y:.09});else ground(0,1.6,3.2,9.6,0x7a1a14,.04,1);
+ if(PROPS.meshy_s_stonealtar){prop('meshy_s_stonealtar',0,-4.2,{w:2,y:.07});addBox(0,-4.2,1,.42);}  // stone altar before the god
     if(PROPS.meshy_s_rugworn)[-5,5].forEach(x=>propWD('meshy_s_rugworn',x,-3.6,3.6,2.8,{y:.09}));
     if(PROPS.meshy_s_banner)[-8.2,8.2].forEach(x=>prop('meshy_s_banner',x,-6,{h:4.2,y:.6,rot:x<0?Math.PI/2:-Math.PI/2}));
     for(let i=0;i<20;i++){const a=i/20*Math.PI*2,x=Math.cos(a)*9.8,z=-.6+Math.sin(a)*9.8;if(z>6&&Math.abs(x)<3)continue;addCircle(x,z,1.9);}  // keep players on the round floor (gap at the exit door)
@@ -4918,7 +4919,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-8';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-9';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
