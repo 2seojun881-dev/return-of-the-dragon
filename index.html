@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-7</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-8</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1614,6 +1614,10 @@ function prop(name,x,z,o){
   if(o.tint)obj.traverse(m=>{if(m.isMesh)m.material=tintedMat(m.material,o.tint);});
   const g=new THREE.Group();g.add(obj);g.position.set(x,0,z);g.rotation.y=o.rot||0;(o.par||W.root).add(g);g.userData.size=sz.clone().multiplyScalar(s);g.userData.prop=name;return g;
 }
+/* a prop stretched to a W x D footprint (carpets, rugs); thickness follows the smaller stretch unless h is given */
+function propWD(name,x,z,Wd,Dp,o){o=o||{};const g=prop(name,x,z,{s:1,par:o.par,rot:o.rot});if(!g)return null;const bb=PBOX[name],sz=bb.getSize(new V()),c=bb.getCenter(new V()),sw=Math.abs(Math.sin(o.rot||0))>.5;
+  const sx=(sw?Dp:Wd)/sz.x,sz2=(sw?Wd:Dp)/sz.z,sy=o.h?o.h/sz.y:Math.min(sx,sz2),obj=g.children[0],b0=PROPS[name].scale;
+  obj.scale.set(b0.x*sx,b0.y*sy,b0.z*sz2);obj.position.set(-c.x*sx,-bb.min.y*sy+(o.y||0),-c.z*sz2);g.userData.size=new V(sz.x*sx,sz.y*sy,sz.z*sz2);return g;}
 const pick=(arr)=>arr[Math.floor(srand()*arr.length)%arr.length];
 /* art bible recolor: palette texture → dark fantasy (steel stays cold, gold/magic stays bright) */
 function recolorTex(img,cls){
@@ -2304,36 +2308,46 @@ function buildEternal(){buildCitadel();
   const sp=spawner('ignis',0,-4,0,1,99999,always);sp.onSpawn=e=>{e.hp=e.maxHp=Math.round(e.maxHp*3);e.atk=Math.round(e.atk*1.5);e.eternal=true;e.lv=120;e.onDie=()=>{W.eternalDown=true;toast('영원의 이그니스를 쓰러뜨렸습니다 · 제단 너머 확장 미로 문이 열렸습니다','gold');};e.aggro=true;e.d=Object.assign({},e.d,{name:'영원의 이그니스'});
     if(e.tag)e.tag.innerHTML='영원의 이그니스 <small>Lv.120</small>';};
   const beaten=()=>W.eternalDown||W.enemies.some(q=>q.eternal&&q.dead);
-  portal(0,28.5,'hall',[-4.6,3.2],always,'','진급의 전당으로 돌아가기 ›');
+  portal(0,28.5,'hall',[-3.6,3.6],always,'','진급의 전당으로 돌아가기 ›');
   portal(0,-26.5,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
   later(1.2,()=>toast('영원한 성채 · 성문이 모두 닫혔습니다. 영원의 이그니스를 쓰러뜨리세요','bad'));}
 function buildHall(){
   setEnv({sky:0x0e0a08,fog:[30,70],ht:0xe8d0a8,hb:0x2a1c12,hi:1.15,sun:0xffe0b0,si:1.1,ash:false});
   W.bounds=[-9.2,9.2,-6.6,7.4];
   ground(0,0,120,120,0x0c0908,.02);
-  const T=4;
+  const T=4,AR=!!PROPS.meshy_h_arena;
+  if(AR){  // user Meshy set: a round ritual arena (floor + colonnade), the gothic throne alcove behind the god, thrones behind the masters
+    prop('meshy_h_arena',0,-.6,{fit:25,y:-1});  // its ritual floor sits ~1 m up the model; drop it to just above the ground plane
+    if(PROPS.meshy_h_alcove)prop('meshy_h_alcove',0,-10.6,{fit:7});
+    if(PROPS.meshy_h_throne)[-5.4,5.4].forEach(x=>prop('meshy_h_throne',x,-5.6,{h:2.8,y:.07,rot:-x*.06}));
+    if(PROPS.meshy_s_rug)propWD('meshy_s_rug',0,2.4,2.8,8,{rot:Math.PI/2,y:.09});else ground(0,1.6,3.2,9.6,0x7a1a14,.04,1);
+    if(PROPS.meshy_s_rugworn)[-5,5].forEach(x=>propWD('meshy_s_rugworn',x,-3.6,3.6,2.8,{y:.09}));
+    if(PROPS.meshy_s_banner)[-8.2,8.2].forEach(x=>prop('meshy_s_banner',x,-6,{h:4.2,y:.6,rot:x<0?Math.PI/2:-Math.PI/2}));
+    for(let i=0;i<20;i++){const a=i/20*Math.PI*2,x=Math.cos(a)*9.8,z=-.6+Math.sin(a)*9.8;if(z>6&&Math.abs(x)<3)continue;addCircle(x,z,1.9);}  // keep players on the round floor (gap at the exit door)
+    [[-7,1.6],[7,1.6],[-4,-7],[4,-7]].forEach(([x,z])=>{const l=new THREE.PointLight(0xff9a40,1.1,9,2);l.position.set(x,2.6,z);W.root.add(l);W.anim.push(t=>{l.intensity=1+Math.sin(t*9+x)*.2;});});  // warm light from the arena's own fire stands
+  }else{
   if(PROPS.floor_wood_large)for(let ix=0;ix<5;ix++)for(let iz=0;iz<4;iz++)prop('floor_wood_large',-8+ix*T,-6+iz*T,{s:1});
   ground(0,0,3.2,14,0x7a1a14,.04,1);ground(0,-5.2,17,2.6,0x7a1a14,.04,1);  // red carpet to the three masters
   const wl=(n,x,z,r)=>{const g=prop(n,x,z,{s:1});if(g)g.rotation.y=r;return g;};
   if(PROPS.wall){[-8,-4,0,4,8].forEach(x=>wl('wall',x,-8.2,0));[-6,-2,2,6].forEach(z=>{wl(z===-2?'wall_window_open':'wall',-10.2,z,Math.PI/2);wl(z===-2?'wall_window_open':'wall',10.2,z,-Math.PI/2);});
     [-8,8].forEach(x=>{const g=wl('wall',x,8.2,Math.PI);if(g)g.scale.y=.35;});}
-  [[-10,-8],[10,-8],[-10,8],[10,8],[-4,-7.6],[4,-7.6]].forEach(([x,z])=>prop('pillar_decorated',x,z,{h:5}));
+  [[-10,-8],[10,-8],[-10,8],[10,8],[-4,-7.6],[4,-7.6]].forEach(([x,z])=>prop('pillar_decorated',x,z,{h:5}));}
   addBox(0,-9,11,1);addBox(-11,0,1,9);addBox(11,0,1,9);addBox(-6,9,4.5,1);addBox(6,9,4.5,1);
   // three stations: warrior (west), god (north centre, raised), rogue (east)
   const stn=(x,z,col)=>{const r=new THREE.Mesh(new THREE.RingGeometry(1.5,1.75,40),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));r.rotation.x=-Math.PI/2;r.position.set(x,.06,z);W.root.add(r);W.anim.push(t=>{r.material.opacity=.5+Math.sin(t*2+x)*.2;});
     const l=new THREE.PointLight(col,1.2,9,2);l.position.set(x,3,z);W.root.add(l);};
-  stn(-6,-4.6,0xff5a3a);stn(0,-5.8,0xfff0b0);stn(6,-4.6,0x9a6aff);
-  prop('banner_red',-6,-7.4,{h:4.2});prop('weaponrack',-8.4,-4.2,{h:1.8,rot:Math.PI/2});prop('sword_shield',-8.8,-6.6,{h:1.6,rot:Math.PI/2});
+  const MX=AR?5:6,MZ=AR?-3.6:-4.6;stn(-MX,MZ,0xff5a3a);stn(0,-5.8,0xfff0b0);stn(MX,MZ,0x9a6aff);
+  if(!AR){prop('banner_red',-6,-7.4,{h:4.2});prop('weaponrack',-8.4,-4.2,{h:1.8,rot:Math.PI/2});prop('sword_shield',-8.8,-6.6,{h:1.6,rot:Math.PI/2});
   prop('banner_blue',6,-7.4,{h:4.2});prop('crates_stacked',8.6,-6.4,{fit:1.6});
-  prop('shrine_candles',0,-7.3,{h:1.5});[-1.6,1.6].forEach(x=>prop('candle_triple',x,-7,{h:.8}));
-  [[-9.4,-2],[9.4,-2],[-9.4,4],[9.4,4]].forEach(([x,z])=>{const t=prop('torch_mounted',x,z,{h:1,y:2.2});if(t)t.rotation.y=x<0?Math.PI/2:-Math.PI/2;const l=new THREE.PointLight(0xffa050,1,8,2);l.position.set(x*.9,2.6,z);W.root.add(l);});
-  spawnNpc('dabin',-6,-4.6,0);spawnNpc('taewan',6,-4.6,0);
+  prop('shrine_candles',0,-7.3,{h:1.5});[-1.6,1.6].forEach(x=>prop('candle_triple',x,-7,{h:.8}));}else prop('weaponrack',-8.4,-3,{h:1.8,rot:Math.PI/2});
+  [[-9.4,-2],[9.4,-2],[-9.4,4],[9.4,4]].forEach(([x,z])=>{const t=AR?null:prop('torch_mounted',x,z,{h:1,y:2.2});if(t)t.rotation.y=x<0?Math.PI/2:-Math.PI/2;const l=new THREE.PointLight(0xffa050,1,8,2);l.position.set(x*.9,2.6,z);W.root.add(l);});
+  spawnNpc('dabin',-MX,MZ,0);spawnNpc('taewan',MX,MZ,0);
   const god=spawnNpc('seojun',0,-5.8,0);god.y=1;god.tagY=3.4;
   const halo=new THREE.Mesh(new THREE.TorusGeometry(.5,.05,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=3.2;god.mesh.add(halo);
   W.anim.push(t=>{god.y=1;halo.rotation.z=t;if(Math.random()<.15)burst(god.pos.x+rand(-1,1),1+rand(0,2.4),god.pos.z+rand(-1,1),0xfff4c0,1,.4,.9,.35,.8);});
   W.shrine={x:0,z:-3};
   portal(0,7.6,'citadel',[-17,-12.2],()=>true,'','천명 성채로 나가기 ›',{door:true});
-  portal(-9.2,3.2,'eternal',[0,24],()=>!!S.awk,'Lv.99 각성자만 들어갈 수 있습니다','영원한 성채 · 각성의 시련 ›',{door:true,rot:Math.PI/2});
+  portal(AR?-6.4:-9.2,AR?2.6:3.2,'eternal',[0,24],()=>!!S.awk,'Lv.99 각성자만 들어갈 수 있습니다','영원한 성채 · 각성의 시련 ›',{door:true,rot:Math.PI/2});
 }
 function buildInn(){
   setEnv({sky:0x0e0a08,fog:[26,60],ht:0xd8b890,hb:0x2a1c12,hi:.62,sun:0xffc890,si:.75,ash:false});
@@ -2390,8 +2404,8 @@ function buildVillage(){
   if(KIT){prop('keg',-5.6,14.9,{h:1});prop('table_long',-12.5,14.8,{fit:2.6});}
   else{mesh(new THREE.BoxGeometry(2.4,.5,1.2),M(0x7a5a3a),-5.4,.35,14.4,W.root);mesh(new THREE.BoxGeometry(2,.2,1),M(0xe8e0d0),-5.4,.65,14.4,W.root);addBox(-5.4,14.4,1.2,.6);
   mesh(new THREE.BoxGeometry(9.6,.2,2.6),M(0x6a4a2a),-9,3.6,15.6,W.root);[-13.5,-4.5].forEach(x=>{mesh(new THREE.BoxGeometry(.2,3.6,.2),M(0x5a3a22),x,1.8,14.5,W.root);addCircle(x,14.5,.2);});}
-  house(8,19,{roof:0x5a4a3a});house(17,9,{w:5,d:5,roof:0x7a4a2a,rot:Math.PI/2});house(-18,9,{w:5,d:6,roof:0x6a3a2a,chimney:true});
-  house(11,-19,{w:6,d:5,roof:0x5a4a3a});house(-19,-20,{w:5,d:5,roof:0x7a3424});
+  house(8,19,PROPS.meshy_v_chapel?{w:6,d:6,kind:'meshy_v_chapel'}:{roof:0x5a4a3a});house(17,9,{w:5,d:5,roof:0x7a4a2a,rot:Math.PI/2});house(-18,9,{w:5,d:6,roof:0x6a3a2a,chimney:true});
+  house(11,-19,PROPS.meshy_v_temple?{w:6.5,d:5,kind:'meshy_v_temple'}:{w:6,d:5,roof:0x5a4a3a});  // user's mission chapel and sun templehouse(-19,-20,{w:5,d:5,roof:0x7a3424});
   const sm=new THREE.Group();sm.position.set(-16,0,-6);W.root.add(sm);
   if(KIT){prop('building_blacksmith_red',-21,-7.5,{fit:8.5,rot:Math.PI/2});addBox(-19.5,-7.5,2.4,2.4);prop('weaponrack',-13.8,-8.4,{h:1.8});}
   else{[[-2.5,-2],[2.5,-2],[-2.5,2],[2.5,2]].forEach(([x,z])=>{mesh(new THREE.BoxGeometry(.3,3.2,.3),M(0x4a3222),x,1.6,z,sm);addCircle(-16+x,-6+z,.25);});
@@ -2507,8 +2521,11 @@ function buildCitadel(){
     const gt=groundTex('stone'),stoneM=(c,rx,ry)=>{const m=new THREE.MeshStandardMaterial({color:c,roughness:.95,metalness:0});if(gt){const t=gt.clone();t.needsUpdate=true;t.repeat.set(rx,ry);m.map=t;}return m;};
     const stone=stoneM(0xc4c6d0,4,3),step=stoneM(0xb4b6c2,3,.25),gold=M(0xe0b048,{roughness:.3,metalness:.7,emissive:0x6a4410}),trim=gold,navy=M(0x1e3a9c,{roughness:.8,emissive:0x081640});
     mesh(new THREE.BoxGeometry(16,TH,12),stone,0,TH/2,0,tg);mesh(new THREE.BoxGeometry(16.3,.16,12.3),trim,0,TH-.1,0,tg);
-    mesh(new THREE.BoxGeometry(8.2,.08,6.7),gold,0,TH+.06,.2,tg);mesh(new THREE.BoxGeometry(7,.1,5.5),navy,0,TH+.08,.2,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,-2.1,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,2.5,tg);
-    mesh(new THREE.BoxGeometry(4.2,.07,5),gold,0,TH+.06,4.2,tg);mesh(new THREE.BoxGeometry(3.4,.09,5.02),navy,0,TH+.08,4.2,tg);  // runner from the stairs to the dais
+    // user Meshy carpets (gold-edged red carpet on the dais, ornate rug down the aisle); drawn boxes are the fallback
+    if(PROPS.meshy_s_carpet)propWD('meshy_s_carpet',0,.2,7.8,6.2,{y:TH,par:tg});
+    else{mesh(new THREE.BoxGeometry(8.2,.08,6.7),gold,0,TH+.06,.2,tg);mesh(new THREE.BoxGeometry(7,.1,5.5),navy,0,TH+.08,.2,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,-2.1,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,2.5,tg);}
+    if(PROPS.meshy_s_rug)propWD('meshy_s_rug',0,4.5,3.4,3.6,{y:TH,par:tg,rot:Math.PI/2});
+    else{mesh(new THREE.BoxGeometry(4.2,.07,5),gold,0,TH+.06,4.2,tg);mesh(new THREE.BoxGeometry(3.4,.09,5.02),navy,0,TH+.08,4.2,tg);}  // runner from the stairs to the dais
     for(let i=0;i<8;i++){const h=(i+1)*TH/8;mesh(new THREE.BoxGeometry(6.4,h,.5),step,0,h/2,10-i*.5-.25,tg);}
     [-1,1].forEach(s=>{mesh(new THREE.BoxGeometry(.5,TH+.2,4.2),stone,s*3.45,(TH+.2)/2,8,tg);mesh(new THREE.BoxGeometry(.6,.12,4.3),trim,s*3.45,TH+.26,8,tg);});
     W.hts.push({x0:-8,x1:8,z0:-29,z1:-17,h:TH,ex:0,ez:-12.2,ew:2.8},{x0:-3.2,x1:3.2,z0:-17,z1:-13,h:TH,rz:-13,rz1:-17});
@@ -2519,7 +2536,12 @@ function buildCitadel(){
     [-1,1].forEach(s=>[-17.8,-22.4,-27.6].forEach(z=>tp(PROPS.meshy_t_pedestal?'meshy_t_pedestal':'pillar_decorated',s*7.2,z,{h:5.4,y:TH},.45)));
     // twin knight guardians at the head of the stairs
     [-1,1].forEach(s=>tp('meshy_t_knight',s*4.7,-18.3,{h:6,y:TH,rot:-s*.12},.8));
-    tp('meshy_t_mary',0,-24.1,{h:3.4,y:TH},.5);
+    if(PROPS.meshy_s_altar)tp('meshy_s_altar',0,-24.9,{h:3,y:TH},1.3);else tp('meshy_t_mary',0,-24.1,{h:3.4,y:TH},.5);
+    // soul crystals either side of the altar, stone braziers at the dais corners and the stair foot, blue banners by the dragon door
+    if(PROPS.meshy_s_crystal)[-1,1].forEach(s=>{tp('meshy_s_crystal',s*3.1,-25,{h:3,y:TH},.6);const l=new THREE.PointLight(0x6ab8ff,1.1,9,2);l.position.set(s*3.1,TH+2.6,-25);W.root.add(l);W.anim.push(t=>{l.intensity=.9+Math.sin(t*1.7+s)*.3;});});
+    if(PROPS.meshy_s_brazier)[-1,1].forEach(s=>{tp('meshy_s_brazier',s*4.1,-20.3,{h:1.7,y:TH},.4);const l=new THREE.PointLight(0xff9a40,1.2,8,2);l.position.set(s*4.1,TH+2.2,-20.3);W.root.add(l);W.anim.push(t=>{l.intensity=1.05+Math.sin(t*9+s)*.2;});});
+    if(PROPS.meshy_s_brazier_bowl)[-1,1].forEach(s=>tp('meshy_s_brazier_bowl',s*5.4,-11.4,{h:1},.5));
+    if(PROPS.meshy_s_banner)[-1,1].forEach(s=>tp('meshy_s_banner',s*2.5,-27.3,{h:4.4,y:TH+.6}));
     const colH=4.4;[-1,1].forEach(s=>tp(PROPS.meshy_t_column?'meshy_t_column':'pillar_decorated',s*4.5,-12.6,{h:colH},.4));
     const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0x8ab8ff,transparent:true,opacity:.6,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(0,TH+.14,-22);W.root.add(al);
     const beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,1.3,12,20,1,true),new THREE.MeshBasicMaterial({color:0x5a8aff,transparent:true,opacity:.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(0,TH+6,-22);W.root.add(beam);
@@ -2528,7 +2550,7 @@ function buildCitadel(){
     // blue soul-fire braziers on the stair posts instead of bright lamps
     [-4.5,4.5].forEach(x=>{const f=flameFx(0x3a6aff,0xb8d0ff,1.3);f.position.set(x,colH+.25,-12.6);W.root.add(f);W.anim.push(t=>f.userData.tick(t));});
     W.anim.push(t=>{al.rotation.z=t*.3;al.material.opacity=.45+Math.sin(t*2)*.15;beam.material.opacity=.08+Math.sin(t*1.3)*.03;bl.intensity=.9+Math.sin(t*2)*.2;});
-    if(KIT){prop('shrine_candles',-2.4,-24.8,{h:1.4,y:TH});prop('shrine_candles',2.4,-24.8,{h:1.4,y:TH});}
+    if(KIT&&!PROPS.meshy_s_crystal){prop('shrine_candles',-2.4,-24.8,{h:1.4,y:TH});prop('shrine_candles',2.4,-24.8,{h:1.4,y:TH});}
     decor([['meshy_sakura',-11,-18.5,5.5,.8],['meshy_sakura',11,-18.5,5.5,.8],['meshy_bush',-6,-16.2,1.6,.7],['meshy_bush',6,-16.2,1.6,.7]]);}
   // 철화 대장간 (south-east, beside the east gate and away from the plaza)
   bigBuilding(21,18,8,8,5.5,0x6a3a2a,0xb8b0a4,'building_blacksmith_red');const fg=new THREE.PointLight(0xff7a2a,1.5,10,2);fg.position.set(16,1.5,15);W.root.add(fg);W.anim.push(t=>{fg.intensity=1.3+Math.sin(t*9)*.3;});
@@ -2552,7 +2574,7 @@ function buildCitadel(){
   spawnNpc('sylvia',-24,-5.1,0);
   // 진급의 전당: the guild masters (다빈 · 태완 · 서준) wait inside the church in the north-west quarter
   const SX=-17,SZ=-19;
-  if(PROPS.building_church_blue){const ch=prop('building_church_blue',SX,SZ,{fit:20,rot:0});if(ch)ch.userData.grown=true;}
+  {const hk=PROPS.meshy_h_church?'meshy_h_church':'building_church_blue';if(PROPS[hk]){const ch=prop(hk,SX,SZ,{fit:hk==='meshy_h_church'?18:20,rot:0});if(ch)ch.userData.grown=true;}}  // user's gothic church
   const hb=addBox(SX,SZ,2.6,4.8);hb.scaleSize=true;
   portal(SX,SZ+5.4,'hall',[0,4.8],()=>true,'','진급의 전당 ›',{door:true});W.shrine={x:SX,z:SZ+6.2};
   if(PROPS.banner_red)[[-3.2,'banner_red'],[3.2,'banner_blue']].forEach(([x,n])=>prop(n,SX+x*1.1,SZ+5.4,{h:4.2}));
@@ -4896,7 +4918,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-7';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-8';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
