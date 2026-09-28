@@ -160,6 +160,10 @@ svg{display:block}
 .cs-name{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim)}
 .cs-name span{flex:none}
 .stat-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}
+#shipHud{position:absolute;left:50%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(44vw,340px);pointer-events:none;z-index:6;font:700 12px 'Gowun Batang',serif;color:#e8f4ff;text-shadow:0 1px 3px #000;text-align:center}
+#shipHud .sh-b{position:relative;height:9px;margin-top:3px;border-radius:5px;background:rgba(0,0,0,.55);border:1px solid rgba(160,200,255,.5);overflow:hidden}
+#shipHud .hp{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#3a8ad8,#7ad0ff)}
+#shipHud .bar{position:absolute;left:0;top:0;height:3px;background:#ffd870}
 #raidT{position:absolute;left:50%;top:calc(58px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:700 13px 'Gowun Batang',serif;color:#ffd8b0;text-shadow:0 1px 3px #000;background:rgba(40,6,4,.72);padding:3px 12px;border-radius:12px;border:1px solid #9a2a1a;white-space:nowrap;z-index:6}
 #raidT.hot{color:#fff;background:rgba(160,10,4,.85);animation:enr .6s ease-in-out infinite}
 #enrage{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,rgba(255,0,0,0) 35%,rgba(210,0,0,.6) 100%);animation:enr 1s ease-in-out infinite}@keyframes enr{50%{opacity:.55}}
@@ -507,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-10</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-1</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -650,7 +654,7 @@ const TIERS=[
  {lv:90,atk:130,def:72,w:{warrior:'멸악 패왕검',rogue:'시귀의 환영검',shaman:'신통 만신봉'},a:{warrior:'멸악 패왕갑',rogue:'시귀의 은신갑',shaman:'신통 만신 로브'}},
  {lv:99,atk:150,def:90,db:true,w:{warrior:'용혈 파천검',rogue:'용혈 섬광단검',shaman:'용혈 멸세령'},a:{warrior:'용혈 파천중갑',rogue:'용혈 섬광가죽갑',shaman:'용혈 멸세제사장복'}},
 ];
-const ZONE_TIERS={beasts:[0],grave:[1,2],clock:[3,4],asura:[5,6],altar:[7]};
+const ZONE_TIERS={beasts:[0],grave:[1,2],clock:[3,4],asura:[5,6],altar:[7],sea:[7],coral:[7]};
 const ZONE_KO={beasts:'야수 서식지',grave:'원혼의 묘지',clock:'태엽 미로',asura:'아수라 흑야 협곡',altar:'용혈의 제단'};
 function makeGear(ti,type,cls,part){const T=TIERS[ti],nm=T[type][cls in T[type]?cls:'all'];let name=Array.isArray(nm)?nm[Math.floor(Math.random()*nm.length)]:nm;
   const g={id:newId(),type,name,lv:T.lv,cls:ti===0?'all':cls,tier:ti,enh:0,dur:100,destroyed:false,rar:T.db?2:0};
@@ -757,12 +761,22 @@ const MOBS={
  asuraGate:{name:'지옥 룬검 군주',lvr:[97,97],role:1.9,bm:{hp:24,exp:9,gold:24},spd:3.4,range:3.2,aspd:1.3,aggr:true,sight:15,model:'goblin',rad:1.4,boss:true,special:'whirl',spcd:5,junk:'지옥의 룬 파편',drop:{high:1,top:.1}},
  barakas:{name:'멸세제룡 바라카스',lv:99,hp:1500000,atk:1400,spd:1.4,range:2.2,aspd:2.4,aggr:true,sight:60,exp:6000000,gold:[250000,500000],model:'ignis',boss:true,rad:3,special:'barakas',spcd:4},
  bloodShaman:{name:'용혈 주술사',lv:99,hp:60000,atk:520,spd:0,range:16,aspd:2.4,aggr:true,sight:40,exp:30000,gold:[2000,4000],model:'goblin',col:0x8a1a1a,cloth:0x3a0a0a,scale:1.1,ranged:true,bolt:0xff3a2a,rad:.7},
+ deepCrawler:{name:'심해의 기어오르는 자',lvr:[96,99],role:1.1,spd:3.2,range:1.7,aspd:1.3,aggr:true,sight:4,model:'goblin',col:0x2a6a6a,cloth:0x1a3a4a,junk:'심해의 비늘',drop:{high:.04}},
+ kraken:{name:'심해의 인어 괴물 세이렌',lv:99,hp:800000,atk:1100,spd:0,range:4,aspd:3,aggr:true,sight:80,exp:3000000,gold:[80000,150000],model:'kraken',boss:true,rad:3,drop:{high:1,top:.2}},
+ krakenArm:{name:'세이렌의 심해 촉수',lvr:[99,99],role:.9,bm:{hp:7,exp:1,gold:1},spd:0,range:0,aspd:9,aggr:false,model:'arm',rad:1.4},
+ coralCrab:{name:'산호 등껍질 괴수',lvr:[99,99],role:1.4,spd:3,range:1.8,aspd:1.5,aggr:false,model:'boar',rad:.8,junk:'빛나는 산호 조각',drop:{high:.07,top:.006}},
+ drownedKnight:{name:'익사한 옛 기사',lvr:[99,99],role:1.6,spd:3.3,range:2.2,aspd:1.4,aggr:true,sight:12,model:'goblin',col:0x4a7a72,cloth:0x1e3a3a,scale:1.05,rad:.7,special:'whirl',spcd:8,junk:'녹슨 신전 문장',drop:{high:.08,top:.008}},
+ abyssCaller:{name:'심연의 부름꾼',lvr:[99,99],role:1.3,spd:2.8,range:9,aspd:2,aggr:true,sight:14,model:'goblin',col:0x2a4a5a,cloth:0x0e2a3a,ranged:true,bolt:0x3affd8,junk:'심연의 진주',drop:{high:.08,top:.008}},
+ coralQueen:{name:'산호 여왕 네레이스',lvr:[99,99],role:2,bm:{hp:30,exp:12,gold:30},spd:3.2,range:3,aspd:1.4,aggr:true,sight:16,model:'goblin',col:0xff7a9a,cloth:0x6a1a4a,scale:1.6,rad:1.4,boss:true,special:'whirl',spcd:5,junk:'산호 여왕의 왕관',drop:{high:1,top:.15}},
  ignis:{name:'고대 드래곤 이그니스',lv:99,hp:300000,atk:900,spd:.7,range:5,aspd:2.2,aggr:true,sight:40,exp:2000000,gold:[60000,120000],model:'ignis',boss:true,rad:3.2,special:'ignis',spcd:4},
 };
 const NPCS={
  aldus:{name:'촌장 알두스',look:{body:0x6b4f7a,robe:true,hair:0xdddddd,beard:0xe8e4dc},idle:'이 마을은 드래곤 전쟁 때도 버텨냈다네. 이번에도 그럴 걸세.'},
  kallen:{name:'경비대장 칼렌',look:{body:0x5a6a78,sleeve:0x4a5866,helm:0x8a939c,cape:0x7a2a22},idle:'방벽은 내가 지킨다. 자네는 앞만 보게.'},
  runba:{name:'대장장이 룬바',look:{body:0x7a4a2a,sleeve:0xc49a74,hair:0x999999,beard:0x999999,belt:0x2a1a10},idle:'망치질 소리가 멈추는 날이 이 마을이 끝나는 날이지.'},
+ haram:{name:'방주 선장 하람',sub:'영원의 방주',service:'voyage',look:{body:0x2a3a5a,sleeve:0x2a3a5a,cape:0x8a2a1a,hair:0x3a2a1a},idle:['바다는 기다려 주지 않네.','용의 바다 너머에 무엇이 있는지, 아무도 돌아와 말해 주지 않았지.']},
+ sailor:{name:'항구 선원',look:{body:0x5a6a7a,sleeve:0x8a7a5a,hair:0x2a1a0a},idle:['요즘 밤마다 바다 밑에서 뭔가 울어대요. 세이렌이란 소문이…','방주는 천명의 빛으로 떠 있다지요. 저런 배는 다시 못 만들 겁니다.']},
+ pilgrim:{name:'망각의 순례자 이오',sub:'잊혀진 신의 제단',service:'godq',look:{body:0xc8b890,robe:true,hair:0xd8d8d8},idle:'…바다를 건너온 자로군.'},
  guard:{name:'마을 경비병',look:{body:0x5a6a78,helm:0x8a939c},idle:'북쪽 문은 우리가 지킵니다!'},
  villager:{name:'마을 주민',look:{body:0x8a7a52,hair:0x6a4a2a},idle:'하늘에서 재가 내려요... 무서워요.'},
  logan:{name:'파견 경비병 로건',look:{body:0x51667a,helm:0x9aa4ae,cape:0x3a4e7a},idle:'성채까지는 이 길을 따라 북쪽이오.'},
@@ -779,7 +793,7 @@ const NPCS={
  rowen:{name:'대제사장 로웬',sub:'영혼의 제단',service:'altar',look:{body:0xd8d0c0,robe:true,hair:0xeeeeee},idle:['천명의 이름으로 묻노라. 그대, 아흔아홉 번의 문턱을 넘어 이 제단 앞에 섰는가.','육신의 그릇은 이미 가득 찼도다. 그러나 영혼의 바다는 끝이 없나니, 쌓아 온 경험을 제단에 바쳐 그 한계를 부수어라.','바쳐진 것은 사라지지 않는다. 피와 숨결이 되어 그대 안에 영원히 흐르리라. 자, 체와 마의 한계를 넘어서라!']},
  burkan:{name:'대장장이 부르칸',sub:'철화 대장간',service:'forge',look:{body:0x5a3a22,sleeve:0xb88a64,beard:0x3a2a1a,hair:0x2a1a10,belt:0x1a120a},idle:['불은 거짓말을 안 해. 쇠도 마찬가지고. 뭘 두들겨 줄까?','용의 비늘이라... 그걸 녹일 수 있는 화로는 대륙에 이곳 하나뿐이지.','날이 무뎌진 채로 사냥 나가지 마라. 수리비 아끼다 목숨 잃는다.']},
  dabin:{name:'전사 길드장 다빈',sub:'전사 진급',service:'promo',cls:'warrior',svc:'train',look:{body:0x6a5a4a,helm:0x8a939c},idle:['레벨 15를 넘겼나? 그럼 대검을 들어라. 전사의 길은 가장 앞에서 시작된다.','검은 팔이 아니라 허리로 휘두르는 거다! 한 판 수련하고 가겠나?','전사는 물러서는 법을 배우지 않는다. 버티는 법을 배울 뿐이지.','땀 흘린 만큼 칼끝이 무거워진다. 수련하면 한동안 공격력이 오를 거다.']},
- taewan:{name:'도적 길드장 태완',sub:'도적 진급',service:'promo',cls:'rogue',svc:'guide',look:{body:0x2a2a30,hood:0x1a1a22},idle:['그림자에 발을 들일 셈이야? 레벨 15면 자격은 충분해. 쌍검은 내가 가르쳐 주지.','쉿. 어디 가고 싶은데? 골드만 주면 사냥터 입구까지 지름길로 모셔다 드리지.','요즘 서문 늑대들이 부쩍 사나워졌더군. 이건 공짜 정보야.','북문 너머 협곡? 목숨이 두 개면 가 보라고. 아니면 레벨부터 올려.']},
+ taewan:{name:'도적 길드장 태완',sub:'도적 진급',service:'promo',cls:'rogue',svc:'guide',look:{body:0x2a2a30,hood:0x1a1a22},idle:['그림자에 발을 들일 셈이야? 레벨 15면 자격은 충분해. 쌍검은 내가 가르쳐 주지.','쉿. 어디 가고 싶은데? 골드만 주면 사냥터 입구까지 지름길로 모셔다 드리지.','요즘 서문 늑대들이 부쩍 사나워졌더군. 이건 공짜 정보야.','서쪽 끝 협곡? 목숨이 두 개면 가 보라고. 아니면 레벨부터 올려.']},
  dongjun:{name:'잡화상 동준',sub:'잡화점',service:'shop',look:{body:0x8a6a2a,hair:0x3a2a1a,belt:0x5a3a1a},idle:['어서 옵쇼! 물약, 마나 물약, 무엇이든! 잡템도 제값 쳐 드립니다요.','천명 성채 최저가! 안 사면 손해, 사면 이득!','오늘 들어온 물약은 신선합니다요. 흔들어 보세요, 반짝반짝하지요?']},
  seojun:{talkR:3.3,name:'천명의 신 서준',sub:'치유 신관 진급 · 축복',service:'promo',cls:'shaman',svc:'bless',look:{body:0xf0e8d0,robe:true,hair:0xfff4d0},idle:['상처 입은 자를 일으키는 빛, 치유 신관의 길을 레벨 15에 이른 자에게 열어 주겠노라.','나는 천명(天命)을 지키는 자. 필멸자여, 하루 한 번 내 축복을 받아 가라.','용의 불꽃은 하늘의 뜻을 태우려 한다. 그대의 칼이 하늘의 뜻을 대신하리라.','두려워 말라. 그대가 쓰러질 때마다 이 성채의 빛이 그대를 다시 일으키리니.']},
 };
@@ -826,8 +840,8 @@ const DLG={
  p5a:[['hector','멈춰라! 천명 성채는 지금 외부인의 출입을 통제하고 있다.'],['P','(투르카의 목걸이를 보여준다)'],['hector','이건... 붉은바위 협곡을 장악했던 투르카의 표식? 네가 그놈을 쓰러뜨렸단 말인가.'],['hector','좋다, 실력은 인정하지. 하지만 마지막 시험이 있다. 숲길의 무덤에서 일어난 해골 돌격병들이 드래곤의 기운에 타락해 버렸다. 타락한 해골 돌격병 5구를 처치해 오염을 정화해라.'],['hector','녀석들은 땅에 붉은 궤적을 그린 뒤 방패를 앞세워 돌진한다. 궤적 밖으로 피하도록.']],
  p5b:[['hector','...해냈군. 좋다, 약속은 지키지.'],['hector','성문을 열어라! 천명 성채가 새로운 영웅을 맞이한다!']],
  c1a:[['eldric','(미간을 좁히며 플레이어를 응시한다)\n남문을 통과했다는 자가 너로군. 헥터 그 고지식한 녀석이 통행증도 없는 자를 들여보냈다길래 뭔가 했는데... 풋내기 모험가라니.'],['P','(말없이 잿빛 잎새 마을 촌장 알두스의 서신과 \'투르카의 목걸이\'를 탁자 위에 올려놓는다)'],['eldric','(서신을 집어 들어 읽어 내려간다. 표정이 점차 굳어진다)\n남쪽 평원까지 화산재가 날아들고, 해골병들이 조직적으로 움직이기 시작했다고? 거기다... 자네가 혼자서 이 목걸이의 주인을 쓰러뜨렸단 말인가?'],['aide','(놀란 목소리로) 단장님! 저건 붉은바위 협곡을 장악했던 투르카의 표식입니다. 기사단 선발대도 고전했던 놈인데...'],['eldric','(부관에게 손을 들어 조용히 시키고, 다시 플레이어를 꿰뚫어 보듯 쳐다본다)\n알두스 촌장이 보통 눈썰미가 아니라는 건 알고 있었지. 그 영감이 자네를 \'용의 불꽃을 잠재울 자\'라고 불렀더군. 하지만 전설 속의 영웅이라 하기엔, 아직 자네의 칼날은 무뎌.'],['P','(무기를 꽉 쥐며 단호한 눈빛을 보낸다)'],['eldric','(희미하게 미소 지으며) 좋아, 그 눈빛. 겁에 질린 도망자의 눈은 아니군.'],['eldric','상황이 심각하다. 고대 드래곤 \'이그니스\'가 깨어나는 건 단순한 자연재해가 아니야. 누군가 의도적으로 드래곤의 봉인을 풀고 있어.']],
- c1b:[['eldric','우리 척후병들이 북문 너머 \'용혈의 제단\'에서 이단 교단 \'황혼의 잿더미\' 놈들이 의식을 치르는 것을 목격했다. 그들이 드래곤에게 마력을 바치고 있어.'],['eldric','문제는 그 사이다. 이 성채의 네 성문 밖은 모두 드래곤의 기운에 타락했다. 서문의 짐승들, 동문의 원혼, 남문의 태엽 미로, 북문의 아수라 협곡까지.']],
- c1c:[['eldric','(탁자를 짚고 몸을 숙이며 플레이어에게 다가간다)\n서문부터 시작해 네 성문을 차례로 넘어서라. 그 끝에서 용혈의 제단에 설 자격을 얻게 될 것이다.'],['eldric','성채의 객주소, 영혼의 제단, 철화 대장간이 자네를 도울 것이다. 천명 기사단도 전력을 다해 자네의 여정을 돕겠다.']],
+ c1b:[['eldric','우리 척후병들이 서쪽 끝 \'용혈의 제단\'에서 이단 교단 \'황혼의 잿더미\' 놈들이 의식을 치르는 것을 목격했다. 그들이 드래곤에게 마력을 바치고 있어.'],['eldric','문제는 그 사이다. 이 성채의 서문 밖, 서쪽으로 이어진 땅은 모두 드래곤의 기운에 타락했다. 짐승의 숲, 원혼의 묘지, 태엽 미로, 그리고 아수라 협곡까지.']],
+ c1c:[['eldric','(탁자를 짚고 몸을 숙이며 플레이어에게 다가간다)\n서문을 나서 서쪽으로 네 땅을 차례로 넘어서라. 그 끝에서 용혈의 제단에 설 자격을 얻게 될 것이다.'],['eldric','성채의 객주소, 영혼의 제단, 철화 대장간이 자네를 도울 것이다. 천명 기사단도 전력을 다해 자네의 여정을 돕겠다.']],
 };
 const SPEAKER={P:'나',turka:'해골병 행동대장 투르카',sys:'시스템'};
 
@@ -875,13 +889,13 @@ const QUESTS=[
  {id:'c2p',zone:'citadel',ch:'제2장',title:'진급의 전당',reward:{exp:3000,gold:3000},
   steps:[{goals:[{k:'promote',id:'any',n:1,t:'진급의 전당에서 진급하기'}],note:'천명 성채 · 분수 북서쪽 교회 [진급의 전당]',guide:'천명 성채 북서쪽 [진급의 전당]의 길드장(전사 다빈 · 도적 태완 · 신 서준)에게 말을 걸어 진급하세요. 사당은 분수 북서쪽 교회 [진급의 전당] 안에 있습니다. 진급하면 전용 무기와 갑옷을 선물로 받습니다.'}]},
  {id:'c3',zone:'grave',ch:'제2장',title:'원혼의 묘지',reward:{exp:60000,gold:30000,stones:{mid:5}},
-  steps:[{goals:[{k:'kill',id:'graveGhost',n:12,t:'억울한 원혼 정화'}],note:'권장 Lv.28~40 · 동문',guide:'동문 밖 [원혼의 묘지](권장 Lv.15~40). 원혼은 멀리서 마법을 쏩니다. 광역 스킬로 한꺼번에 정리하세요.'}]},
+  steps:[{goals:[{k:'kill',id:'graveGhost',n:12,t:'억울한 원혼 정화'}],note:'권장 Lv.28~40 · 서쪽 사냥터 2',guide:'야수 서식지 서쪽 끝 너머 [원혼의 묘지](권장 Lv.15~40). 원혼은 멀리서 마법을 쏩니다. 광역 스킬로 한꺼번에 정리하세요.'}]},
  {id:'c4',zone:'clock',ch:'제3장',title:'멈추지 않는 태엽',reward:{exp:500000,gold:150000,stones:{high:3}},
-  steps:[{goals:[{k:'kill',id:'clockGolem',n:6,t:'파괴된 태엽 골렘 처치'}],note:'권장 Lv.56~70 · 남문',guide:'남문 밖 [태엽 미로](권장 Lv.40~70). 골렘의 내려찍기에 맞으면 기절하고 밀려납니다. 붉은 원 밖으로 피하세요.'}]},
+  steps:[{goals:[{k:'kill',id:'clockGolem',n:6,t:'파괴된 태엽 골렘 처치'}],note:'권장 Lv.56~70 · 서쪽 사냥터 3',guide:'원혼의 묘지 서쪽 너머 [태엽 미로](권장 Lv.40~70). 골렘의 내려찍기에 맞으면 기절하고 밀려납니다. 붉은 원 밖으로 피하세요.'}]},
  {id:'c5',zone:'asura',ch:'제3장',title:'아수라 흑야 협곡',reward:{exp:2000000,gold:500000,stones:{top:1}},
-  steps:[{goals:[{k:'kill',id:'asuraWarrior',n:8,t:'아수라 전사 처치'}],note:'권장 Lv.84~99 · 북문',guide:'북문 밖 [아수라 흑야 협곡](권장 Lv.70~99). 만렙을 향한 지옥의 구간입니다. 아수라 전사의 회전 베기를 조심하세요.'}]},
+  steps:[{goals:[{k:'kill',id:'asuraWarrior',n:8,t:'아수라 전사 처치'}],note:'권장 Lv.84~99 · 서쪽 사냥터 4',guide:'태엽 미로 서쪽 너머 [아수라 흑야 협곡](권장 Lv.70~99). 만렙을 향한 지옥의 구간입니다. 아수라 전사의 회전 베기를 조심하세요.'}]},
  {id:'c6',zone:'altar',ch:'최종장',title:'용혈의 제단',reward:{exp:3000000,title:'용을 잠재운 자'},
-  steps:[{goals:[{k:'kill',id:'ignis',n:1,t:'고대 드래곤 이그니스 토벌'}],note:'권장 Lv.99 · 북문 용혈의 제단',guide:'용혈의 제단은 언제든 들어갈 수 있지만 낮은 레벨이면 한 번에 쓰러집니다. 이그니스를 쓰러뜨리면 용의 비늘과 2% 확률로 전설의 용혈 무기를 얻습니다.'}]},
+  steps:[{goals:[{k:'kill',id:'ignis',n:1,t:'고대 드래곤 이그니스 토벌'}],note:'권장 Lv.99 · 서쪽 끝 용혈의 제단',guide:'용혈의 제단은 언제든 들어갈 수 있지만 낮은 레벨이면 한 번에 쓰러집니다. 이그니스를 쓰러뜨리면 용의 비늘과 2% 확률로 전설의 용혈 무기를 얻습니다.'}]},
 ];
 const qIdx=id=>QUESTS.findIndex(q=>q.id===id);
 
@@ -1391,7 +1405,7 @@ function inPlace(clip){if(clip.userData&&clip.userData.inPlace)return clip;clip.
 /* Meshy models: entries with "zones" load only when a zone that uses them is built (and its neighbours are
    prefetched in the background), so phones don't download every model at startup. */
 let MANI=null;const CUSTOM_LOAD={},CUSTOM_ONCE={},BOOT_ZONES=['title','showcase'];
-const ZONE_NEAR={eternal:['hall'],hall:['citadel','eternal'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','grave','clock','asura'],beasts:['citadel'],grave:['citadel'],clock:['citadel'],asura:['citadel','altar'],altar:['asura','lair'],lair:['altar']};
+const ZONE_NEAR={eternal:['hall'],hall:['citadel','eternal'],inn:['village','prologue'],prologue:['inn'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','port'],beasts:['citadel','grave'],grave:['beasts','clock'],clock:['grave','asura'],asura:['clock','altar'],altar:['asura','lair'],lair:['altar'],port:['citadel','sea'],sea:['port','coral'],coral:['sea','port']};
 /* Meshy's library clips bend chibi heroes' head ~35° off the neck (a sheared chin, a flat-looking skull from the side):
    pull head/neck (and, outside one-shot moves, the spine) most of the way back to the modelled pose, in the clip data itself */
 /* hero clips were generated on an earlier rig of the same character whose bones point differently: replaying their local
@@ -1870,7 +1884,7 @@ function kitIgnis(){
   h.tick=t=>{ticks.forEach(f=>f(t));aura.rotation.z=t*.4;aura.material.opacity=.28+Math.sin(t*3)*.08;};
   return Object.assign(h,{wings,head:new THREE.Group(),ignis:true});
 }
-function enemyModel(d,type){if(CUSTOM.mobs[type]){const h=customRig(CUSTOM.mobs[type]);return type==='ignis'||type==='barakas'?Object.assign(h,{wings:[],head:new THREE.Group(),ignis:true}):h;}if(d.model==='ignis')return makeIgnis();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
+function enemyModel(d,type){if(CUSTOM.mobs[type]){const h=customRig(CUSTOM.mobs[type]);return type==='ignis'||type==='barakas'?Object.assign(h,{wings:[],head:new THREE.Group(),ignis:true}):h;}if(d.model==='ignis')return makeIgnis();if(d.model==='kraken')return makeKraken();if(d.model==='arm')return makeArm();if(KIT&&SKEL[type])return skelModel(type,d);if(d.model==='goblin')return goblinModel(d);if(d.model==='wolf'||d.model==='boar'||d.model==='ox')return quadModel(d.model,d);return staticModel(d.model);}
 
 /* ---------- labels ---------- */
 const tagsEl=$('#tags');
@@ -2000,6 +2014,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   P.crit=(c.crit||.12)+G.crit/100+(P.furyT>0?1:0);P.critX=1.5+G.critd/100+(S.cls==='rogue'&&P.set3?.6:0);P.cdr=Math.min(.4,G.cdr/100);P.acc=G.acc;P.rageN=rage;
   if(isRed())P.def*=.7;  // 붉은 이름: 방어력 -30%
   if(tierOf()===2){P.maxHp=Math.round(P.maxHp*1.1);P.maxMp=Math.round(P.maxMp*1.1);P.atk*=1.1;}
+  if(S.godMark){P.maxHp=Math.round(P.maxHp*1.05);P.maxMp=Math.round(P.maxMp*1.05);P.atk*=1.05;}  // 잊혀진 신의 각인
   if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
   if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(!SIMX&&typeof updSetFx==='function')updSetFx();}
 function makePlayer(){
@@ -2053,7 +2068,7 @@ function spawnEnemy(type,x,z,sp){
   const e={type,d,lv,atk:atk0,exp:lr?Math.round(9*Math.pow(lv,1.5)*rl*bm.exp):d.exp,goldR:lr?[lv*6*bm.gold,lv*11*bm.gold]:d.gold,mesh:m.g,parts:m,pos:m.g.position,hp:hp0,maxHp:hp0,home:new V(x,0,z),face:rand(0,6.28),aggro:false,atkCd:rand(.5,1.5),spCd:d.spcd||5,
     stun:0,freeze:0,air:0,airT:1,slowT:0,slow:0,dead:false,gone:false,sp,rad:d.rad||.5,wait:rand(1,4),wdest:null,anim:null,cast:null,flashT:0,skin:null,walk:0,pat:0,dash:null};
   e.sizeK=K;m.g.rotation.y=e.face;m.g.traverse(o=>o.userData.ent=e);
-  const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
+  const h=CUSTOM.mobs[type]?(CUSTOM.mobs[type].height||2.2)+.6:d.model==='ignis'?13:d.model==='kraken'?9:d.model==='arm'?1.8:d.model==='wolf'?3*(d.scale||1.55)/1.55+.6:d.model==='ox'?3.2:d.model==='goblin'?2.3*(d.scale||.8)/.8:d.model==='tent'?3.2:2.6;
   e.tag=makeTag(e,'en'+(d.boss?' boss show':'')+(d.static||d.dummy?' show':''),d.name+(lv?' <small>Lv.'+lv+'</small>':''),h*K);
   if(d.static)e.col=addCircle(x,z,d.rad*.8);
   if(d.dummy)e.col=addCircle(x,z,.4);
@@ -2106,24 +2121,25 @@ const ZONES={
  village:{name:'잿빛 잎새 마을',build:buildVillage,spawn:[-8,12]},
  plains:{name:'바람노래 평원',build:buildPlains,spawn:[0,22]},
  citadel:{name:'천명 성채',build:buildCitadel,spawn:[0,12]},
- beasts:{name:'서문 · 야수 서식지',build:buildBeasts,spawn:[32,0]},
- grave:{name:'동문 · 원혼의 묘지',build:buildGrave,spawn:[-32,0]},
- clock:{name:'남문 · 태엽 미로',build:buildClock,spawn:[0,-32]},
- asura:{name:'북문 · 아수라 흑야 협곡',build:buildAsura,spawn:[0,32]},
+ beasts:{name:'서쪽 사냥터 1 · 야수 서식지',build:buildBeasts,spawn:[32,0]},
+ grave:{name:'서쪽 사냥터 2 · 원혼의 묘지',build:buildGrave,spawn:[32,0]},
+ clock:{name:'서쪽 사냥터 3 · 태엽 미로',build:buildClock,spawn:[32,0]},
+ asura:{name:'서쪽 사냥터 4 · 아수라 흑야 협곡',build:buildAsura,spawn:[32,0]},
  altar:{name:'용혈의 제단',build:buildAltar,spawn:[0,24]},
  lair:{name:'용혈의 제단 · 멸세의 둥지',build:buildLair,spawn:[0,22]},
+ port:{name:'천명 항구',build:buildPort,spawn:[-17,0]},
+ sea:{name:'영원의 방주 · 호위전',build:buildSea,spawn:[0,4]},
+ coral:{name:'용의 바다 · 잊혀진 산호 항구',build:buildCoral,spawn:[26,0]},
 };
 const ZONE_ORDER=['inn','village','plains','citadel'];
 const HUBZ=['beasts','grave','clock','asura','altar'];
-function nextZone(from,to){if(from===to)return null;
-  if(from==='eternal')return 'hall';if(to==='eternal')return from==='hall'?'eternal':nextZone(from,'hall');
-  if(from==='hall')return 'citadel';if(to==='hall')return from==='citadel'?'hall':nextZone(from,'citadel');
-  if(from==='citadel'){if(HUBZ.includes(to))return to==='altar'&&!W.portals.find(p=>p.to==='altar')?'asura':to;return 'plains';}
-  if(HUBZ.includes(from)){if(to==='altar'&&from==='asura')return 'altar';return 'citadel';}
-  const ti=ZONE_ORDER.indexOf(HUBZ.includes(to)?'citadel':to),ci=ZONE_ORDER.indexOf(from);if(ti<0||ci<0)return null;return ZONE_ORDER[ci+(ti>ci?1:-1)];}
+const ZLINK={inn:['village'],village:['inn','plains'],plains:['village','citadel'],citadel:['plains','hall','beasts','port'],hall:['citadel','eternal'],eternal:['hall'],
+  beasts:['citadel','grave'],grave:['beasts','clock'],clock:['grave','asura'],asura:['clock','altar'],altar:['asura','lair'],lair:['altar'],port:['citadel'],sea:[],coral:[]};
+function nextZone(from,to){if(from===to)return null;const prev={[from]:null},q=[from];  // breadth-first over the portal links: west chain, east harbour
+  while(q.length){const z=q.shift();if(z===to){let c=z;while(prev[c]!==from)c=prev[c];return c;}(ZLINK[z]||[]).forEach(n=>{if(!(n in prev)){prev[n]=z;q.push(n);}});}return null;}
 function clearZone(){
   if(P){(P.mercs||[]).forEach(m=>m.tag.remove());P.mercs=[];P.merc=null;P.chests=[];P.divRev=0;if(P.setFx){P.setFx.dispose();P.setFx=null;P.setFxQuiet=true;}}
-  scene.remove(W.root);
+  scene.remove(W.root);if(typeof shipHud==='function'&&$('#shipHud'))shipHud(false);if(typeof SYN!=='undefined')SYN.zones=[];
   W.enemies.forEach(e=>e.tag&&e.tag.remove());W.npcs.forEach(n=>n.tag&&n.tag.remove());W.portals.forEach(p=>p.tagEl&&p.tagEl.remove());
   floats.forEach(f=>f.el.remove());floats.length=0;FX.length=0;
   W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:'',noGrass:[]};GC.im=null;
@@ -2155,6 +2171,19 @@ function expandZone(z){const k=ZS(z);if(k===1)return;
   if(W.shrine){W.shrine.x*=k;W.shrine.z*=k;}
   W.spawners.forEach(s=>{s.x*=k;s.z*=k;s.r*=k;if(s.pts)s.pts=s.pts.map(([x,zz])=>[x*k,zz*k]);const d=MOBS[s.mob]||{};
     if(typeof s.n==='number'&&!d.static&&!d.boss&&!d.dummy)s.n=Math.min(12,Math.round(s.n*2.5));});}
+/* re-orient a zone after it is built (pre-scale coords): x' = a*x + b*z, z' = c*x + d*z.
+   Mirrors (det<0) flip facings; turns yaw every object. Colliders, spawners, portals and bounds follow. */
+function transformZone(a,b,c,d){const T=(x,z)=>[a*x+b*z,c*x+d*z],mir=a*d-b*c<0,swap=b!==0,qY=new THREE.Quaternion().setFromAxisAngle(new V(0,1,0),Math.atan2(b,d));
+  const fixQ=q=>{if(mir)q.set(q.x,-q.y,-q.z,q.w);else q.premultiply(qY);};
+  const cs=[T(W.bounds[0],W.bounds[2]),T(W.bounds[1],W.bounds[3])];W.bounds=[Math.min(cs[0][0],cs[1][0]),Math.max(cs[0][0],cs[1][0]),Math.min(cs[0][1],cs[1][1]),Math.max(cs[0][1],cs[1][1])];
+  W.root.children.forEach(o=>{
+    if(o.isInstancedMesh){const m=new THREE.Matrix4(),p=new V(),q=new THREE.Quaternion(),sc=new V();for(let i=0;i<o.count;i++){o.getMatrixAt(i,m);m.decompose(p,q,sc);[p.x,p.z]=T(p.x,p.z);fixQ(q);m.compose(p,q,sc);o.setMatrixAt(i,m);}o.instanceMatrix.needsUpdate=true;return;}
+    [o.position.x,o.position.z]=T(o.position.x,o.position.z);fixQ(o.quaternion);});
+  W.cols.forEach(c0=>{[c0.x,c0.z]=T(c0.x,c0.z);if(swap&&c0.hw!=null){const t=c0.hw;c0.hw=c0.hd;c0.hd=t;}});
+  W.npcs.forEach(n=>{if(n.home)[n.home.x,n.home.z]=T(n.home.x,n.home.z);});
+  W.portals.forEach(p=>{[p.x,p.z]=T(p.x,p.z);});
+  W.spawners.forEach(sp=>{[sp.x,sp.z]=T(sp.x,sp.z);if(sp.pts)sp.pts=sp.pts.map(([x,z])=>T(x,z));});
+  if(W.shrine)[W.shrine.x,W.shrine.z]=T(W.shrine.x,W.shrine.z);}
 function buildZone(z){clearZone();$('#raidT').hidden=true;$('#enrage').hidden=true;_s=12345;W.zone=z;ZONES[z].build();expandZone(z);if(z!=='prologue')updSpawners(0,true);}
 
 
@@ -2309,7 +2338,7 @@ function buildEternal(){buildCitadel();
     if(e.tag)e.tag.innerHTML='영원의 이그니스 <small>Lv.120</small>';};
   const beaten=()=>W.eternalDown||W.enemies.some(q=>q.eternal&&q.dead);
   portal(0,28.5,'hall',[-3.6,3.6],always,'','진급의 전당으로 돌아가기 ›');
-  portal(0,-26.5,'clock',[0,-32],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
+  portal(0,-26.5,'clock',[32,0],beaten,'영원의 이그니스를 쓰러뜨리면 미로로 가는 문이 열립니다','제단 너머 · 확장 미로 ›',{door:true}).g.position.y=1.6;
   later(1.2,()=>toast('영원한 성채 · 성문이 모두 닫혔습니다. 영원의 이그니스를 쓰러뜨리세요','bad'));}
 function buildHall(){
   setEnv({sky:0x0e0a08,fog:[30,70],ht:0xe8d0a8,hb:0x2a1c12,hi:1.15,sun:0xffe0b0,si:1.1,ash:false});
@@ -2504,8 +2533,8 @@ function buildCitadel(){
   ground(0,0,60,60,0x646975,.05,1);
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
   const WC=0xa4a8b2;
-  stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,30,-29,8,WC);  // the dragon-altar door stands on the Soul Altar terrace, not in a wall gap
-  stoneWall(-30,29,-16.2,29,8,WC);stoneWall(-7.8,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
+  stoneWall(-30,-29,30,-29,8,WC);  // the dragon-altar door stands on the Soul Altar terrace, not in a wall gap
+  stoneWall(-30,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
   stoneWall(-30,-29,-30,-3.6,8,WC);stoneWall(-30,3.6,-30,29,8,WC);stoneWall(30,-29,30,-3.6,8,WC);stoneWall(30,3.6,30,29,8,WC);
   tower(-29,-28,12,0xaeb2bc);tower(29,-28,12,0xaeb2bc);tower(-29,28,12,0xaeb2bc);tower(29,28,12,0xaeb2bc);
   fountain(0,0);
@@ -2585,10 +2614,8 @@ function buildCitadel(){
   // statues (user Meshy models) flanking the main road from the south gate to the plaza
   [['meshy_st_angel',-5.6,13,Math.PI/2],['meshy_st_goddess',5.6,13,-Math.PI/2],['meshy_st_archer',-5.6,22,Math.PI/2],['meshy_st_tide',5.6,22,-Math.PI/2]].forEach(([n,x,z,r])=>{if(PROPS[n]){prop(n,x,z,{h:5,rot:r});addCircle(x,z,.9);}});
   decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-26,-17,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
-  portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 야수 서식지 Lv.1~15 ›');
-  portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
-  portal(-12,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
-  portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
+  portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 서쪽 사냥터 (야수 서식지 Lv.1~15) ›');
+  portal(28.5,0,'port',[-17,0],ok,'','동문 · 천명 항구 ›');
   portal(0,-26.5,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
   portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
   // cottages (user Meshy houses) fill the empty quarters around the plaza; doors face the roads
@@ -2610,12 +2637,12 @@ function buildBeasts(){
   setEnv({sky:0x3a4450,fog:[30,120],ht:0x9aaac0,hb:0x2a2e22,hi:.55,sun:0xffcf98,si:1,ash:true,ashCol:0x9a948c,ashSize:.1});
   W.bounds=[-38,37,-38,38];
   ground(0,0,440,440,0x3a4a2c,.1);ground(0,0,80,80,0x4a5c33,.14,1);
-  for(let x=37;x>-24;x-=4)ground(x,Math.sin(x*.09)*4,4.6,4.4,0x6e5c47,.06,2);
+  for(let x=37;x>-40;x-=4)ground(x,Math.sin(x*.09)*4,4.6,4.4,0x6e5c47,.06,2);
   grass(0,0,76,76,900,0x5e7440);grassCarpet(0x9ab070);
   const SPW=[[22,15],[18,-17],[-6,-20],[-20,14],[-26,-6],[-12,25]];
-  for(let i=0;i<46;i++){const a=srand()*6.28,r=34+srand()*12,x=Math.cos(a)*r,z=Math.sin(a)*r;if(x>30&&Math.abs(z)<9)continue;tree(x,z,1+srand()*.7,srand()<.45?'pine':null);}
+  for(let i=0;i<46;i++){const a=srand()*6.28,r=34+srand()*12,x=Math.cos(a)*r,z=Math.sin(a)*r;if(Math.abs(x)>30&&Math.abs(z)<9)continue;tree(x,z,1+srand()*.7,srand()<.45?'pine':null);}
   for(let i=0;i<24;i++){const x=-30+srand()*56,z=-30+srand()*60;if(Math.abs(z-Math.sin(x*.09)*4)<5||SPW.some(([a,b])=>Math.hypot(x-a,z-b)<10))continue;tree(x,z,.7+srand()*.4,srand()<.45?'pine':null);}
-  for(let i=0;i<16;i++){const x=-32+srand()*62,z=-32+srand()*64;if(x>24&&Math.abs(z)<7)continue;rock(x,z,.7+srand()*1.3);}
+  for(let i=0;i<16;i++){const x=-32+srand()*62,z=-32+srand()*64;if(Math.abs(x)>24&&Math.abs(z)<7)continue;rock(x,z,.7+srand()*1.3);}
   if(KIT){[[-60,-30],[-55,30],[0,-65],[10,65],[-70,0]].forEach(([x,z],i)=>prop(['mountain_A_grass_trees','mountain_B_grass_trees','hills_A_trees'][i%3],x,z,{fit:40,rot:i}));scatterProps([['bone_A',.6],['sack',.8],['resource_lumber',1.4]],12,-30,30,-30,30);}
   volcano(80,-260,1.6);
   spawner('beastBoar',22,15,6,5,7,always,null,[2,6]);spawner('beastBoar',18,-17,6,5,7,always,null,[4,8]);
@@ -2625,14 +2652,15 @@ function buildBeasts(){
     ['meshy_bush',-30,8,2.4,.8],['meshy_bush',14,-32,2.4,.8],['meshy_bush',-4,12,2,.8],['meshy_bush',28,12,2.2,.8]]);
   if(PROPS.meshy_worldtree){const l=new THREE.PointLight(0xc8ffb0,1.1,26,2);l.position.set(-4,9,-35);W.root.add(l);}
   portal(37,0,'citadel',[-25,0],always,'','천명 성채 서문 ›');
+  portal(-37,0,'grave',[32,0],always,'','서쪽 · 원혼의 묘지 Lv.15~40 ›');
 }
 function buildGrave(){
   setEnv({sky:0x1e1a2a,fog:[22,100],ht:0x7a78a8,hb:0x1a1618,hi:.5,sun:0xa8b0ff,si:.7,ash:true,ashCol:0x9ab8ff,ashSize:.12,ashUp:true});
   W.bounds=[-37,38,-38,38];
   ground(0,0,440,440,0x22241e,.12);ground(0,0,80,80,0x2c2e26,.18,1);
   for(let x=-37;x<26;x+=4)ground(x,Math.cos(x*.1)*3,4.4,4.4,0x3e3a34,.08,2);
-  for(let i=0;i<40;i++){const x=-34+srand()*70,z=-34+srand()*70;if(x<-26&&Math.abs(z)<7)continue;tree(x,z,1+srand()*.6,'dead');}
-  if(KIT){scatterProps([['grave_A',1.7],['gravestone',1.1],['gravemarker_A',1],['ribcage',1.2],['bone_A',.6],['skull',.45],['fence_broken',2.2]],110,-34,36,-34,34,(x,z)=>x<-26&&Math.abs(z)<7);
+  for(let i=0;i<40;i++){const x=-34+srand()*70,z=-34+srand()*70;if(x<-26&&Math.abs(z)<7||x>28&&Math.abs(z+24)<7)continue;tree(x,z,1+srand()*.6,'dead');}
+  if(KIT){scatterProps([['grave_A',1.7],['gravestone',1.1],['gravemarker_A',1],['ribcage',1.2],['bone_A',.6],['skull',.45],['fence_broken',2.2]],110,-34,36,-34,34,(x,z)=>x<-26&&Math.abs(z)<7||x>28&&Math.abs(z+24)<7);
     [[-10,-12],[12,14],[20,-18],[-18,20],[4,-26]].forEach(([x,z])=>prop('shrine_candles',x,z,{h:1.6}));[[-30,-6],[-30,6]].forEach(([x,z])=>prop('post_lantern',x,z,{h:3}));prop('arch_gate',-33,0,{fit:6,rot:Math.PI/2});
     [[60,0],[40,-60],[40,60]].forEach(([x,z],i)=>prop('mountain_C',x,z,{fit:44,rot:i,tint:0x8a88a8}));}
   const fogT=fogTexture();[0,1].forEach(i=>{const f=new THREE.Mesh(new THREE.PlaneGeometry(120,120),new THREE.MeshBasicMaterial({map:fogT,color:0x8a90c0,transparent:true,opacity:.28,depthWrite:false}));f.rotation.x=-Math.PI/2;f.position.y=.6+i*.9;W.root.add(f);W.anim.push(t=>{fogT.offset.x=t*.01;});});
@@ -2643,7 +2671,9 @@ function buildGrave(){
   decor([['meshy_stump',-24,-24,1.8,.8],['meshy_stump',8,24,1.8,.8]]);
   if(PROPS.meshy_glowshroom)[[-20,-6],[-6,-22],[10,-10],[26,-4],[16,26],[-26,24],[0,12],[-10,30]].forEach(([x,z],i)=>{const g=prop('meshy_glowshroom',x,z,{h:1.4+srand()*1.2,rot:srand()*6});addCircle(x,z,.5);
     if(i%2===0){const l=new THREE.PointLight(0x4ac8ff,1.2,8,2);l.position.set(x,1.4,z);W.root.add(l);}});
-  portal(-37,0,'citadel',[25,0],always,'','천명 성채 동문 ›');
+  transformZone(-1,0,0,1);
+  portal(37,0,'beasts',[-32,0],always,'','동쪽 · 야수 서식지 ›');
+  portal(-37,-24,'clock',[32,0],always,'','서쪽 · 태엽 미로 Lv.40~70 ›');
 }
 function buildClock(){
   setEnv({sky:0x1c1814,fog:[22,90],ht:0xc8a878,hb:0x2a2016,hi:.55,sun:0xffc890,si:.9,ash:true,ashCol:0xffc070,ashSize:.08});
@@ -2661,7 +2691,9 @@ function buildClock(){
   spawner('clockDoll',-20,0,5,4,8,always,null,[40,47]);spawner('clockDoll',0,-16,5,4,8,always,null,[47,56]);spawner('clockDoll',26,-14,5,3,8,always,null,[50,56]);
   spawner('clockGolem',-4,14,4,2,10,always,null,[56,62]);spawner('clockGolem',28,20,4,2,10,always,null,[62,70]);spawner('clockGolem',-24,30,4,2,10,always,null,[64,70]);
   spawner('clockBoss',-10,31,0,1,180,always);
-  portal(0,-36.5,'citadel',[-12,25],always,'','천명 성채 남문 ›');
+  transformZone(0,-1,1,0);
+  portal(36.5,0,'grave',[-32,-24],always,'','동쪽 · 원혼의 묘지 ›');
+  portal(-37,10,'asura',[32,0],always,'','서쪽 · 아수라 흑야 협곡 Lv.70~99 ›');
 }
 function buildAsura(){
   setEnv({sky:0x2a0c0a,fog:[26,120],ht:0xc86a5a,hb:0x1a0806,hi:.5,sun:0xff7a4a,si:1,ash:true,ashCol:0xff6a2a,ashUp:true,ashSize:.16});
@@ -2677,8 +2709,9 @@ function buildAsura(){
   spawner('asuraWarrior',-12,-18,5,3,9,always,null,[84,90]);spawner('asuraWarrior',10,-34,5,3,9,always,null,[90,97]);
   spawner('asuraBoss',0,-47,0,1,180,always);
   spawner('asuraGate',11,-54,0,1,300,always);  // 용혈의 제단 입구를 지키는 지옥 룬검 군주
-  portal(0,36.5,'citadel',[-14,-25],always,'','천명 성채 북문 ›');
-  portal(0,-58.5,'altar',[0,24],always,'','용혈의 제단 ›');
+  transformZone(0,1,-1,0);
+  portal(36.5,0,'clock',[-32,10],always,'','동쪽 · 태엽 미로 ›');
+  portal(-58.5,0,'altar',[0,23],always,'','서쪽 끝 · 용혈의 제단 ›');
 }
 function buildAltar(){
   setEnv({sky:0x140606,fog:[40,170],ht:0xa04a3a,hb:0x100404,hi:.45,sun:0xff6a3a,si:1,ash:true,ashCol:0xff5a1a,ashUp:true,ashSize:.22});
@@ -2691,7 +2724,7 @@ function buildAltar(){
   volcano(0,-160,2.4);
   if(S.level<90)later(1,()=>toast('경고: 권장 레벨 99 · 현재 레벨로는 이그니스의 공격 한 번에 쓰러질 수 있습니다','bad'));
   spawner('ignis',0,-6,0,1,90,always);
-  portal(0,27.5,'citadel',[0,-25],always,'','천명 성채 북문 ›');
+  portal(0,27.5,'asura',[-54,0],always,'','아수라 흑야 협곡 ›');
   portal(0,-25.5,'lair',[0,22],()=>!!S.ignisDown&&S.level>=99,'Lv.99 · 이그니스를 쓰러뜨리면 멸세의 둥지로 가는 길이 열립니다','멸세의 둥지 · 바라카스 ›',{door:true});
 }
 
@@ -2812,7 +2845,7 @@ const DONE={
   async citadel(){
     const nq=curQ();
     S.gold+=20000;S.stones.low+=10;S.stones.mid+=3;S.scrolls+=1;save();refreshHud();
-    await dialog([['sys','천명 성채 입성 기념 지원품이 지급되었습니다.\n· 20,000 골드\n· 하급 강화석 ×10, 중급 강화석 ×3\n· 보호의 주문서 ×1'],['sys','천명 성채 안내\n· 남서쪽 [객주소] 객주인 아릴: 귀환지 등록, 잡템 매각, 창고\n· 북쪽 계단 위 [영혼의 제단] 대제사장 로웬: 경험치로 스탯 강화, Lv.99 한계 돌파\n· 동문 옆 [철화 대장간] 대장장이 부르칸: 강화, 수리, 용혈 무기 제련'],['sys','· 무관 다빈(전사 수련) · 정보상 태완(지름길) · 잡화상 동준(잡화점) · 광장의 천명의 신 서준(하루 한 번 축복)\n· 서문 Lv.1~15 · 동문 Lv.15~40 · 남서문 Lv.40~70 · 북서문 Lv.70~99 · 영혼의 제단 뒤 용혈의 제단']]);
+    await dialog([['sys','천명 성채 입성 기념 지원품이 지급되었습니다.\n· 20,000 골드\n· 하급 강화석 ×10, 중급 강화석 ×3\n· 보호의 주문서 ×1'],['sys','천명 성채 안내\n· 남서쪽 [객주소] 객주인 아릴: 귀환지 등록, 잡템 매각, 창고\n· 북쪽 계단 위 [영혼의 제단] 대제사장 로웬: 경험치로 스탯 강화, Lv.99 한계 돌파\n· 동문 곁 [철화 대장간] 대장장이 부르칸: 강화, 수리, 용혈 무기 제련'],['sys','· 무관 다빈(전사 수련) · 정보상 태완(지름길) · 잡화상 동준(잡화점) · 광장의 천명의 신 서준(하루 한 번 축복)\n· 서문을 나서 서쪽으로: 야수 서식지 Lv.1~15 → 원혼의 묘지 Lv.15~40 → 태엽 미로 Lv.40~70 → 아수라 협곡 Lv.70~99 → 용혈의 제단\n· 동문: 천명 항구 (신대륙 「용의 바다」 행 방주)']]);
   },
 };
 async function csEldric(){
@@ -2860,11 +2893,12 @@ function hitEnemy(e,mult,o){
   let d=o.fixed?P.atk*mult:P.atk*mult*rand(.9,1.1);const crit=o.fixed?false:o.crit||Math.random()<(P.crit||.12)+cA;if(crit)d*=(o.critX||P.critX||1.6)+cX;
   if(o.add)d+=o.add;if(P.ascT>0&&o.skill)d*=1.3;if(S.cls==='warrior'&&P.lset&&P.lset.two&&e.stun>0)d*=1.25;
   if(e.def){const pen=Math.min(1,(o.pierce||0)+(P.pierceT>0?.2:0)+((P.gs&&P.gs.pierce)||0)/100),eff=e.def*(e.defDownT>0?.8:1)*(1-pen),tf=S.cls==='shaman'&&!o.merc&&!o.fixed?.3:0;d*=(1-tf)*mitig(eff)+tf;}
-  if(e.d.boss&&P.gs&&P.gs.uniq.slayer)d*=1.15;if(S.cls==='shaman'&&P.set3&&!o.merc)d*=1.35;if(e.mark>0)d*=1.3;if(o.undeadX&&isUndead(e))d*=o.undeadX;if(e.seal>0&&S.cls==='shaman'&&isUndead(e))d*=1.1;d=Math.max(1,Math.round(d));
+  if(e.d.boss&&P.gs&&P.gs.uniq.slayer)d*=1.15;if(S.cls==='shaman'&&P.set3&&!o.merc)d*=1.35;if(e.mark>0)d*=1.3;if(S.cls==='rogue'&&(e.deck||e.type==='krakenArm'))d*=1.5;if(e.vulnT>0)d*=1.5;if(o.undeadX&&isUndead(e))d*=o.undeadX;if(e.seal>0&&S.cls==='shaman'&&isUndead(e))d*=1.1;d=Math.max(1,Math.round(d));
   if(P.godT>0&&!o.holy&&rt-(P.holyT||0)>.45){P.holyT=rt;holyWave(e.pos.clone());}
   let amb=false;if(P.ambush&&!o.merc&&!o.holy&&!o.fixed){d=Math.round(d*3*(crit?1:1.6));amb=true;P.ambush=false;later(0,breakStealth);floatText(e.pos,'기습!','crit',e.tagY+.5);}
   if(S.admin&&!e.d.dummy&&d<e.hp){d=e.type==='barakas'?Math.ceil(e.maxHp*.08):Math.ceil(e.hp);}
   if(!e.d.dummy)e.hp-=d;
+  if(S.cls==='rogue'&&!o.fixed&&!e.d.dummy&&!e.d.static)synMark(e);else if(S.cls==='shaman'&&!o.syn&&!o.merc&&!e.d.dummy&&synMarked(e))later(0,()=>synBlast(e));
   if(e.hpFloor&&e.hp<e.maxHp*e.hpFloor)e.hp=Math.ceil(e.maxHp*e.hpFloor);
   floatText(e.pos,fmt(d),crit||amb?'crit':'dmg',e.tagY*.8);if(o.basic||o.skill)auHit(S.cls,crit||amb);
   e.flashT=.1;e.showT=6;
@@ -2901,6 +2935,7 @@ function killEnemy(e){
   if(e.type==='ignis'){ignisLoot(e);if(!S.ignisDown){S.ignisDown=true;toast('용혈의 제단 북쪽 · [멸세의 둥지] 문이 열렸습니다','gold');}}
   if(e.type==='barakas')barakasLoot(e);
   if(e.onDie)e.onDie(e);
+  if(W.zone==='coral')godShard(e);
   if(e.type==='clockBoss'||(e.type==='asuraBoss'&&Math.random()<.3)){S.stoneAwk=(S.stoneAwk||0)+1;toast('[각성의 돌] 획득! · Lv.50에 2차 진급 재료','gold');}
   if(e.type==='ignis'&&Math.random()<.35){S.dheart=(S.dheart||0)+1;toast('이그니스의 [드래곤하트] 획득! · Lv.99 3차 진급 재료','gold');}
   if(d.drop)for(const k in d.drop){if(Math.random()<d.drop[k]*dropMul()){S.stones[k]++;toast(STONE[k]+' 획득');}}
@@ -2948,6 +2983,7 @@ function hurtPlayer(amount,src,ho){ho=ho||{};
   if(P.aegisT>0){floatText(P.pos,'용암 보호막','info',2);return;}
   if(src&&src.weakT>0)amount*=.8;
   if(P.dshieldT>0)amount*=.2;  // 신성 방패
+  if(P.synT>0)amount*=.8;  // 시너지 공명
   const magic=!ho.phys,tf=ho.trueFrac||0;let def=(magic?(P.mdef||P.def):P.def)*(P.shieldT>0?1.5:1)*(1-(src&&src.pr||0))*(ho.ignoreDef?1-ho.ignoreDef:1);
   let d=amount*((1-tf)*mitig(def)+tf)*(src&&!src.pvp?pveK():1)*rand(.9,1.1)*(1-.15*(P.rageN||0))*(1-.03*grit())*(1-(P.dr||0))*(P.immT>0?.5:1);d=Math.max(1,Math.round(d));
   if(ho.fixed)d=Math.round(amount);
@@ -3097,7 +3133,7 @@ function rageGain(v){if(S.cls!=='warrior'||!(v>0))return;resAdd(v*(1+.05*grit())
 function isBehind(e){const dx=P.pos.x-e.pos.x,dz=P.pos.z-e.pos.z,d=Math.hypot(dx,dz)||1;return (Math.sin(e.face)*dx+Math.cos(e.face)*dz)/d<-.25;}
 function resCost(k){const s=CLASSES[S.cls].sk[k];return s&&s.res||0;}
 function canUse(k){if(P.mp<mpCost(k))return false;if(resOf()&&(P.res||0)<resCost(k))return false;if(S.cls==='rogue'&&k==='s3'&&!(P.cp>0))return false;return true;}
-function healMul(){return (S.cls==='shaman'&&S.level>=15?1.3:1)*(S.cls==='shaman'&&P.set3?1.35:1)*(P.godT>0?1.5:1)*(S.cls==='shaman'&&P.lset&&P.lset.w?1.25:1);}
+function healMul(){return (S.godMark&&S.cls==='shaman'?1.1:1)*(S.cls==='shaman'&&S.level>=15?1.3:1)*(S.cls==='shaman'&&P.set3?1.35:1)*(P.godT>0?1.5:1)*(S.cls==='shaman'&&P.lset&&P.lset.w?1.25:1);}
 function skOk(k){const s=CLASSES[S.cls].sk[k];return !!s&&(S.level>=s.lv||(k==='ult'&&tierOf()>=2))&&(!s.tut||S.tut);}
 function skNeed(k){const s=CLASSES[S.cls].sk[k];if(!s)return S.cls==='novice'?'Lv.15 진급':'-';if(k==='ult'&&S.level<s.lv)return '2차 진급';if(s.tut&&!S.tut)return '잠김';return 'Lv.'+s.lv;}
 function useSkill(k){
@@ -3113,7 +3149,7 @@ function useSkill(k){
   if(S.cls==='rogue'&&k==='s3'&&!(P.cp>0)){toast('급소 포인트가 없습니다 (그림자 침투 · 급소 베기로 쌓으세요)');return;}
   if(sk.gold&&S.gold<sk.gold){toast('골드가 부족합니다. ('+sk.gold+' 골드 필요)');return;}
   const ok=SKILLS[S.cls][k]();
-  if(ok!==false){P.cd[k]=sk.cd*(P.godT>0?.5:1)*(1-(P.cdr||0))*(S.cls==='rogue'&&P.lset&&P.lset.two&&(k==='s1'||k==='s3')?.8:1);if(typeof setFxSkill==='function')setFxSkill(k);if(sk.gold){S.gold-=sk.gold;floatText(P.pos,'-'+sk.gold+' G','info',2.9);}
+  if(ok!==false){if(W.zone==='sea'&&S.cls==='shaman'&&!SEA.done){SEA.bar=Math.min(30,SEA.bar+6);floatText(P.pos,'방주 신성 결계 +6%','heal',3.2);}P.cd[k]=sk.cd*(P.godT>0?.5:1)*(1-(P.cdr||0))*(S.cls==='rogue'&&P.lset&&P.lset.two&&(k==='s1'||k==='s3')?.8:1);if(typeof setFxSkill==='function')setFxSkill(k);if(sk.gold){S.gold-=sk.gold;floatText(P.pos,'-'+sk.gold+' G','info',2.9);}
     if(P.stealthT>0&&k!=='s2'&&S.cls==='rogue'){}
     const w=S.weapon;if(S.cls==='shaman'&&w.db&&!w.destroyed&&Math.random()<.15+.02*w.db){floatText(P.pos,'용혈: 마력 소모 0','info',3);const t=autoTarget(14);if(t)later(.5,()=>lavaBurst(t.pos.clone(),w.db));}else P.mp-=cost;if(MP.peer)mpSend({t:'fx',k:'skill'});later(.3,()=>pvpStrike(2.2,4,false,(PVP_FX[S.cls]||{})[k],S.cls==='warrior'&&k==='s3'?.3:0));
     if(goalActive('skill','dummy')){const sc=W.enemies.find(e=>e.type==='scarecrow');if(sc&&d2(sc.pos,P.pos)<16)later(.8,()=>progress('skill','dummy'));}}
@@ -3327,6 +3363,7 @@ function updEnemy(e,dt){
     else{e.parts.b.rotation.z=Math.min(1.5,e.deadT*5);e.mesh.position.y=e.deadT>1?-(e.deadT-1)*1.5:0;if(e.deadT>2)removeEnemy(e);}
     e.tag.style.opacity=Math.max(0,1-e.deadT*2);return;}
   if(e.type==='barakas')barakasTick(e,dt);
+  if(e.type==='kraken'){krakenTick(e,dt);return;}if(e.type==='krakenArm'){krakenArmTick(e,dt);return;}
   if(e.d.static||e.d.dummy){if(e.d.dummy&&e.flashT>0)e.parts.b.rotation.z=Math.sin(rt*40)*.08;else if(e.d.dummy)e.parts.b.rotation.z*=.9;return;}
   if(e.air>0){e.air-=dt;const k=1-e.air/e.airT;e.mesh.position.y=Math.sin(k*Math.PI)*2.4;e.parts.b.rotation.x=k*6.28;if(e.air<=0){e.mesh.position.y=0;e.parts.b.rotation.x=0;}return;}
   if(e.freeze>0){e.freeze-=dt;if(e.freeze<=0)setSkin(e,null);return;}
@@ -3393,6 +3430,258 @@ function startSpecial(e,dP){
     e.cast={t:0,dur:1,tele,end:()=>{e.dash={dir:new V(Math.sin(ang),0,Math.cos(ang)),left:L,hit:false};}};return true;}
   return false;
 }
+/* ===================== 동쪽 바다 · 천명 항구 → 영원의 방주 호위전 → 신대륙 「용의 바다」 =====================
+   천명 성채 동문 → 천명 항구 (선장 하람) → 출항: 영원의 방주 호위전 (배 위 해상 디펜스, 심해의 인어 괴물 세이렌)
+   → 승리하면 신대륙 첫 지역 [잊혀진 산호 항구] (산호 · 용 화석 숲 · 잊혀진 신의 제단)
+   직업 역할: 전사 = 뱃머리 사수 (촉수 내려치기를 몸으로 막아 방주 피해 0), 도적 = 갑판 척살 (+50%) · 대포 포술 (x2),
+   신관 = 신성 결계 (스킬마다 방주에 결계, 결계가 방주 피해를 먼저 흡수). Meshy 모델을 올리면 meshy_ship / meshy_kraken 으로 교체됩니다. */
+function makeShip(o){o=o||{};const g=new THREE.Group();
+  if(PROPS.meshy_ship){  // user Meshy pirate ship: hull 12-29% of its height (a display stand below), deck at 29% -> deck at y=0, bow to -z
+    const H=31.9,o2={h:H,y:-.29*H,rot:-Math.PI/2,par:g};const full=prop('meshy_ship',0,0,o2);
+    if(o.sea&&full){renderer.localClippingEnabled=true;const lo=[new THREE.Plane(new V(0,-1,0),1)],hi=[new THREE.Plane(new V(0,1,0),-1)];  // raid deck: solid hull, see-through rigging
+      full.traverse(q=>{if(q.isMesh){q.material=q.material.clone();q.material.clippingPlanes=lo;}});
+      const up=prop('meshy_ship',0,0,o2);if(up)up.traverse(q=>{if(q.isMesh){q.material=q.material.clone();q.material.clippingPlanes=hi;q.material.transparent=true;q.material.opacity=.08;q.material.depthWrite=false;q.castShadow=false;}});}
+    return g;}
+  const ivory=M(0xe8dcc0,{roughness:.7}),gold=M(0xd8a83a,{roughness:.35,metalness:.7,emissive:0x3a2406}),wood=M(0x6a4a2e,{roughness:.9}),dark=M(0x3a2618,{roughness:.9}),sailM=new THREE.MeshStandardMaterial({color:0xf2ead8,roughness:.9,side:THREE.DoubleSide});
+  // hull: top-down outline (bow at -z) extruded downwards
+  const sh=new THREE.Shape();sh.moveTo(-4.6,12.5);sh.lineTo(4.6,12.5);sh.lineTo(4.9,2);sh.quadraticCurveTo(4.6,-10,0,-17);sh.quadraticCurveTo(-4.6,-10,-4.9,2);sh.lineTo(-4.6,12.5);
+  const hull=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:3.6,bevelEnabled:false,curveSegments:14}),ivory);hull.rotation.x=Math.PI/2;hull.position.y=-.02;g.add(hull);
+  const band=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.35,bevelEnabled:false,curveSegments:14}),gold);band.rotation.x=Math.PI/2;band.position.y=-1.1;band.scale.set(1.015,1.015,1);g.add(band);
+  const deckSh=new THREE.Shape(sh.getPoints(20).map(p=>new THREE.Vector2(p.x*.96,p.y*.98)));
+  const deck=new THREE.Mesh(new THREE.ShapeGeometry(deckSh),new THREE.MeshStandardMaterial({color:0x8a6a44,roughness:.85}));deck.rotation.x=-Math.PI/2;deck.position.y=.02;deck.receiveShadow=true;g.add(deck);
+  const gt=groundTex('dirt');if(gt){const t=gt.clone();t.needsUpdate=true;t.repeat.set(.12,.12);deck.material.map=t;deck.material.color.setHex(0x9a7a50);}
+  // rails with gold posts
+  const pts=sh.getPoints(40);for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],len=Math.hypot(b.x-a.x,b.y-a.y);if(len<.05)continue;
+    const r=mesh(new THREE.BoxGeometry(.14,.14,len),wood,(a.x+b.x)/2*.97,1,(a.y+b.y)/2*.99,g);r.rotation.y=Math.atan2(b.x-a.x,b.y-a.y);
+    if(i%3===0)mesh(new THREE.CylinderGeometry(.08,.1,1,6),gold,a.x*.97,.5,a.y*.99,g);}
+  // stern castle, masts, sails, bowsprit and a golden dragon figurehead
+  if(!o.sea){mesh(new THREE.BoxGeometry(9,2.2,3.6),ivory,0,1.1,10.6,g);mesh(new THREE.BoxGeometry(9.3,.3,3.9),gold,0,2.25,10.6,g);}
+  const sail=(z,h,w)=>{mesh(new THREE.CylinderGeometry(.22,.3,h,8),dark,0,h/2,z,g);mesh(new THREE.CylinderGeometry(.12,.12,w+1,6),dark,0,h*.82,z,g).rotation.z=Math.PI/2;
+    const geo=new THREE.PlaneGeometry(w,h*.55,8,4),p=geo.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i);p.setZ(i,-(1-(x/(w/2))**2)*.9);}geo.computeVertexNormals();
+    const s=new THREE.Mesh(geo,sailM);s.position.set(0,h*.52,z-.2);g.add(s);
+    const em=new THREE.Mesh(new THREE.CircleGeometry(1.1,24),glowM(0xffc84a,.8));em.position.set(0,h*.55,z-.95);em.rotation.y=Math.PI;g.add(em);return s;};
+  const s1=sail(-4.5,15,8.5),s2=sail(4.5,13,7.5);
+  const bs=mesh(new THREE.CylinderGeometry(.14,.2,7,6),dark,0,2.6,-18.5,g);bs.rotation.x=-1.15;
+  const fh=mesh(new THREE.ConeGeometry(.55,2.4,6),gold,0,.6,-17.4,g);fh.rotation.x=-1.3;
+  [-1,1].forEach(s=>{const l=new THREE.PointLight(0xffc070,.9,10,2);l.position.set(s*3.6,2.2,-2);g.add(l);mesh(new THREE.SphereGeometry(.22,8,6),glowM(0xffd080),s*3.9,1.5,-2,g);});
+  if(o.sea)g.traverse(q=>{if(q.isMesh&&q.position.y>2.6){q.material=q.material.clone();q.material.transparent=true;q.material.opacity=.2;q.material.depthWrite=false;q.castShadow=false;}});  // on the raid deck the rigging must not hide the fight
+  g.userData.sails=[s1,s2];return g;}
+function seaPlane(col,y,x0){const m=new THREE.Mesh(new THREE.PlaneGeometry(600,600,1,1),new THREE.MeshStandardMaterial({color:col,roughness:.12,metalness:.35,transparent:true,opacity:.92}));
+  m.rotation.x=-Math.PI/2;m.position.set((x0||0)+300*(x0!=null?1:0),y,0);W.root.add(m);const c0=new THREE.Color(col);W.anim.push(t=>{m.material.color.copy(c0).multiplyScalar(.92+Math.sin(t*.9)*.08);m.position.y=y+Math.sin(t*1.1)*.06;});return m;}
+/* ---------- 천명 항구 (성채 동문 밖) ---------- */
+function buildPort(){
+  setEnv({sky:0x3a4a62,fog:[30,140],ht:0xb8c8e0,hb:0x2a2a30,hi:.62,sun:0xffc890,si:1.05,ash:false});
+  W.bounds=[-22,18,-14,14];
+  ground(0,0,440,440,0x1c3444,.02);
+  ground(-9,0,26,28,0x6a6a70,.06,1);ground(-9,0,6,28,0x7a7a82,.05,2);ground(-9,0,26,5,0x7a7a82,.05,2);
+  seaPlane(0x1e5a70,.04,4);
+  for(let z=-13;z<=13;z+=2.4){mesh(new THREE.BoxGeometry(1,1.2,2.3),M(0x8a8a90,{roughness:.9}),4.5,-.1,z,W.root);}  // quay edge
+  const pier=new THREE.Group();W.root.add(pier);mesh(new THREE.BoxGeometry(14,.3,3.4),M(0x7a5a38,{roughness:.9}),11,.05,-1.5,pier);
+  for(let x=5;x<=18;x+=2.6)[-3,0].forEach(z=>mesh(new THREE.CylinderGeometry(.18,.2,2,6),M(0x4a3222),x,-.8,z,pier));
+  const ship=makeShip();ship.position.set(20,0,-8.6);ship.rotation.y=-Math.PI/2;W.root.add(ship);
+  const plank=mesh(new THREE.BoxGeometry(1.2,.12,3.4),M(0x6a4a2e),14,.6,-4.4,W.root);plank.rotation.x=.28;
+  W.anim.push(t=>{ship.position.y=Math.sin(t*.8)*.12;ship.rotation.z=Math.sin(t*.6)*.015;});
+  addBox(12,-8.8,8,5.3);addBox(12,7.2,8,6.8);  // water (the pier z -3..0 stays walkable)
+  // lighthouse
+  const lh=new THREE.Group();lh.position.set(-1,0,-12);W.root.add(lh);[[1.6,4,0xe8e4dc],[1.3,3,0xb83a2a],[1.1,3,0xe8e4dc]].reduce((y,[r,h,c])=>{mesh(new THREE.CylinderGeometry(r*.85,r,h,14),M(c),0,y+h/2,0,lh);return y+h;},0);
+  mesh(new THREE.CylinderGeometry(1.2,1.2,1.2,10,1,true),glowM(0xfff0b0,.6),0,10.6,0,lh);const beam=new THREE.Mesh(new THREE.ConeGeometry(2.4,16,16,1,true),glowM(0xfff0b0,.12));beam.rotation.z=Math.PI/2;beam.position.set(8,10.6,0);
+  const bh=new THREE.Group();bh.position.y=0;bh.add(beam);lh.add(bh);W.anim.push(t=>{bh.rotation.y=t*.5;});addCircle(-1,-12,1.8);
+  const ll=new THREE.PointLight(0xfff0c0,1.4,22,2);ll.position.set(-1,11,-12);W.root.add(ll);
+  // warehouses, sailors' tavern, cargo
+  if(KIT){[['building_home_B_red',-15,-9,0,7],['building_tavern_red',-13,9,Math.PI,9],['building_market_blue',-3,10,Math.PI,6]].forEach(([k,x,z,r,f])=>{if(PROPS[k]){prop(k,x,z,{fit:f,rot:r});addBox(x,z,f*.42,f*.36);}});
+    [['crates_stacked',2,-4,1.8],['barrel_large',2.6,5.5,1.1],['keg',1.4,6.2,1],['box_large',-6,-11,1.3],['crates_stacked',-8,-12,1.8],['barrel_large',3,-7,1.1]].forEach(([k,x,z,f])=>{if(PROPS[k]){prop(k,x,z,{fit:f,rot:srand()*6});addCircle(x,z,f*.4);}});}
+  [[-18,-5],[-18,5],[3.4,-2.6],[3.4,3.2]].forEach(([x,z],i)=>torch(x,z,i<2));
+  spawnNpc('haram',15.6,-1.6,-Math.PI/2);spawnNpc('sailor',-4,-6,Math.PI/2);spawnNpc('guard',-19.5,2.6,Math.PI/2).d=NPCS.guard;
+  portal(-21,0,'citadel',[25,0],always,'','천명 성채 동문 ›');
+  later(.8,()=>toast(S.coralOpen?'천명 항구 · 선장 하람에게 말을 걸면 신대륙으로 바로 항해할 수 있습니다':'천명 항구 · 선장 하람: 신대륙 「용의 바다」 행 방주 (Lv.90 이상)','gold'));}
+function openVoyage(){const lv=S.level,ok=lv>=90||S.admin,here=W.zone;
+  const rows=[];
+  if(here==='port'){rows.push('<div class="row"><div class="l"><b>출항 · 영원의 방주 호위전</b><small>폭풍의 바다에서 심해의 인어 괴물 세이렌으로부터 방주를 지킵니다 · Lv.90 이상 (권장 99)</small></div><button class="btn sm pri" id="vSail"'+(ok?'':' disabled')+'>출항</button></div>');
+    if(S.coralOpen)rows.push('<div class="row"><div class="l"><b>신대륙 직항</b><small>잊혀진 산호 항구로 바로 항해합니다</small></div><button class="btn sm" id="vDirect">항해</button></div>');}
+  else rows.push('<div class="row"><div class="l"><b>천명 항구로 귀항</b><small>방주를 타고 천명 성채 동쪽 항구로 돌아갑니다</small></div><button class="btn sm pri" id="vHome">귀항</button></div>');
+  openPanel('방주 선장 하람','<p class="note">「영원의 방주」는 천명의 빛을 싣고 용의 바다를 건너는 마지막 배일세. 바다 밑에서 무언가가 우릴 노리고 있지.</p>'+rows.join(''));
+  const b1=$('#vSail'),b2=$('#vDirect'),b3=$('#vHome');
+  if(b1)b1.onclick=()=>{closePanel();dialog([['haram','닻을 올려라! 폭풍이 오기 전에 빠져나간다!'],['haram','바다가 심상치 않아… 모두 갑판을 지켜 주게. 방주의 내구도가 바닥나면 끝이야!']]).then(()=>gotoZone('sea',[0,4]));};
+  if(b2)b2.onclick=()=>{closePanel();gotoZone('coral',[26,0]);};
+  if(b3)b3.onclick=()=>{closePanel();gotoZone('port',[12,-1.5]);};}
+/* ---------- 영원의 방주 호위전 (해상 디펜스 레이드) ---------- */
+const SEA={};
+function buildSea(){
+  setEnv({sky:0x141c28,fog:[18,95],ht:0x8aa0c0,hb:0x10141c,hi:.55,sun:0xa8c0ff,si:.75,ash:true,ashCol:0xa8c8f0,ashSize:.07});
+  W.bounds=[-3.8,3.8,-12,9.2];
+  seaPlane(0x16303e,-2.4);
+  const ship=makeShip({sea:true});W.root.add(ship);SEA.ship=ship;
+  [[0,-6],[0,5]].forEach(([x,z])=>{const l=new THREE.PointLight(0xffd8a0,1.3,16,1.6);l.position.set(x,5,z);W.root.add(l);});  // deck lanterns
+  // waves rolling past
+  for(let i=0;i<26;i++){const w=new THREE.Mesh(new THREE.TorusGeometry(rand(2,5),.12,4,16,Math.PI),new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:.35}));w.rotation.x=-Math.PI/2;
+    const x0=(Math.random()<.5?-1:1)*rand(7,40),z0=rand(-60,60);w.position.set(x0,-2.3,z0);W.root.add(w);W.anim.push(t=>{w.position.z=((z0+t*6+60)%120)-60;});}
+  swimmers(0,-4,17,2);
+  // cannons at the bow
+  SEA.cannons=[-1,1].map(s=>{const g=new THREE.Group();g.position.set(s*3,0,-10.2);W.root.add(g);
+    mesh(new THREE.BoxGeometry(1,.5,1.3),M(0x4a3222),0,.35,0,g);const b=mesh(new THREE.CylinderGeometry(.26,.34,1.8,10),M(0x2a2a30,{metalness:.8,roughness:.35}),0,.8,-.4,g);b.rotation.x=Math.PI/2-.35;
+    const ring=new THREE.Mesh(new THREE.RingGeometry(1.1,1.35,32),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.06;g.add(ring);
+    const fill=new THREE.Mesh(new THREE.CircleGeometry(1.1,32),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.35,depthWrite:false}));fill.rotation.x=-Math.PI/2;fill.position.y=.07;g.add(fill);addCircle(s*3,-10.2,.7);
+    return {x:s*3,z:-10.2,g,ring,fill,cd:0,ch:0};});
+  // holy barrier dome over the ship
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(15,32,16,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:0xffe6a0,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));dome.scale.set(.42,.5,1);W.root.add(dome);SEA.dome=dome;
+  Object.assign(SEA,{t:0,ph:0,hp:100,bar:0,wave:0,waveT:6,slamT:16,inkT:12,lungeT:24,lunge:0,done:false,k:null,storm:0,lightT:5,barT:10,deck:[]});
+  const ksp=spawner('kraken',0,-27,0,1,99999,always);ksp.onSpawn=krakenInit;
+  W.tick=seaTick;shipHud(true);
+  later(1.2,()=>dialog([['haram','놈이다… 심해의 인어 괴물 세이렌이 방주를 노린다! 갑판으로 기어오르는 놈들부터 막아!'],['sys','[영원의 방주 호위전]\n· 방주 내구도가 0이 되면 실패합니다.\n· 전사: 붉은 표시(촉수 내려치기) 안에 서서 몸으로 막으면 방주 피해 0\n· 도적: 갑판 몬스터 · 촉수 피해 +50%, 뱃머리 대포 피해 2배\n· 신관: 스킬을 쓸 때마다 방주에 신성 결계가 쌓여 피해를 먼저 흡수\n· 세이렌이 떠오르면 뱃머리 대포 옆에 서서 장전 → 자동 포격']]));}
+function shipHud(on){let h=$('#shipHud');if(!h){h=document.createElement('div');h.id='shipHud';h.innerHTML='<div class="sh-t"></div><div class="sh-b"><i class="hp"></i><i class="bar"></i></div>';document.body.appendChild(h);}h.hidden=!on;}
+function shipHit(pct,why){if(SEA.done||W.zone!=='sea')return;let v=pct;if(SEA.bar>0){const ab=Math.min(SEA.bar,v);SEA.bar-=ab;v-=ab;if(ab>0)floatText(new V(0,0,-2),'신성 결계 -'+ab.toFixed(1)+'%','info',3.4);}
+  if(v<=0)return;SEA.hp=Math.max(0,SEA.hp-v);if(why&&v>=2)floatText(new V(rand(-2,2),0,rand(-6,4)),why+' 방주 -'+v.toFixed(1)+'%','hurt',2.6);shake(Math.min(.5,v*.08));
+  if(SEA.hp<=0)seaFail();}
+function seaFail(){if(SEA.done)return;SEA.done=true;toast('영원의 방주가 침몰합니다… 천명 항구로 돌아갑니다','bad');auThunder(0);shake(1.4);
+  tween(3,k=>{if(SEA.ship)SEA.ship.position.y=-k*3;},()=>{},x=>x);later(3.4,()=>{if(W.zone==='sea')gotoZone('port',[12,-1.5]);});}
+/* giant sea reptiles (user Meshy Ichthyotitan) circling offshore */
+function swimmers(cx,cz,R,n){if(!PROPS.meshy_ichthyo)return;for(let i=0;i<n;i++){const g=prop('meshy_ichthyo',0,0,{fit:11});if(!g)return;const ph=i*Math.PI;
+  W.anim.push(t=>{const a=t*.22+ph,x=cx+Math.cos(a)*R,z=cz+Math.sin(a)*R*1.1;g.position.set(x,-2.2+Math.sin(t*1.6+ph)*.5,z);g.rotation.y=Math.atan2(-Math.sin(a)*R,Math.cos(a)*R*1.1);});}}
+function makeKraken(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);
+  if(PROPS.meshy_kraken){prop('meshy_kraken',0,0,{h:14,par:b});return {g,b,kraken:true,arms:[]};}
+  const skin=M(0x5a1e3a,{roughness:.55,emissive:0x1a0410}),under=M(0xb8686a,{roughness:.6});
+  const head=mesh(new THREE.SphereGeometry(4.2,24,18),skin,0,5,0,b);head.scale.set(1,1.35,1.1);
+  for(let i=0;i<14;i++){const a=Math.random()*6.28,y=Math.random()*1.2;mesh(new THREE.SphereGeometry(rand(.3,.7),8,6),skin,Math.cos(a)*3.8,5+y*3,Math.sin(a)*3.8,b);}
+  const eyes=[-1,1].map(s=>{const e=mesh(new THREE.SphereGeometry(.75,14,10),glowM(0xff2a1a),s*1.9,3.6,3.3,b);mesh(new THREE.SphereGeometry(.28,8,6),B(0x100000),s*1.9,3.6,3.95,b);return e;});
+  const arms=[];for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2,root=new THREE.Group();root.position.set(Math.cos(a)*3.2,1,Math.sin(a)*3.2);root.rotation.y=-a+Math.PI/2;b.add(root);
+    let par=root;const segs=[];for(let k=0;k<9;k++){const r=.95*(1-k/10),s=new THREE.Group();s.position.z=k?1.25:0;par.add(s);const m=mesh(new THREE.CylinderGeometry(r*.8,r,1.35,8),k%2?under:skin,0,0,.62,s);m.rotation.x=Math.PI/2;segs.push(s);par=s;}
+    arms.push({root,segs,ph:Math.random()*6});}
+  return {g,b,kraken:true,arms,eyes};}
+function makeArm(){const g=new THREE.Group(),b=new THREE.Group();g.add(b);const skin=M(0x5a1e3a,{roughness:.55,emissive:0x1a0410}),under=M(0xd08a8a);
+  for(let k=0;k<9;k++){const r=.75*(1-k/11),m=mesh(new THREE.CylinderGeometry(r*.85,r,1.05,8),k%2?under:skin,-4.2+k*1,r*.8,0,b);m.rotation.z=Math.PI/2;
+    if(k%2)for(const s of[-1,1])mesh(new THREE.SphereGeometry(r*.3,6,5),under,-4.2+k*1,.1,s*r*.6,b);}
+  return {g,b,arm:true};}
+function krakenInit(e){Object.assign(e,{invuln:true,surf:0,face:0,def:220});e.mesh.position.y=-14;e.tag.style.display='none';SEA.k=e;
+  e.onDie=()=>{SEA.done=true;raidT(null);shipHud(false);S.coralOpen=true;S.stones.top=(S.stones.top||0)+1;save();toast('심해의 인어 괴물 세이렌 격퇴! · [최상급 강화석] 획득','big');mpChatLine('🌊','[영원의 방주] 세이렌이 심해로 가라앉았습니다 — 폭풍 너머로 신대륙이 보입니다','s');
+    tween(4,k=>{e.mesh.position.y=-k*16;},()=>{},x=>x);later(2.5,()=>dialog([['haram','해냈군! 폭풍이 걷힌다… 저기 보이나? 산호로 뒤덮인 항구… 신대륙 「용의 바다」일세!']]).then(()=>{if(W.zone==='sea')gotoZone('coral',[26,0]);}));};}
+function krakenDamage(e,pct,why){if(!e||e.dead)return;const d=Math.round(e.maxHp*pct);e.hp-=d;e.flashT=.12;floatText(e.pos,why+' '+fmt(d),'crit',e.tagY*.6);if(e.hp<=0)killEnemy(e);}
+function krakenTick(e,dt){e.face=0;
+  const p=e.parts;if(!p.arms||!p.arms.length){p.b.rotation.z=Math.sin(rt*.8)*.06;p.b.rotation.x=Math.sin(rt*.6)*.04;}  // the mermaid sways in the swellif(p.arms)p.arms.forEach((a,i)=>a.segs.forEach((s,k)=>{s.rotation.x=Math.sin(rt*1.3+a.ph+k*.45)*.22-.05;s.rotation.y=Math.cos(rt*.9+a.ph+k*.3)*.12;}));
+  if(e.surf){const ty=SEA.lunge>0?-1.2:-3.4;e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
+  const tz=SEA.lunge>0?-15.2:-27;e.pos.z+=(tz-e.pos.z)*Math.min(1,dt*(SEA.lunge>0?4:1.2));}
+function krakenArmTick(e,dt){e.face=Math.PI/2*0;e.life-=dt;if(e.parts.b)e.parts.b.children.forEach((m,k)=>m.position.y=Math.max(.2,m.position.y)+Math.sin(rt*6+k)*.004);
+  if(e.life<=0&&!e.dead){shipHit(4,'촉수 조이기');floatText(e.pos,'촉수가 방주를 조입니다!','hurt',2);removeEnemy(e);}}
+function seaSlam(){const s=Math.random()<.5?-1:1,z=rand(-9.5,7),len=8.4,tele=teleRect(s*4.2,z,s>0?-Math.PI/2:Math.PI/2,len,2.6);
+  const arm=makeArm();arm.g.position.set(s*9,6,z);arm.g.rotation.z=s*1.2;W.root.add(arm.g);floatText(new V(s*3,0,z),'촉수 내려치기!','crit',2.4);
+  tween(2.1,k=>{tele.userData.set(k);arm.g.position.x=s*(9-k*1.5);arm.g.position.y=6+Math.sin(k*Math.PI)*2;arm.g.rotation.z=s*(1.2-k*.3);},()=>{killObj(tele);killObj(arm.g);if(SEA.done)return;shake(.9);
+    burst(0,.6,z,0x6a3a5a,40,8,.8,.6,-6);burst(s*4,.3,z,0xcfe6ff,30,6,.8,.4,-4);
+    const inR=!P.dead&&Math.abs(P.pos.z-z)<1.3+P.rad&&Math.abs(P.pos.x)<4.3;
+    if(inR&&S.cls==='warrior'){hurtPlayer(SEA.k?SEA.k.atk*.8:800,SEA.k,{phys:1});floatText(P.pos,'뱃머리 사수 · 방어!','crit',3.2);rageGain(25);}
+    else{if(inR)hurtPlayer(SEA.k?SEA.k.atk*1.6:1400,SEA.k,{phys:1});shipHit(SEA.ph>=3?7:5.5,'촉수 내려치기');}
+    const a=spawnEnemy('krakenArm',0,z);a.face=0;a.life=7;a.aggro=true;a.tag.classList.add('show');a.onDie=()=>{burst(0,1,z,0x6a2a4a,30,6,.8,.5,-4);if(SEA.k&&!SEA.k.dead)krakenDamage(SEA.k,.04,'촉수 절단!');};},x=>x);}
+function seaInk(){for(let i=0;i<3;i++){const at=i===0&&!P.dead?P.pos.clone():new V(rand(-3.4,3.4),0,rand(-10,8)),tele=teleCircle(at.x,at.z,2.2);
+    tween(1.6,k=>tele.userData.set(k),()=>{killObj(tele);burst(at.x,.6,at.z,0x1a0a2a,30,5,.8,.6,-4);if(!P.dead&&d2(at,P.pos)<2.2+P.rad){hurtPlayer(SEA.k?SEA.k.atk*1.1:900,SEA.k);P.slowT=2;floatText(P.pos,'먹물 · 둔화','info',3);}},x=>x);}}
+function seaLunge(){const tele=teleRect(0,-12,0,5.2,7.8);toast('세이렌이 뱃머리를 물어뜯으려 합니다! (전사: 뱃머리에서 막기)','bad');
+  tween(2,k=>tele.userData.set(k),()=>{killObj(tele);if(SEA.done)return;SEA.lunge=7;shake(1.2);auRoar(.9);const k0=SEA.k;
+    const blocked=!P.dead&&S.cls==='warrior'&&P.pos.z<-6.8;if(!P.dead&&P.pos.z<-6.8)hurtPlayer(k0?k0.atk*(blocked?.9:1.8):1500,k0,{phys:1});
+    shipHit(blocked?1:6,blocked?'뱃머리 사수 ·':'세이렌의 물어뜯기');if(blocked)floatText(P.pos,'뱃머리 사수!','crit',3.2);
+    toast('세이렌의 머리가 뱃머리에 걸렸습니다 — 약점 노출! 7초간 받는 피해 +50%','gold');},x=>x);}
+function spawnCrawlers(n){for(let i=0;i<n;i++){const s=Math.random()<.5?-1:1,z=rand(-9,7.5);const e=spawnEnemy('deepCrawler',s*3.5,z);e.deck=true;e.wait=999;e.aggro=false;burst(s*3.8,.4,z,0xcfe6ff,14,4,.6,.4,-3);}}
+function seaTick(dt){if(SEA.done)return;SEA.t+=dt;const k=SEA.k;
+  // lightning
+  SEA.lightT-=dt;if(SEA.lightT<=0){SEA.lightT=rand(5,11);const h0=hemi.intensity;hemi.intensity=2.4;later(.12,()=>hemi.intensity=h0);auThunder(.2);}
+  if(SEA.ship){SEA.ship.rotation.z=Math.sin(rt*.7)*.02;SEA.ship.rotation.x=Math.sin(rt*.5)*.01;}
+  SEA.dome.material.opacity=Math.min(.22,SEA.bar/30*.22)*(.8+Math.sin(rt*3)*.2);
+  if(S.cls==='shaman'){SEA.barT-=dt;if(SEA.barT<=0){SEA.barT=10;SEA.bar=Math.min(30,SEA.bar+2);}}
+  if(SEA.t<6)return;
+  if(SEA.ph===0){SEA.ph=1;toast('1단계 · 심해의 습격 — 갑판으로 기어오르는 괴물을 막으세요','bad');}
+  // crawler waves
+  SEA.waveT-=dt;if(SEA.waveT<=0){SEA.wave++;SEA.waveT=SEA.ph>=2?14:9;spawnCrawlers(Math.min(7,SEA.ph>=2?2+SEA.wave%3:3+Math.floor(SEA.wave/2)));}
+  SEA.slamT-=dt;if(SEA.slamT<=0&&SEA.t>12){SEA.slamT=SEA.ph>=3?5:SEA.ph>=2?7:10;seaSlam();}
+  // deck crawlers go for the main mast unless someone stands in their way (warriors taunt from farther)
+  const core=new V(0,0,-4),tr=S.cls==='warrior'?8:4.5;
+  for(const e of W.enemies){if(!e.deck||e.dead)continue;if(!e.aggro&&!P.dead&&d2(e.pos,P.pos)<tr){e.aggro=true;continue;}
+    if(!e.aggro){const dc=d2(e.pos,core);if(dc>1.8){moveEnt(e,core.x,core.z,e.d.spd,dt,.2);}else{e.atkCd-=dt;if(e.atkCd<=0){e.atkCd=1.2;e.anim={t:0,dur:.5};shipHit(.7,'갑판 괴물');}}}}
+  // phase 2: the kraken surfaces
+  if(SEA.ph===1&&k&&(SEA.t>=70||SEA.wave>=7)){SEA.ph=2;k.surf=1;k.invuln=false;k.tag.style.display='';k.aggro=true;k.showT=1e9;auRoar(1);shake(1.3);toast('2단계 · 심해의 인어 괴물 세이렌이 떠올랐습니다! 뱃머리 대포로 포격하세요','bad');mpChatLine('🌊','심해의 인어 괴물 세이렌이 수면 위로 떠올랐습니다','s');}
+  if(SEA.ph>=2&&k&&!k.dead){
+    if(SEA.ph===2&&k.hp<=k.maxHp*.3){SEA.ph=3;toast('3단계 · 세이렌이 광포해집니다 — 촉수가 더 자주 내려칩니다','bad');auRoar(1);}
+    SEA.inkT-=dt;if(SEA.inkT<=0){SEA.inkT=SEA.ph>=3?8:11;seaInk();}
+    SEA.lungeT-=dt;if(SEA.lungeT<=0&&SEA.lunge<=0){SEA.lungeT=22;seaLunge();}
+    if(SEA.lunge<=0)k.vulnT=0;if(SEA.lunge>0){SEA.lunge-=dt;k.vulnT=SEA.lunge;SEA.bite=(SEA.bite||0)+dt;if(SEA.bite>=1){SEA.bite=0;shipHit(1.2,'물어뜯기');}}
+    // cannons: stand beside one for 1.2 s to load; it fires on its own
+    for(const c of SEA.cannons){c.cd-=dt;const rdy=c.cd<=0;c.ring.material.color.setHex(rdy?0xffd070:0x6a6a6a);
+      if(rdy&&!P.dead&&Math.hypot(P.pos.x-c.x,P.pos.z-c.z)<1.7){c.ch+=dt;if(c.ch>=1.2){c.ch=0;c.cd=15;cannonFire(c);}}else c.ch=Math.max(0,c.ch-dt*2);
+      c.fill.scale.setScalar(Math.max(.01,c.ch/1.2));}}
+  if(SEA.t>480){SEA.storm=(SEA.storm||0)+dt;if(SEA.storm>=1){SEA.storm=0;shipHit(1,'대폭풍');}}
+  const s=Math.floor(SEA.t);raidT('방주 호위전 '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+(SEA.ph>=2?' · 세이렌 '+Math.ceil(k&&!k.dead?k.hp/k.maxHp*100:0)+'%':' · 습격 '+SEA.wave+'파')+(SEA.t>420?' · 대폭풍 '+Math.max(0,Math.ceil(480-SEA.t))+'초':''),SEA.hp<30||SEA.t>420);
+  const h=$('#shipHud');if(h&&!h.hidden){h.querySelector('.sh-t').textContent='영원의 방주 내구도 '+Math.ceil(SEA.hp)+'%'+(SEA.bar>0?' · 신성 결계 '+SEA.bar.toFixed(0)+'%':'');h.querySelector('.hp').style.width=SEA.hp+'%';h.querySelector('.bar').style.width=Math.min(100,SEA.bar/30*100)+'%';}}
+function cannonFire(c){const k=SEA.k;if(!k||k.dead)return;auRoar(.3);shake(.5);burst(c.x,1.2,c.z-1.2,0xffa040,24,6,.5,.4,0);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.35,10,8),B(0x1a1a1a));W.root.add(ball);const a=new V(c.x,1.2,c.z-1),b=new V(k.pos.x,k.mesh.position.y+5,k.pos.z);
+  tween(.7,t=>{ball.position.lerpVectors(a,b,t);ball.position.y+=Math.sin(t*Math.PI)*4;},()=>{killObj(ball);burst(b.x,b.y,b.z,0xff7a2a,40,8,.8,.6,0);ringFx(b.x,b.z,4,0xffa040,.5);
+    krakenDamage(k,S.cls==='rogue'?.1:.05,S.cls==='rogue'?'포술 명중!':'포격!');},x=>x);}
+/* ---------- 신대륙 「용의 바다」 · 잊혀진 산호 항구 ---------- */
+function coralCluster(x,z,s,col){const g=new THREE.Group();g.position.set(x,0,z);W.root.add(g);const m=M(col,{emissive:col,emissiveIntensity:.55,roughness:.4});
+  const n=4+Math.floor(srand()*5);for(let i=0;i<n;i++){const h=(1+srand()*2.2)*s,br=new THREE.Group();br.rotation.set((srand()-.5)*.9,srand()*6,(srand()-.5)*.9);g.add(br);
+    mesh(new THREE.CylinderGeometry(.06*s,.16*s,h,6),m,0,h/2,0,br);mesh(new THREE.SphereGeometry(.2*s,8,6),glowM(col,.9),0,h,0,br);
+    if(srand()<.6){const t=mesh(new THREE.CylinderGeometry(.04*s,.1*s,h*.5,5),m,0,h*.7,0,br);t.rotation.z=.8;t.position.x=.2*s;}}
+  addCircle(x,z,.5*s);return g;}
+function dragonFossil(x,z,rot,s){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;W.root.add(g);const bone=M(0xd8cfb8,{roughness:.8});
+  for(let i=0;i<14;i++){const v=mesh(new THREE.BoxGeometry(.6*s,.5*s,.7*s),bone,0,(1.2+Math.sin(i/13*Math.PI)*1.6)*s,(i-6.5)*.9*s,g);v.rotation.x=.2;}
+  for(let i=1;i<9;i++){const r=(1.6+Math.sin(i/9*Math.PI)*1.8)*s;[-1,1].forEach(sd=>{const rib=mesh(new THREE.TorusGeometry(r,.13*s,5,14,Math.PI*.62),bone,sd*.1,(1.2+Math.sin(i/13*Math.PI)*1.6)*s,(i-5)*.9*s,g);rib.rotation.set(0,Math.PI/2,sd>0?-.1:Math.PI+.1);});}
+  const sk=new THREE.Group();sk.position.set(0,.9*s,-7.2*s);sk.rotation.x=.35;g.add(sk);mesh(new THREE.BoxGeometry(1.8*s,1.4*s,2.6*s),bone,0,0,0,sk);mesh(new THREE.ConeGeometry(.7*s,2.2*s,6),bone,0,-.2*s,-2.2*s,sk).rotation.x=-Math.PI/2;
+  [-1,1].forEach(sd=>{const h=mesh(new THREE.ConeGeometry(.25*s,2*s,6),bone,sd*.7*s,.9*s,.9*s,sk);h.rotation.x=.9;});
+  addBox(x,z,1.6*s,6*s);return g;}
+function buildCoral(){
+  setEnv({sky:0x0c2626,fog:[22,110],ht:0x7ad8c8,hb:0x0a1a18,hi:.6,sun:0xffe0a8,si:.8,ash:true,ashCol:0x6affe0,ashUp:true,ashSize:.1});
+  W.bounds=[-38,30,-28,28];
+  ground(0,0,440,440,0x0e2a2a,.04);ground(-6,0,70,58,0x2a3a34,.14,1);ground(8,0,48,4.4,0x4a5448,.06,2);ground(-10,-10,4.4,30,0x4a5448,.06,2);
+  seaPlane(0x0e4a44,.04,31);
+  const pier=new THREE.Group();W.root.add(pier);for(let x=24;x<40;x+=1.6)mesh(new THREE.BoxGeometry(1.4,.25,3.4),M(0x3a4a42,{roughness:.9}),x,srand()*.1,rand(-.2,.2),pier).rotation.y=(srand()-.5)*.12;
+  const ship=makeShip();ship.position.set(40,0,-9);ship.rotation.y=-Math.PI/2;W.root.add(ship);W.anim.push(t=>{ship.position.y=Math.sin(t*.8)*.12;});addBox(40,-9,14,5.4);
+  const cols=[0xff5a8a,0x3affd8,0x9a6aff,0xffa04a,0x5ac8ff];
+  for(let i=0;i<34;i++){const x=-34+srand()*60,z=-25+srand()*50;if(Math.abs(z)<3.4&&x>-4||Math.hypot(x+6,z+20)<7||Math.hypot(x+32,z-6)<6)continue;coralCluster(x,z,.8+srand()*1.3,cols[i%cols.length]);
+    if(i%4===0){const l=new THREE.PointLight(cols[i%cols.length],1,10,2);l.position.set(x,1.6,z);W.root.add(l);}}
+  swimmers(48,0,11,1);dragonFossil(-20,14,.5,1.4);dragonFossil(12,-17,-1.1,1.1);
+  if(KIT){[['ribcage',-28,-8,5],['skull',4,20,2.4],['bone_A',-12,6,1.6],['ribcage',18,12,4],['bone_A',-24,22,1.8]].forEach(([k,x,z,f])=>{if(PROPS[k]){prop(k,x,z,{fit:f,rot:srand()*6,tint:0xd8d0b8});addCircle(x,z,f*.35);}});
+    [[-2,-24],[-12,-24],[-16,-17],[4,-16]].forEach(([x,z],i)=>{if(PROPS.pillar_decorated){const p=prop('pillar_decorated',x,z,{h:i%2?3.4:6,tint:0x7aa89a});if(p&&i%2)p.rotation.z=.25;addCircle(x,z,.8);}});}
+  // 잊혀진 신의 제단: a broken altar that still gives off a faint golden light
+  const AX=-6,AZ=-20,alt=new THREE.Group();alt.position.set(AX,0,AZ);W.root.add(alt);
+  mesh(new THREE.CylinderGeometry(3.2,3.6,.7,10),M(0x6a7a70,{roughness:.9}),0,.35,0,alt);mesh(new THREE.BoxGeometry(2.2,1.2,1.2),M(0x8a9a8a),0,1.3,0,alt);const top=mesh(new THREE.BoxGeometry(1.4,.4,1.1),M(0x8a9a8a),.5,2.1,.1,alt);top.rotation.z=.35;
+  const done=()=>S.godQ&&S.godQ.st>=2;
+  const ring=new THREE.Mesh(new THREE.RingGeometry(3.4,3.9,48),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));ring.rotation.x=-Math.PI/2;ring.position.y=.75;alt.add(ring);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(1,1.6,18,20,1,true),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.08,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.y=9;alt.add(beam);
+  const gl=new THREE.PointLight(0xffd070,1.3,14,2);gl.position.y=3;alt.add(gl);addCircle(AX,AZ,3.4);
+  W.anim.push(t=>{const k=done()?1.8:1;ring.rotation.z=t*.4;ring.material.opacity=(.35+Math.sin(t*1.6)*.15)*k;beam.material.opacity=(.06+Math.sin(t*1.1)*.03)*k;gl.intensity=(1.1+Math.sin(t*1.6)*.3)*k;if(Math.random()<.2*k)burst(AX+rand(-2,2),1+rand(0,3),AZ+rand(-2,2),0xffe8a0,1,.4,1,.3,.8);});
+  let nearT=0;W.tick=dt=>{nearT-=dt;if(nearT<=0&&!DL&&!P.dead&&Math.hypot(P.pos.x-AX,P.pos.z-AZ)<4.4){nearT=8;godAltar();}};
+  spawner('coralCrab',10,8,6,4,10,always,null,[99,99]);spawner('coralCrab',14,-8,6,4,10,always,null,[99,99]);
+  spawner('drownedKnight',-6,6,6,4,10,always,null,[99,99]);spawner('drownedKnight',-18,-4,6,4,10,always,null,[99,99]);
+  spawner('abyssCaller',-24,-16,6,3,12,always,null,[99,99]);spawner('abyssCaller',-2,18,6,3,12,always,null,[99,99]);
+  spawner('coralQueen',-32,6,0,1,300,always);
+  spawnNpc('haram',25.4,-2.4,-Math.PI/2);spawnNpc('pilgrim',-1.4,-15.2,Math.PI*.8);
+  later(1,()=>{toast('신대륙 「용의 바다」 · 잊혀진 산호 항구','big');if(!S.coralSeen){S.coralSeen=true;save();later(1.2,()=>dialog([['sys','산호로 뒤덮인 버려진 항구. 거대한 용의 뼈가 숲처럼 솟아 있고, 그 안쪽 어딘가에서 희미한 황금빛이 새어 나온다.']]));}});}
+const GODQ_N=3;
+function godAltar(){const q=S.godQ||(S.godQ={st:0,n:0});
+  if(q.st>=2){dialog([['sys','잊혀진 신의 제단이 따스한 황금빛으로 숨 쉬고 있다. 천명의 옛 이름이 그대 안에 새겨져 있다.']]);return;}
+  if(q.st===0){dialog([['sys','부서진 제단. 이끼 아래로 알 수 없는 문자가 희미하게 빛난다.\n…망각의 순례자라면 이 글을 읽을 수 있을지도 모른다.']]);return;}
+  if(q.n<GODQ_N){dialog([['sys','제단의 빛이 무언가를 기다린다. [고대 신의 파편] '+q.n+'/'+GODQ_N]]);return;}
+  q.st=2;S.godMark=true;S.title='잊혀진 신의 계승자';recalc();save();refreshHud();ringFx(-6,-20,8,0xffd070,1.2);burst(-6,2,-20,0xffe8a0,120,9,1.4,.6,-2);shake(.8);auChime(1);
+  const extra=S.cls==='shaman'?[['sys','(여신관의 몸이 빛에 잠긴다. 치유의 권능이 인간의 것이 아닌, 신의 것임을 깨닫는다.)'],['pilgrim','그대로군… 천명의 신관이여, 그대의 빛은 빌린 것이 아니었소. 이 바다 끝에서 진정한 신으로 깨어날 날이 올 것이오.']]:
+    S.cls==='warrior'?[['pilgrim','강철의 전사여, 신은 방패를 든 자를 먼저 기억하오. 그대의 몸이 결계가 될 것이오.']]:[['pilgrim','그림자 속을 걷는 자여, 빛은 그림자를 드리우는 자가 있어야 비로소 빛나는 법이오.']];
+  dialog([['sys','세 개의 파편이 제단 위에서 하나로 녹아들고, 황금빛 기둥이 하늘을 꿰뚫는다!'],['pilgrim','이 제단은… 천명(天命)이라 불리기 전, 이 세계를 지키던 옛 신의 것이오. 드래곤들이 바다를 건너 그 신을 삼켰지.']].concat(extra,[['sys','[신성 각인] 공격력 · 체력 · 마력 +5%'+(S.cls==='shaman'?' · 치유량 +10%':'')+'\n칭호 [잊혀진 신의 계승자] 획득']]));}
+function openGodQuest(){const q=S.godQ||(S.godQ={st:0,n:0});
+  if(q.st===0){dialog([['pilgrim','바다를 건너온 자가 있다니… 저 부서진 제단이 보이오? 천명의 신보다 먼저 이 세계를 지키던 신의 것이오.'],['pilgrim','이 항구의 괴물들은 신이 삼켜질 때 흩어진 파편을 품고 있소. [고대 신의 파편] '+GODQ_N+'개를 모아 제단에 바쳐 주시오.',[{t:'받아들인다',fn:()=>{q.st=1;q.n=q.n||0;save();toast('퀘스트 · 잊혀진 신의 제단: [고대 신의 파편] 0/'+GODQ_N,'gold');}},{t:'나중에'}]]]);return;}
+  if(q.st===1){dialog([['pilgrim',q.n>=GODQ_N?'파편이 모였군요. 제단 앞에 서 보시오.':'파편은 산호 괴물들과 익사한 기사들이 품고 있소. ('+q.n+'/'+GODQ_N+') 산호 여왕 네레이스는 반드시 하나를 지니고 있지.']]);return;}
+  dialog([['pilgrim','옛 신이 그대를 기억하오. 이 바다 너머, 더 깊은 곳에 신을 삼킨 드래곤들이 잠들어 있소…']]);}
+function godShard(e){const q=S.godQ;if(!q||q.st!==1||q.n>=GODQ_N)return;if(e.type==='coralQueen'||Math.random()<.2){q.n++;save();toast('[고대 신의 파편] '+q.n+'/'+GODQ_N,'gold');burst(e.pos.x,1.2,e.pos.z,0xffe08a,24,4,.8,.4,0);}}
+/* ---------- 3직업 시너지: 암흑 표식(도적) × 신성(신관) → 성암 폭발 → 공명 흡수(전사) ----------
+   도적의 공격은 적에게 5초 [암흑 표식]을 남기고, 파티원에게는 그 자리의 표식 지대(보라 원)로 전해집니다.
+   신관의 신성 공격이 표식에 닿으면 [성암 폭발] (주변 광역 피해) → 폭발 근처 파티원 방어 공명 (받는 피해 -20%, 6초),
+   전사는 폭발을 흡수해 보호막(최대 체력 10%)과 분노를 얻습니다. 몬스터는 각자 따로이므로 표식은 위치로 공유합니다. */
+const SYN={zones:[],sendT:0,cd:0};
+function synMark(e){e.dmark=5;if(!e.dmfx){const r=new THREE.Mesh(new THREE.RingGeometry(.55,.72,24),new THREE.MeshBasicMaterial({color:0xa04aff,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false}));r.rotation.x=-Math.PI/2;e.mesh.add(r);r.position.y=.12/Math.max(.01,e.mesh.scale.y);e.dmfx=r;}
+  if(MP.party&&Object.keys(MP.party).length&&rt>SYN.sendT){SYN.sendT=rt+.8;mpSend({t:'dmk',z:W.zone,x:+e.pos.x.toFixed(1),zz:+e.pos.z.toFixed(1)});}}
+function synZone(x,z){const m=new THREE.Mesh(new THREE.RingGeometry(3.4,4,40),new THREE.MeshBasicMaterial({color:0xa04aff,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.1,z);W.root.add(m);SYN.zones.push({x,z,t:5,m});}
+function synMarked(e){if(e.dmark>0)return true;return SYN.zones.some(q=>Math.hypot(q.x-e.pos.x,q.z-e.pos.z)<4);}
+function synBlast(e){if(rt<SYN.cd)return;SYN.cd=rt+1.2;e.dmark=0;const p=e.pos.clone();SYN.zones=SYN.zones.filter(q=>{if(Math.hypot(q.x-p.x,q.z-p.z)<4){killObj(q.m);return false;}return true;});
+  ringFx(p.x,p.z,4,0xfff0c0,.6);ringFx(p.x,p.z,3,0xa04aff,.5);burst(p.x,1.2,p.z,0xfff0c0,40,7,.8,.5,0);burst(p.x,1.2,p.z,0x8a3aff,30,6,.8,.5,0);floatText(p,'성암 폭발!','crit',e.tagY+.6);shake(.4);auChime(.6);
+  for(const q of W.enemies){if(!q.dead&&!q.d.dummy&&d2(q.pos,p)<4+q.rad)hitEnemy(q,1.5,{holy:true,syn:true,proc:true});}
+  synResonance(p.x,p.z,true);if(MP.party&&Object.keys(MP.party).length)mpSend({t:'res',z:W.zone,x:+p.x.toFixed(1),zz:+p.z.toFixed(1)});}
+function synResonance(x,z,own){if(!P||P.dead||Math.hypot(P.pos.x-x,P.pos.z-z)>14)return;P.synT=6;floatText(P.pos,'공명 · 받는 피해 -20%','info',3);
+  if(S.cls==='warrior'){const v=Math.round(P.maxHp*.1);P.barrier=(P.barrier||0)+v;P.barrierT=Math.max(P.barrierT||0,6);rageGain(20);floatText(P.pos,'공명 흡수 · 보호막 +'+fmt(v),'crit',3.4);ringFx(P.pos.x,P.pos.z,2.2,0xffd070,.5);}}
+function synTick(dt){if(P&&P.synT>0)P.synT-=dt;SYN.zones=SYN.zones.filter(q=>{q.t-=dt;q.m.material.opacity=.5*Math.min(1,q.t);if(q.t<=0){killObj(q.m);return false;}return true;});
+  for(const e of W.enemies){if(e.dmark>0){e.dmark-=dt;if(e.dmark<=0&&e.dmfx){killObj(e.dmfx);e.dmfx=null;}}}}
+
 /* ===================== 멸세제룡 바라카스 — Lv.99 최상위 레이드 (멸세의 둥지) =====================
    1페이즈 (100~70%): 용혈의 발톱 · 꼬리치기 · 용혈의 숨결 · 용암 분출
    2페이즈 (70~30%): 비상(무적) + 운석 · 12/3/6/9시 제단의 용혈 주술사 4명을 45초 안에 처치 (실패 시 파멸의 용암 폭발)
@@ -3729,8 +4018,8 @@ const AFTER={
   giveWeapon(){const c=CLASSES[S.cls];S.bag.push({type:'w',name:c.weapons[1][0],base:c.weapons[1][1],lv:1,cls:'all',enh:0,dur:100,destroyed:false});toast('['+c.weapons[1][0]+'] 획득','gold');$('#bagBtn').classList.add('pulse');save();},
   unlockS1(){unlock('s1');},
 };
-const SERVICE_LABEL={promo:'진급 · 길드',enhance:'장비 강화',rune:'룬 각인',market:'통합 거래소',guild:'길드',daily:'현상금 게시판',inn:'객주소 이용',altar:'제단에 경험을 바친다',forge:'철화 대장간',train:'수련하기',guide:'지름길 안내',shop:'잡화점',bless:'축복을 받는다'};
-const SERVICES={promo:()=>{},enhance:()=>openForge('enh'),rune:openRune,market:openMarket,guild:openGuild,daily:openDaily,inn:openInn,altar:openAltar,forge:()=>openForge('enh'),train:openTrain,guide:openGuide,shop:openShop,bless:openBless};
+const SERVICE_LABEL={promo:'진급 · 길드',enhance:'장비 강화',rune:'룬 각인',market:'통합 거래소',guild:'길드',daily:'현상금 게시판',inn:'객주소 이용',altar:'제단에 경험을 바친다',forge:'철화 대장간',train:'수련하기',guide:'지름길 안내',shop:'잡화점',bless:'축복을 받는다',voyage:'항해',godq:'잊혀진 신의 제단'};
+const SERVICES={promo:()=>{},enhance:()=>openForge('enh'),rune:openRune,market:openMarket,guild:openGuild,daily:openDaily,inn:openInn,altar:openAltar,forge:()=>openForge('enh'),train:openTrain,guide:openGuide,shop:openShop,bless:openBless,voyage:openVoyage,godq:openGodQuest};
 
 /* =========================================================
    UI: dialog / panels / toasts
@@ -3738,12 +4027,12 @@ const SERVICES={promo:()=>{},enhance:()=>openForge('enh'),rune:openRune,market:o
 let DL=null;
 const dlgLayer=$('#dlgLayer'),dlgWho=$('#dlg .who'),dlgTxt=$('#dlg .txt'),dlgCh=$('#dlg .choices'),dlgNx=$('#dlg .nx');
 function speakerName(w){if(w==='P')return CLASSES[S.cls].name+' (나)';return SPEAKER[w]||(NPCS[w]&&NPCS[w].name)||w;}
-function dialog(lines){return new Promise(res=>{if(CS&&CS.skip)return res();if(!lines||!lines.length)return res();DL={lines,i:0,res,typing:null};dlgLayer.hidden=false;showLine();});}
+function dialog(lines){return new Promise(res=>{if(CS&&CS.skip)return res();if(!lines||!lines.length)return res();if(DL&&DL.typing)clearInterval(DL.typing);DL={lines,i:0,res,typing:null};dlgLayer.hidden=false;showLine();});}
 function showLine(){const [w,t,ch]=DL.lines[DL.i];dlgWho.textContent=speakerName(w);dlgCh.innerHTML='';dlgNx.hidden=!!ch;
   const txt=t;let i=0;dlgTxt.innerHTML='';const isAct=w==='P'||/^\(/.test(txt);
   const render=n=>{const s=txt.slice(0,n);dlgTxt.innerHTML='';const parts=s.split(/(\([^)]*\)?)/);parts.forEach(p=>{if(!p)return;if(p[0]==='('){const em=document.createElement('em');em.textContent=p;dlgTxt.appendChild(em);}else dlgTxt.appendChild(document.createTextNode(p));});};
   clearInterval(DL.typing);DL.full=()=>{clearInterval(DL.typing);DL.typing=null;render(txt.length);if(ch)showChoices(ch);};
-  DL.typing=setInterval(()=>{i+=2;render(i);if(i>=txt.length)DL.full();},22);
+  const me=DL,tid=setInterval(()=>{if(DL!==me||me.typing!==tid){clearInterval(tid);return;}i+=2;render(i);if(i>=txt.length)me.full();},22);DL.typing=tid;  // a dialog replaced mid-typing stops its own timer
 }
 function showChoices(ch){dlgCh.innerHTML='';ch.forEach(c=>{const b=document.createElement('button');b.className='btn'+(c.fn?' pri':'');b.textContent=c.t;b.onclick=ev=>{ev.stopPropagation();closeDialog();c.fn&&c.fn();};dlgCh.appendChild(b);});}
 function closeDialog(){if(!DL)return;clearInterval(DL.typing);const r=DL.res;DL=null;dlgLayer.hidden=true;r();}
@@ -4155,7 +4444,7 @@ function openAltar(){const st=S.stat,cost=Math.round(needExp(Math.min(S.level,98
 function openTrain(){const cost=300*S.level,on=buffOn('war');
   openPanel('전사 수련 · 무관 다빈','<div class="row"><div class="l"><b>무관의 수련</b><small>10분 동안 공격력 +15%'+(on?' · 남은 시간 '+Math.ceil((S.buffs.war-Date.now())/60000)+'분':'')+'</small></div><button class="btn sm pri" id="trBtn"'+(S.gold<cost?' disabled':'')+'>'+fmt(cost)+' G</button></div><p class="note">허리로 휘둘러라. 칼이 아니라 몸이 베는 거다.</p>');
   $('#trBtn').onclick=()=>{S.gold-=cost;S.buffs.war=Math.max(Date.now(),S.buffs.war)+600000;recalc();save();refreshHud();toast('수련 효과: 공격력 +15%','gold');closePanel();};}
-const HUNTS=[['beasts','서문 · 야수 서식지','Lv.1~15',[34,0]],['grave','동문 · 원혼의 묘지','Lv.15~40',[-34,0]],['clock','남문 · 태엽 미로','Lv.40~70',[0,-34]],['asura','북문 · 아수라 흑야 협곡','Lv.70~99',[0,34]],['altar','용혈의 제단','제한 없음',[0,26]]];
+const HUNTS=[['beasts','서쪽 1 · 야수 서식지','Lv.1~15',[33,0]],['grave','서쪽 2 · 원혼의 묘지','Lv.15~40',[33,0]],['clock','서쪽 3 · 태엽 미로','Lv.40~70',[33,0]],['asura','서쪽 4 · 아수라 흑야 협곡','Lv.70~99',[33,0]],['altar','서쪽 끝 · 용혈의 제단','제한 없음',[0,23]]];
 function openGuide(){const lv=S.level;
   openPanel('지름길 안내 · 정보상 태완','<p class="note">골드만 주면 사냥터 입구까지 바로 모셔다 드리지. 권장 레벨은 공짜 정보야.</p>'+HUNTS.map((h,i)=>{const cost=500+i*i*4000,rec=(i===0&&lv<=15)||(i===1&&lv>15&&lv<=40)||(i===2&&lv>40&&lv<=70)||(i===3&&lv>70);
     return '<div class="row"><div class="l"><b>'+h[1]+(rec?' <small style="color:var(--ok)">● 추천</small>':'')+'</b><small>권장 '+h[2]+'</small></div><button class="btn sm'+(rec?' pri':'')+'" data-go="'+i+'"'+(S.gold<cost?' disabled':'')+'>'+fmt(cost)+' G</button></div>';}).join(''));
@@ -4278,6 +4567,8 @@ function mpRecv(m){const id=m.id;
   else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*Math.min(1,Math.max(0,+m.p||0)));P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+String(m.n||'').slice(0,12)+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
   else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,Math.min(6,+m.d||0));floatText(P.pos,'신성 방패 ('+String(m.n||'').slice(0,12)+')','crit',3);}}
   else if(m.t==='ann'){const txt=String(m.txt||'').slice(0,80);mpChatLine('📢',txt,'s');toast(txt,'gold');}
+  else if(m.t==='dmk'){if(m.z===W.zone&&MP.party&&MP.party[id])synZone(+m.x||0,+m.zz||0);}
+  else if(m.t==='res'){if(m.z===W.zone&&MP.party&&MP.party[id])synResonance(+m.x||0,+m.zz||0);}
   else if(m.t==='rez'){if(m.to===MP.id&&P&&P.dead)reviveHere(.3,'['+String(m.n||'?').slice(0,12)+'] 님의 부활');}
   else if(m.t==='pvp'){pvpHit(m);}
   else if(m.t==='pk'){pvpKilled(m);}
@@ -4548,7 +4839,7 @@ function loop(now){
   if(P&&gameOn&&!pz){
     updAuto(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();if(P.tag){if(CS||W.zone==='title'||W.zone==='prologue')P.tag.style.display='none';else placeTag(P.tag,P.pos,P.tagY+(P.y||0));}
     for(let i=W.enemies.length-1;i>=0;i--){const e=W.enemies[i];if(e)updEnemy(e,dt);}
-    updProj(dt);updAreas(dt);updSpawners(dt,false);
+    updProj(dt);updAreas(dt);updSpawners(dt,false);if(W.tick)W.tick(dt);synTick(dt);
     // reach goals
   }else if(P&&gameOn){animHumanoid(P,dt,P.walk!==P._pw);P._pw=P.walk;}
   if(P&&gameOn){W.enemies.forEach(e=>animEnemy(e,dt));updNpcs(dt);if(!MP.client&&!MP.off&&!MP.full&&!MP.connecting)netConnect();mpTick(dt);if(W.hts.length){P.pos.y=groundH(P.pos.x,P.pos.z);W.npcs.forEach(n=>{n.pos.y=groundH(n.pos.x,n.pos.z);});}}
@@ -4677,6 +4968,8 @@ function bgmStyle(z){
   if(z==='altar'||z==='eternal'||z==='lair'){const ig=W.enemies&&W.enemies.find(e=>(e.type==='ignis'||e.type==='barakas')&&!e.dead);if(ig&&ig.aggro)return ig.hp<ig.maxHp*.5?'raid2':'raid';return 'altar';}
   if(['beasts','grave','clock','asura'].includes(z))return z;
   if(z==='hall')return 'shrine';
+  if(z==='sea'){const k=typeof SEA!=='undefined'&&SEA.k;return k&&SEA.ph>=2&&!k.dead?(k.hp<k.maxHp*.5?'raid2':'raid'):'clock';}  // storm at sea
+  if(z==='port')return 'citadel';if(z==='coral')return 'shrine';
   if(z==='citadel'){const h=new Date().getHours();return h>=19||h<6?'shrine':'citadel';}  // the citadel at night (device clock) plays the sanctuary theme
   return ['village','citadel','hall','inn'].includes(z)?'town':'field';}
 /* instruments */
@@ -4919,7 +5212,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-10';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-1';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

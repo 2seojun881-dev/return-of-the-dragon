@@ -2450,6 +2450,45 @@
       ],
       "uniform": true,
       "userModel": "영혼의 제단 릴리스 595113391"
+    },
+    "s_siren": {
+      "file": "s_siren.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_kraken"
+      ],
+      "zones": [
+        "sea"
+      ],
+      "uniform": true,
+      "userModel": "Icebound Empress"
+    },
+    "s_ichthyo": {
+      "file": "s_ichthyo.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_ichthyo"
+      ],
+      "zones": [
+        "sea",
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Modern Ichthyotitan Severnensis"
+    },
+    "s_ship": {
+      "file": "s_ship.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_ship"
+      ],
+      "zones": [
+        "port",
+        "sea",
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Pirate Ship (Meshy)"
     }
   }
 }
