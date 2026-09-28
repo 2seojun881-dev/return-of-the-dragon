@@ -148,7 +148,7 @@ svg{display:block}
 .bar.mp{height:8px;background:#0e1a2c;margin-top:2px}
 .bar.mp i{background:linear-gradient(#6ab8ff,#2a64b8)}
 .bar.mp span{font-size:9px;line-height:8px}
-body.hasRes #gold,body.hasRes #qtrack{margin-top:11px}
+.tag.me .nm{color:#ffe08a}
 .bar.res{height:8px;background:#1e140c;margin-top:2px}.bar.res i{background:var(--rc,#ff6a3a)}.bar.res span{font-size:9px;line-height:8px;letter-spacing:.02em}
 #b-mpot{right:240px;bottom:60px;width:42px;height:42px;background:radial-gradient(circle at 50% 35%,#24406a,#0e1422 72%)}
 #b-mpot .cnt{position:absolute;right:3px;bottom:0;font-size:10px;z-index:5;text-shadow:0 1px 1px #000}
@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.27-26</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-1</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1133,7 +1133,7 @@ function palisade(x1,z1,x2,z2,h){
 function stoneWall(x1,z1,x2,z2,h,col){h=h||6;
   if(KIT&&PROPS.wall_straight){const bb=PBOX.wall_straight,sz=new V();bb.getSize(sz);const s=h/sz.y,pl=Math.max(sz.x,sz.z)*s;
     const len=Math.hypot(x2-x1,z2-z1),n=Math.max(1,Math.round(len/pl)),rot=Math.atan2(x2-x1,z2-z1)+Math.PI/2;
-    for(let i=0;i<n;i++){const k=(i+.5)/n;prop('wall_straight',x1+(x2-x1)*k,z1+(z2-z1)*k,{s,rot:sz.x>=sz.z?rot:rot+Math.PI/2});}
+    for(let i=0;i<n;i++){const k=(i+.5)/n,g=prop('wall_straight',x1+(x2-x1)*k,z1+(z2-z1)*k,{s,rot:sz.x>=sz.z?rot:rot+Math.PI/2});if(g){const f=(len/n)/pl;if(sz.x>=sz.z){g.scale.x*=f;g.userData.size.x*=f;}else{g.scale.z*=f;g.userData.size.z*=f;}}}  // pieces exactly fill the segment (no overhang into gates)
     addBox((x1+x2)/2,(z1+z2)/2,Math.max(Math.abs(x2-x1),1.6)/2,Math.max(Math.abs(z2-z1),1.6)/2).line=true;return;}const w=Math.abs(x2-x1)+.01,d=Math.abs(z2-z1)+.01;const hw=Math.max(w,1.6),hd=Math.max(d,1.6);
   mesh(new THREE.BoxGeometry(hw,h,hd),M(col||0xb8bcc4),(x1+x2)/2,h/2,(z1+z2)/2,W.root);
   const n=Math.floor(Math.max(w,d)/1.6);for(let i=0;i<n;i+=2){const k=(i+.5)/n;mesh(new THREE.BoxGeometry(w>d?.9:hw,.8,w>d?hd:.9),M(col||0xb8bcc4),x1+(x2-x1)*k,h+.4,z1+(z2-z1)*k,W.root);}
@@ -1744,7 +1744,10 @@ function heroRim(m){m.emissive.setHex(0x2a2218);m.emissiveMap=null;m.customProgr
   m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n  float rimF=1.0-clamp(dot(normalize(vViewPosition),normal),0.0,1.0);totalEmissiveRadiance+=vec3(1.0,0.78,0.52)*pow(rimF,2.2)*0.95;');};return m;}
 /* player action -> clip on a Meshy-rigged hero (attack / skill / cast from Meshy's animation library) */
 const MESHY_ACT={swing:['attack',.6],dash:['skill',.5],cast:['cast',.6],cast2:['cast',.7],cast3:['skill',1],summon:['cast',1.2],leap:['skill',1],spin:['skill',1.6],ult:['skill',.8],throw:['attack',.5],banner:['cast',1],bow:['attack',.5]};
-function meshyHero(cls){const h=customRig(CUSTOM.players[cls]);h.cfg={idle:'Idle',run:'Running_A',map:MESHY_ACT};h.hero=true;return h;}
+function meshyHero(cls){const e=CUSTOM.players[cls],h=customRig(e);
+  if(e.yawFix==null){e.yawFix=0;try{const ra=h.acts.run||h.acts.walk||h.acts.idle;if(ra){ra.play();h.mixer.update(.3);}h.g.updateMatrixWorld(true);let hb=null;h.model.traverse(o=>{if(o.isBone&&o.name==='Hips'&&!hb)hb=o;});
+    if(hb){const f=new V(0,0,1).applyQuaternion(hb.getWorldQuaternion(new THREE.Quaternion())),y=Math.atan2(f.x,f.z);if(Math.abs(y)>.2)e.yawFix=-y;}h.mixer.stopAllAction();}catch(err){}}
+  if(e.yawFix){const w=new THREE.Group();h.model.parent.add(w);w.add(h.model);w.rotation.y=e.yawFix;}h.cfg={idle:'Idle',run:'Running_A',map:MESHY_ACT};h.hero=true;return h;}
 function heroModel(cls){if(CUSTOM.players[cls]&&CUSTOM.players[cls].rigged)return meshyHero(cls);return GLB[cls]&&HERO_CFG[cls]?skinnedHero(cls):procHero(PROC_OF[cls]||cls);}
 
 function attachHeroWeapon(h,cls,enh){if(h.skinned){h.setWeapon(enh);return null;}const pc=PROC_OF[cls]||cls,c={wtype:pc==='ranger'?'bow':pc==='sorcerer'?'staff':'sword'},w=weaponModel(c.wtype,enh);(c.wtype==='bow'?h.armL:h.armR).userData.hand.add(w);return w;}
@@ -1998,7 +2001,7 @@ function recalc(){const c=CLASSES[S.cls],L=S.level,st=S.stat||{str:0,vit:0,def:0
   if(S.awk&&AWK[S.cls]){P.maxHp=Math.round(P.maxHp*1.2);P.maxMp=Math.round(P.maxMp*1.2);P.atk*=1.2;if(S.cls==='rogue'){P.crit+=.1;P.critX+=.3;}}  // 각성: +20%
   if(P.hp>P.maxHp)P.hp=P.maxHp;if(P.mp===undefined||P.mp>P.maxMp)P.mp=P.maxMp;if(!SIMX&&typeof updSetFx==='function')updSetFx();}
 function makePlayer(){
-  if(P){killObj(P.mesh);killObj(P.shield);if(P.tring)killObj(P.tring);killMerc();if(P.setFx)P.setFx.dispose();}
+  if(P){if(P.tag)P.tag.remove();killObj(P.mesh);killObj(P.shield);if(P.tring)killObj(P.tring);killMerc();if(P.setFx)P.setFx.dispose();}
   const c=CLASSES[S.cls],h=heroModel(S.cls);scene.add(h.g);
   P={mesh:h.g,parts:h,pos:h.g.position,hp:1,maxHp:1,dest:null,target:null,hunt:null,face:Math.PI,atkCd:0,cd:{s1:0,s2:0,s3:0,ult:0},barrier:0,barrierT:0,stealthT:0,godT:0,mercLeft:0,lock:0,shieldT:0,kb:null,dead:false,anim:null,potCd:0,stuck:0,last:new V(),walk:0,isPlayer:true,wmesh:null,y:0};
   const sh=new THREE.Mesh(new THREE.SphereGeometry(1.4,16,12),new THREE.MeshBasicMaterial({color:0xffd070,transparent:true,opacity:.18,depthWrite:false,blending:THREE.AdditiveBlending}));sh.position.y=1;sh.visible=false;h.g.add(sh);P.shield=sh;
@@ -2008,6 +2011,7 @@ function makePlayer(){
   fg.rotation.x=-Math.PI/2;fg.position.y=.05;fg.renderOrder=2;h.g.add(fg);  // soft pool of light at the player's feet
   const tr=new THREE.Mesh(new THREE.RingGeometry(.9,1.15,32),new THREE.MeshBasicMaterial({color:0xff4a3a,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide}));tr.rotation.x=-Math.PI/2;tr.visible=false;scene.add(tr);P.tring=tr;
   P.res=S.cls==='warrior'?0:100;P.cp=0;
+  P.tag=makeTag(P,'npc mp me',String(S.name||'').replace(/[<>&]/g,''),2.35);
   setWeaponModel();recalc();P.hp=P.maxHp;P.mp=P.maxMp;tierAura();
 }
 function setWeaponModel(){
@@ -2488,7 +2492,7 @@ function buildCitadel(){
   ground(0,0,8,58,0x767b88,.05,2);ground(0,0,58,8,0x767b88,.05,2);ground(-14,-18,6,20,0x767b88,.05,2);ground(14,-18,6,20,0x767b88,.05,2);
   const WC=0xa4a8b2;
   stoneWall(-30,-29,-17,-29,8,WC);stoneWall(-11,-29,30,-29,8,WC);  // the dragon-altar door stands on the Soul Altar terrace, not in a wall gap
-  stoneWall(-30,29,-25,29,8,WC);stoneWall(-19,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
+  stoneWall(-30,29,-16.2,29,8,WC);stoneWall(-7.8,29,-3.2,29,8,WC);stoneWall(3.2,29,30,29,8,WC);
   stoneWall(-30,-29,-30,-3.6,8,WC);stoneWall(-30,3.6,-30,29,8,WC);stoneWall(30,-29,30,-3.6,8,WC);stoneWall(30,3.6,30,29,8,WC);
   tower(-29,-28,12,0xaeb2bc);tower(29,-28,12,0xaeb2bc);tower(-29,28,12,0xaeb2bc);tower(29,28,12,0xaeb2bc);
   fountain(0,0);
@@ -2561,7 +2565,7 @@ function buildCitadel(){
   decor([['meshy_sakura',-9,9,6,.8],['meshy_sakura',9,9,6,.8],['meshy_supplies',-26,-17,2.4,.9,.3],['meshy_bush',-6,26,2,.7],['meshy_bush',6,26,2,.7]]);
   portal(-28.5,0,'beasts',[32,0],ok,'','서문 · 야수 서식지 Lv.1~15 ›');
   portal(28.5,0,'grave',[-32,0],ok,'','동문 · 원혼의 묘지 Lv.15~40 ›');
-  portal(-22,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
+  portal(-12,28.5,'clock',[0,-32],ok,'','남서문 · 태엽 미로 Lv.40~70 ›');
   portal(-14,-28.5,'asura',[0,32],ok,'','북문 · 아수라 흑야 협곡 Lv.70~99 ›');
   portal(0,-26.5,'altar',[0,24],ok,'','용혈의 제단 · 최종 보스 ›',PROPS.meshy_t_portal?{door:true}:{}).g.position.y=1.6;
   portal(0,28.5,'plains',[0,-94],ok,'','정문(남문) · 바람노래 평원 ›');
@@ -2635,7 +2639,7 @@ function buildClock(){
   spawner('clockDoll',-20,0,5,4,8,always,null,[40,47]);spawner('clockDoll',0,-16,5,4,8,always,null,[47,56]);spawner('clockDoll',26,-14,5,3,8,always,null,[50,56]);
   spawner('clockGolem',-4,14,4,2,10,always,null,[56,62]);spawner('clockGolem',28,20,4,2,10,always,null,[62,70]);spawner('clockGolem',-24,30,4,2,10,always,null,[64,70]);
   spawner('clockBoss',-10,31,0,1,180,always);
-  portal(0,-36.5,'citadel',[-22,25],always,'','천명 성채 남문 ›');
+  portal(0,-36.5,'citadel',[-12,25],always,'','천명 성채 남문 ›');
 }
 function buildAsura(){
   setEnv({sky:0x2a0c0a,fog:[26,120],ht:0xc86a5a,hb:0x1a0806,hi:.5,sun:0xff7a4a,si:1,ash:true,ashCol:0xff6a2a,ashUp:true,ashSize:.16});
@@ -3759,8 +3763,10 @@ async function gotoZone(z,arrive){
 /* =========================================================
    HUD
    ========================================================= */
+function layoutHud(){const pb=$('#pbox'),g=$('#gold'),q=$('#qtrack');if(!pb||!g)return;const r=pb.getBoundingClientRect();if(!r.height)return;
+  const gt=Math.round(r.bottom+4);if(layoutHud.gt!==gt){layoutHud.gt=gt;g.style.top=gt+'px';}const gb=Math.round(g.getBoundingClientRect().bottom+6);if(q&&layoutHud.qt!==gb){layoutHud.qt=gb;q.style.top=gb+'px';}}
 function refreshHud(){
-  if(!S||!P)return;const c=CLASSES[S.cls];
+  if(!S||!P)return;const c=CLASSES[S.cls];layoutHud();
   $('#pname .lv').textContent='Lv.'+S.level;const cn=heroClsName();$('#pname .cn').style.color=isRed()?'#ff4a3a':'';$('#pname .cn').textContent=(S.name||cn)+(S.name&&S.name!==cn?' · '+cn:'');$('#ptitle').textContent=S.title?'['+S.title+']':'';
   $('#hpbar i').style.transform='scaleX('+clamp(P.hp/P.maxHp,0,1)+')';$('#hpbar span').textContent=Math.ceil(P.hp)+' / '+P.maxHp;
   $('#expbar i').style.transform='scaleX('+clamp(S.exp/needExp(S.level),0,1)+')';
@@ -4226,7 +4232,7 @@ function mpRecv(m){const id=m.id;
   if(m.t==='st'){if(m.z!==W.zone||!CLASSES[m.c])return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
     r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.red=!!m.rk;r.g=typeof m.g==='string'?m.g.slice(0,24):'';r.pkOn=!!m.pk;r.tag.classList.toggle('red',r.red);r.awk=m.a;r.zone=m.z;mpMove(r,m);r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;
     const ti=Math.max(0,Math.min(3,m.ti|0));if(r.ti!==ti){r.ti=ti;tierAura(r,m.c,ti);}
-    const lbl=r.name.replace(/[<>&]/g,'')+' <small>Lv.'+r.lv+' '+(ti&&TIER_NAMES[m.c]?TIER_NAMES[m.c][ti-1]:CLASSES[m.c].name)+'</small>';if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
+    const lbl=r.name.replace(/[<>&]/g,'');if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
   else if(m.t==='chat'){const r=MP.others[id],txt=String(m.txt||'').slice(0,80);mpChatLine(String(m.n||'?').slice(0,12),txt,'all');if(r&&r.h.g.visible)floatText(r.pos,txt.slice(0,24),'info',3);}
   else if(m.t==='fx'){const r=MP.others[id];if(r&&r.h.skinned&&r.h.g.visible)r.h.playOnce(m.k==='skill'?'Spellcast_Shoot':'1H_Melee_Attack_Slice_Diagonal',.5);}
   else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*Math.min(1,Math.max(0,+m.p||0)));P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+String(m.n||'').slice(0,12)+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
@@ -4500,7 +4506,7 @@ function loop(now){
   runTimers();
   const pz=paused();
   if(P&&gameOn&&!pz){
-    updAuto(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();
+    updAuto(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();if(P.tag){if(CS||W.zone==='title'||W.zone==='prologue')P.tag.style.display='none';else placeTag(P.tag,P.pos,P.tagY+(P.y||0));}
     for(let i=W.enemies.length-1;i>=0;i--){const e=W.enemies[i];if(e)updEnemy(e,dt);}
     updProj(dt);updAreas(dt);updSpawners(dt,false);
     // reach goals
@@ -4862,7 +4868,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.27-26';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-1';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
