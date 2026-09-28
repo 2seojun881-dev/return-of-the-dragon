@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-2</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-3</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2844,7 +2844,7 @@ function hitEnemy(e,mult,o){
   if(S.admin&&!e.d.dummy&&d<e.hp){d=e.type==='barakas'?Math.ceil(e.maxHp*.08):Math.ceil(e.hp);}
   if(!e.d.dummy)e.hp-=d;
   if(e.hpFloor&&e.hp<e.maxHp*e.hpFloor)e.hp=Math.ceil(e.maxHp*e.hpFloor);
-  floatText(e.pos,fmt(d),crit||amb?'crit':'dmg',e.tagY*.8);
+  floatText(e.pos,fmt(d),crit||amb?'crit':'dmg',e.tagY*.8);if(o.basic||o.skill)auHit(S.cls,crit||amb);
   e.flashT=.1;e.showT=6;
   if(e.tag)e.tag.classList.add('show');
   if(!e.d.static&&!e.d.dummy){
@@ -3018,7 +3018,7 @@ function playAnim(kind,dur){P.anim={kind,t:0,dur};}
 function basicAttack(t){
   if(MP.peer)mpSend({t:'fx',k:'atk'});later(.2,()=>pvpStrike(1,(P.range||2)+.8,true));
   if(P.setFx&&P.setFx.attack)P.setFx.attack();
-  const c=S.cls;P.atkCd=P.aspd;faceTo(t.pos.x,t.pos.z);
+  const c=S.cls;P.atkCd=P.aspd;faceTo(t.pos.x,t.pos.z);later(c==='rogue'?.08:c==='shaman'?.02:.12,()=>{if(!P.dead)auSwing(c);});
   const w=S.weapon;if(w&&!w.destroyed&&w.dur>0){w.dur=Math.max(0,w.dur-.08);if(w.dur<=0){recalc();toast('무기가 손상되었습니다! 철화 대장간에서 수리하세요 (공격력 50%)','bad');}else if(Math.abs(w.dur-20)<.05)toast('무기 내구도가 20% 남았습니다.');}
   const db=w&&!w.destroyed&&w.db?w.db:0,proc=()=>db&&Math.random()<.12+.02*db;
   if(c==='novice'||c==='warrior'){playAnim('swing',.45);later(.2,()=>{if(P.dead)return;slashFx(P.pos,P.face,c==='warrior'?2.8:2.3,0xfff4d8);
@@ -3610,7 +3610,8 @@ function stepToward(tx,tz,dt,stopAt){if(W.hts.length){const w=hWay(P.pos.x,P.pos
 function lerpAng(a,b,k){let d=b-a;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return a+d*k;}
 function animHumanoid(ent,dt,moving){
   const h=ent.parts;
-  if(ent.isNpc&&NPC_FIXED){ent.mesh.rotation.y=ent.face;if(!ent._posed){ent._posed=true;if(h.skinned){if(h.cfg&&h.cfg.idle)h.setBase(h.cfg.idle);h.mixer.update(.4);}}h.b.position.y=ent.y||0;return;}  // one fixed poseent.mesh.rotation.y=lerpAng(ent.mesh.rotation.y,ent.face,1-Math.exp(-dt*14));
+  if(ent.isNpc&&NPC_FIXED){ent.mesh.rotation.y=ent.face;if(!ent._posed){ent._posed=true;if(h.skinned){if(h.cfg&&h.cfg.idle)h.setBase(h.cfg.idle);h.mixer.update(.4);}}h.b.position.y=ent.y||0;return;}  // one fixed pose
+  ent.mesh.rotation.y=lerpAng(ent.mesh.rotation.y,ent.face,1-Math.exp(-dt*14));
   if(h.skinned){
     if(!ent.dead&&!ent.lying)h.setBase(moving?h.cfg.run:h.cfg.idle);
     if(ent.anim){const a=ent.anim;if(!a.started){a.started=true;const m=h.cfg.map[a.kind];if(m)h.playOnce(m[0],m[1]);}a.t+=dt;if(a.t>=a.dur)ent.anim=null;}
@@ -4770,6 +4771,16 @@ function auRoar(v){if(!AU.ctx||!AU.on)return;v=v||1;const c=AU.ctx,t=c.currentTi
   const n=nsrc(AU.noise,t,1.1),nf=c.createBiquadFilter(),ng=c.createGain();nf.type='bandpass';nf.frequency.value=240;n.connect(nf);nf.connect(ng);ng.connect(AU.sfx);env(ng,t,.05,.22*v,.3,.7);}
 function auCoin(v){if(!AU.ctx||!AU.on)return;v=v||1;const c=AU.ctx,t=c.currentTime;[2093,2794].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f*(1+Math.random()*.02);o.connect(g);g.connect(AU.sfx);env(g,t+i*.06,.003,.09*v,.01,.25);o.start(t+i*.06);o.stop(t+i*.06+.4);});}
 function auSlash(v){if(!AU.ctx||!AU.on)return;v=v||1;const c=AU.ctx,t=c.currentTime,n=nsrc(AU.white,t,.35),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(7000,t);f.frequency.exponentialRampToValueAtTime(900,t+.25);n.connect(f);f.connect(g);g.connect(AU.sfx);env(g,t,.005,.25*v,.02,.25);}
+/* class swing sounds: warrior/novice heavy blade whoosh, rogue double dagger swish, shaman magic cast */
+function whoosh(t,f0,f1,dur,q,vol){const c=AU.ctx,n=nsrc(AU.white,t,dur+.05),f=c.createBiquadFilter(),g=c.createGain();f.type='bandpass';f.Q.value=q;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);n.connect(f);f.connect(g);g.connect(AU.sfx);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+dur*.45);g.gain.exponentialRampToValueAtTime(.0001,t+dur);}
+function auSwing(cls,v){if(!AU.ctx||!AU.on)return;v=v||1;const c=AU.ctx,t=c.currentTime;
+  if(cls==='rogue'){whoosh(t,3200,5200,.13,2.2,.22*v);whoosh(t+.1,3600,6400,.12,2.2,.18*v);return;}
+  if(cls==='shaman'){[0,.05].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(hz(76+i*7),t+d);o.frequency.exponentialRampToValueAtTime(hz(88+i*7),t+d+.28);o.connect(g);g.connect(AU.sfx);env(g,t+d,.03,.06*v,.05,.3);o.start(t+d);o.stop(t+d+.5);});whoosh(t,5000,9000,.3,1.5,.08*v);return;}
+  whoosh(t,500,1800,.26,1.3,.34*v*(cls==='warrior'?1:.8));const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(110,t+.08);o.frequency.exponentialRampToValueAtTime(60,t+.26);o.connect(g);g.connect(AU.sfx);env(g,t+.08,.02,.08*v,.02,.15);o.start(t+.08);o.stop(t+.4);}
+function auHit(cls,crit){if(!AU.ctx||!AU.on||rt-(AU.hitT||0)<.07)return;AU.hitT=rt;const c=AU.ctx,t=c.currentTime,k=crit?1.4:1;
+  if(cls==='shaman'){[96,103].forEach((m,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(AU.sfx);env(g,t+i*.03,.004,.05*k,.02,.25);o.start(t+i*.03);o.stop(t+i*.03+.35);});return;}
+  const n=nsrc(AU.white,t,.12),f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=cls==='rogue'?2600:1400;n.connect(f);f.connect(g);g.connect(AU.sfx);env(g,t,.002,.2*k,.01,.09);
+  const o=c.createOscillator(),g2=c.createGain();o.type='square';o.frequency.setValueAtTime(cls==='rogue'?900:crit?300:180,t);o.frequency.exponentialRampToValueAtTime(cls==='rogue'?500:90,t+.1);o.connect(g2);g2.connect(AU.sfx);env(g2,t,.002,.035*k,.01,.1);o.start(t);o.stop(t+.18);}
 function auChime(v){if(!AU.ctx||!AU.on)return;v=v||1;const c=AU.ctx,t=c.currentTime;[84,88,91,96].forEach((m,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=hz(m);o.connect(g);g.connect(AU.sfx);env(g,t+i*.07,.01,.08*v,.05,.8);o.start(t+i*.07);o.stop(t+i*.07+1.1);});}
 function auThunder(delay){if(!AU.ctx||!AU.on)return;const c=AU.ctx,t=c.currentTime+(delay||0),n=nsrc(AU.noise,t,3),f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=220;n.connect(f);f.connect(g);g.connect(AU.amb);env(g,t,.12,.9,.3,2.2);}
 function auSetOn(on){AU.on=on;try{localStorage.setItem('ignis.snd',on?'1':'0');}catch(e){}if(AU.ctx){const t=AU.ctx.currentTime;AU.master.gain.cancelScheduledValues(t);AU.master.gain.setValueAtTime(AU.master.gain.value,t);AU.master.gain.linearRampToValueAtTime(on?.85:0,t+.3);}
@@ -4868,7 +4879,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-2';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-3';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
