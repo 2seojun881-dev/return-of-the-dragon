@@ -507,7 +507,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-4</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.28-5</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2505,10 +2505,10 @@ function buildCitadel(){
   // 영혼의 제단 (north, raised): a symmetric stone terrace with a long stair on the main axis, blue + gold light
   {const TH=1.6,tg=new THREE.Group();tg.position.set(0,0,-23);tg.userData.area=true;W.root.add(tg);
     const gt=groundTex('stone'),stoneM=(c,rx,ry)=>{const m=new THREE.MeshStandardMaterial({color:c,roughness:.95,metalness:0});if(gt){const t=gt.clone();t.needsUpdate=true;t.repeat.set(rx,ry);m.map=t;}return m;};
-    const stone=stoneM(0x9a9ca8,4,3),step=stoneM(0x8a8c98,3,.25),trim=M(0x6a5236,{roughness:.6}),navy=M(0x1a2448,{roughness:1}),gold=M(0x9a7a3a,{roughness:.55});
+    const stone=stoneM(0xc4c6d0,4,3),step=stoneM(0xb4b6c2,3,.25),gold=M(0xe0b048,{roughness:.3,metalness:.7,emissive:0x6a4410}),trim=gold,navy=M(0x1e3a9c,{roughness:.8,emissive:0x081640});
     mesh(new THREE.BoxGeometry(16,TH,12),stone,0,TH/2,0,tg);mesh(new THREE.BoxGeometry(16.3,.16,12.3),trim,0,TH-.1,0,tg);
-    mesh(new THREE.BoxGeometry(7.4,.05,5.9),gold,0,TH+.08,.2,tg);mesh(new THREE.BoxGeometry(7,.06,5.5),navy,0,TH+.1,.2,tg);
-    mesh(new THREE.BoxGeometry(3.4,.05,5),navy,0,TH+.1,4.2,tg);  // runner from the stairs to the dais
+    mesh(new THREE.BoxGeometry(8.2,.08,6.7),gold,0,TH+.06,.2,tg);mesh(new THREE.BoxGeometry(7,.1,5.5),navy,0,TH+.08,.2,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,-2.1,tg);mesh(new THREE.BoxGeometry(5.6,.11,.14),gold,0,TH+.09,2.5,tg);
+    mesh(new THREE.BoxGeometry(4.2,.07,5),gold,0,TH+.06,4.2,tg);mesh(new THREE.BoxGeometry(3.4,.09,5.02),navy,0,TH+.08,4.2,tg);  // runner from the stairs to the dais
     for(let i=0;i<8;i++){const h=(i+1)*TH/8;mesh(new THREE.BoxGeometry(6.4,h,.5),step,0,h/2,10-i*.5-.25,tg);}
     [-1,1].forEach(s=>{mesh(new THREE.BoxGeometry(.5,TH+.2,4.2),stone,s*3.45,(TH+.2)/2,8,tg);mesh(new THREE.BoxGeometry(.6,.12,4.3),trim,s*3.45,TH+.26,8,tg);});
     W.hts.push({x0:-8,x1:8,z0:-29,z1:-17,h:TH,ex:0,ez:-12.2,ew:2.8},{x0:-3.2,x1:3.2,z0:-17,z1:-13,h:TH,rz:-13,rz1:-17});
@@ -2524,6 +2524,7 @@ function buildCitadel(){
     const al=new THREE.Mesh(new THREE.RingGeometry(1.6,2,32),new THREE.MeshBasicMaterial({color:0x8ab8ff,transparent:true,opacity:.6,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));al.rotation.x=-Math.PI/2;al.position.set(0,TH+.14,-22);W.root.add(al);
     const beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,1.3,12,20,1,true),new THREE.MeshBasicMaterial({color:0x5a8aff,transparent:true,opacity:.1,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));beam.position.set(0,TH+6,-22);W.root.add(beam);
     const bl=new THREE.PointLight(0x6a8aff,1,12,2);bl.position.set(0,TH+3,-22);W.root.add(bl);
+    const wl=new THREE.PointLight(0xfff0d0,1.25,22,1.4);wl.position.set(0,TH+6,-19);W.root.add(wl);  // warm key light so the terrace isn't dark
     // blue soul-fire braziers on the stair posts instead of bright lamps
     [-4.5,4.5].forEach(x=>{const f=flameFx(0x3a6aff,0xb8d0ff,1.3);f.position.set(x,colH+.25,-12.6);W.root.add(f);W.anim.push(t=>f.userData.tick(t));});
     W.anim.push(t=>{al.rotation.z=t*.3;al.material.opacity=.45+Math.sin(t*2)*.15;beam.material.opacity=.08+Math.sin(t*1.3)*.03;bl.intensity=.9+Math.sin(t*2)*.2;});
@@ -4878,7 +4879,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.28-4';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.28-5';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
