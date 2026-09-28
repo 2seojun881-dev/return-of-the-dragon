@@ -2397,7 +2397,8 @@
         "meshy_h_throne"
       ],
       "zones": [
-        "hall"
+        "hall",
+        "citadel"
       ],
       "uniform": true,
       "userModel": "영혼의 제단 릴리스 595113200"
