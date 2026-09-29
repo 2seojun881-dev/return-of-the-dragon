@@ -511,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-6</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-7</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -661,7 +661,7 @@ function makeGear(ti,type,cls,part){const T=TIERS[ti],nm=T[type][cls in T[type]?
   if(type==='w')g.base=T.atk;else{g.part=part||(typeof ARMOR_PARTS!=='undefined'?ARMOR_PARTS[Math.floor(Math.random()*5)]:'body');g.def=Math.round((T.def+(name==='가죽 톳옷'?-1:0))*(PART_DEF[g.part]||1));if(g.part!=='body')g.name=armorPartName(name,g.part);}
   if(T.db){g.db=1;}return g;}
 let _iid=0;function newId(){return Date.now().toString(36)+(++_iid).toString(36)+Math.random().toString(36).slice(2,5);}
-function clsName(k){return k==='all'||!k?'공용':CLASSES[k].name;}
+function clsName(k){return k==='all'||!k?'공용':(Object.hasOwn(CLASSES,k)?CLASSES[k].name:'?');}
 /* ---------- equipment v2: 10 slots, rarity, random sub-options, dragon sets ---------- */
 const RAR=[{n:'일반',c:'#d8d0c0',m:1,sub:0,g:'  '},{n:'고급',c:'#4a9aff',m:1,sub:2,g:'CB'},{n:'전설',c:'#ffc83a',m:1.4,sub:3,g:'BA'},{n:'영웅',c:'#ff3a2a',m:1.8,sub:4,g:'AS'},{n:'용혈 전설',c:'#ff8a2a',m:2.2,sub:0,g:'SS'}];
 /* Lv.99 최상위 전설: 용혈 세트 (멸세제룡 바라카스 전리품) — weapon + armour per class, 2-set bonus */
@@ -2139,6 +2139,7 @@ function nextZone(from,to){if(from===to)return null;const prev={[from]:null},q=[
   while(q.length){const z=q.shift();if(z===to){let c=z;while(prev[c]!==from)c=prev[c];return c;}(ZLINK[z]||[]).forEach(n=>{if(!(n in prev)){prev[n]=z;q.push(n);}});}return null;}
 function clearZone(){
   if(P){(P.mercs||[]).forEach(m=>m.tag.remove());P.mercs=[];P.merc=null;P.chests=[];P.divRev=0;if(P.setFx){P.setFx.dispose();P.setFx=null;P.setFxQuiet=true;}}
+  if(typeof SEA!=='undefined')SEA.done=true;  // pending sea-raid tweens must not fire in the next zone
   scene.remove(W.root);if(typeof shipHud==='function'&&$('#shipHud'))shipHud(false);if(typeof SYN!=='undefined')SYN.zones=[];
   W.enemies.forEach(e=>e.tag&&e.tag.remove());W.npcs.forEach(n=>n.tag&&n.tag.remove());W.portals.forEach(p=>p.tagEl&&p.tagEl.remove());
   floats.forEach(f=>f.el.remove());floats.length=0;FX.length=0;
@@ -3402,7 +3403,8 @@ function enemyAttack(e){
 }
 /* an unrigged Meshy model used as a floating caster: a glow at the staff head and a rune circle at her feet */
 function casterModel(name,h){const g=new THREE.Group(),b=new THREE.Group();g.add(b);prop(name,0,0,{h,par:b});
-  const orb=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshBasicMaterial({color:0x9a5aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));orb.position.set(-.53*h/1.9,.944*h,.467*h/1.9);orb.scale.setScalar(.7);  // the staff's gem (measured on the model)b.add(orb);
+  const orb=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshBasicMaterial({color:0x9a5aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));orb.position.set(-.53*h/1.9,.944*h,.467*h/1.9);orb.scale.setScalar(.7);  b.add(orb);  // the staff's gem (measured on the model)
+  
   const l=new THREE.PointLight(0xa05aff,1.2,7,2);l.position.copy(orb.position);b.add(l);
   const rc=new THREE.Mesh(new THREE.RingGeometry(1.1,1.35,40),new THREE.MeshBasicMaterial({color:0xa05aff,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false}));rc.rotation.x=-Math.PI/2;rc.position.y=.05;g.add(rc);
   W.anim.push(t=>{rc.rotation.z=t*.8;});return {g,b,caster:true,orb};}
@@ -3574,23 +3576,24 @@ function krakenInit(e){Object.assign(e,{invuln:true,surf:0,face:0,def:220});e.me
     const y0=e.mesh.position.y;tween(4,k=>{e.mesh.position.y=y0-k*(PROPS.meshy_kraken?20:16);},()=>{},x=>x);later(2.5,()=>dialog([['haram','해냈군! 폭풍이 걷힌다… 저기 보이나? 산호로 뒤덮인 항구… 신대륙 「용의 바다」일세!']]).then(()=>{if(W.zone==='sea')gotoZone('coral',[26,0]);}));};}
 function krakenDamage(e,pct,why){if(!e||e.dead)return;const d=Math.round(e.maxHp*pct);e.hp-=d;e.flashT=.12;floatText(e.pos,why+' '+fmt(d),'crit',e.tagY*.6);if(e.hp<=0)killEnemy(e);}
 function krakenTick(e,dt){e.face=0;
-  const p=e.parts;if(!p.arms||!p.arms.length){p.b.rotation.z=Math.sin(rt*.8)*.06;p.b.rotation.x=Math.sin(rt*.6)*.04;}  // the mermaid sways in the swellif(p.arms)p.arms.forEach((a,i)=>a.segs.forEach((s,k)=>{s.rotation.x=Math.sin(rt*1.3+a.ph+k*.45)*.22-.05;s.rotation.y=Math.cos(rt*.9+a.ph+k*.3)*.12;}));
+  const p=e.parts;if(!p.arms||!p.arms.length){p.b.rotation.z=Math.sin(rt*.8)*.06;p.b.rotation.x=Math.sin(rt*.6)*.04;}    // the mermaid sways in the swell
+  if(p.arms)p.arms.forEach((a,i)=>a.segs.forEach((s,k)=>{s.rotation.x=Math.sin(rt*1.3+a.ph+k*.45)*.22-.05;s.rotation.y=Math.cos(rt*.9+a.ph+k*.3)*.12;}));
   const big=!!PROPS.meshy_kraken;if(e.surf){const ty=SEA.lunge>0?(big?-8.4:-1.2):(big?-10.5:-3.4);e.mesh.position.y+=(ty-e.mesh.position.y)*Math.min(1,dt*1.5);}
   const tz=SEA.lunge>0?(big?-15.5:-15.2):(big?-19.5:-27);e.pos.z+=(tz-e.pos.z)*Math.min(1,dt*(SEA.lunge>0?4:1.2));}
 function krakenArmTick(e,dt){e.life-=dt;const c=e.parts.crystal;if(c){c.rotation.y+=dt*2;c.position.y=1.3+Math.sin(rt*3)*.15;}
   if(e.life<=0&&!e.dead){shipHit(4,'해일 결정');floatText(e.pos,'해일 결정이 방주를 잠식합니다!','hurt',2);removeEnemy(e);}}
 function seaSlam(){const s=Math.random()<.5?-1:1,z=rand(-9.5,7),len=8.4,tele=teleRect(s*4.2,z,s>0?-Math.PI/2:Math.PI/2,len,2.6);
   const arm={g:new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,8.6,24,1,true,0,Math.PI),new THREE.MeshStandardMaterial({color:0x3a9ad8,emissive:0x0a3a6a,roughness:.2,metalness:.2,transparent:true,opacity:.78,side:THREE.DoubleSide}))};arm.g.rotation.x=Math.PI/2;arm.g.position.set(s*9,6,z);W.root.add(arm.g);floatText(new V(s*3,0,z),'해일 내려치기!','crit',2.4);
-  tween(2.1,k=>{tele.userData.set(k);arm.g.position.x=s*(9-k*8);arm.g.position.y=6-k*5+Math.sin(k*Math.PI)*2;arm.g.rotation.y=s*k*.4;if(Math.random()<.4)burst(arm.g.position.x,arm.g.position.y+1,z+rand(-4,4),0xcfe6ff,2,2,.5,.3,-3);},()=>{killObj(tele);killObj(arm.g);if(SEA.done)return;shake(.9);
+  tween(2.1,k=>{tele.userData.set(k);arm.g.position.x=s*(9-k*8);arm.g.position.y=6-k*5+Math.sin(k*Math.PI)*2;arm.g.rotation.y=s*k*.4;if(Math.random()<.4)burst(arm.g.position.x,arm.g.position.y+1,z+rand(-4,4),0xcfe6ff,2,2,.5,.3,-3);},()=>{killObj(tele);killObj(arm.g);if(SEA.done||W.zone!=='sea')return;shake(.9);
     burst(0,.6,z,0x7ac8ff,50,9,.9,.6,-6);burst(s*4,.3,z,0xcfe6ff,30,6,.8,.4,-4);
     const inR=!P.dead&&Math.abs(P.pos.z-z)<1.3+P.rad&&Math.abs(P.pos.x)<4.3;
     if(inR&&S.cls==='warrior'){hurtPlayer(SEA.k?SEA.k.atk*.8:800,SEA.k,{phys:1});floatText(P.pos,'뱃머리 사수 · 방어!','crit',3.2);rageGain(25);}
     else{if(inR)hurtPlayer(SEA.k?SEA.k.atk*1.6:1400,SEA.k,{phys:1});shipHit(SEA.ph>=3?7:5.5,'해일 내려치기');}
     const a=spawnEnemy('krakenArm',0,z);a.face=0;a.life=7;a.aggro=true;a.tag.classList.add('show');a.onDie=()=>{burst(0,1,z,0x6a2a4a,30,6,.8,.5,-4);if(SEA.k&&!SEA.k.dead)krakenDamage(SEA.k,.04,'해일 결정 파괴!');};},x=>x);}
 function seaInk(){for(let i=0;i<3;i++){const at=i===0&&!P.dead?P.pos.clone():new V(rand(-3.4,3.4),0,rand(-10,8)),tele=teleCircle(at.x,at.z,2.2);
-    tween(1.6,k=>tele.userData.set(k),()=>{killObj(tele);burst(at.x,.6,at.z,0x1a0a2a,30,5,.8,.6,-4);if(!P.dead&&d2(at,P.pos)<2.2+P.rad){hurtPlayer(SEA.k?SEA.k.atk*1.1:900,SEA.k);P.slowT=2;floatText(P.pos,'먹물 · 둔화','info',3);}},x=>x);}}
+    tween(1.6,k=>tele.userData.set(k),()=>{killObj(tele);if(SEA.done||W.zone!=='sea')return;burst(at.x,.6,at.z,0x1a0a2a,30,5,.8,.6,-4);if(!P.dead&&d2(at,P.pos)<2.2+P.rad){hurtPlayer(SEA.k?SEA.k.atk*1.1:900,SEA.k);P.slowT=2;floatText(P.pos,'먹물 · 둔화','info',3);}},x=>x);}}
 function seaLunge(){const tele=teleRect(0,-12,0,5.2,7.8);toast('세이렌이 뱃머리를 물어뜯으려 합니다! (전사: 뱃머리에서 막기)','bad');
-  tween(2,k=>tele.userData.set(k),()=>{killObj(tele);if(SEA.done)return;SEA.lunge=7;shake(1.2);auRoar(.9);const k0=SEA.k;
+  tween(2,k=>tele.userData.set(k),()=>{killObj(tele);if(SEA.done||W.zone!=='sea')return;SEA.lunge=7;shake(1.2);auRoar(.9);const k0=SEA.k;
     const blocked=!P.dead&&S.cls==='warrior'&&P.pos.z<-6.8;if(!P.dead&&P.pos.z<-6.8)hurtPlayer(k0?k0.atk*(blocked?.9:1.8):1500,k0,{phys:1});
     shipHit(blocked?1:6,blocked?'뱃머리 사수 ·':'세이렌의 물어뜯기');if(blocked)floatText(P.pos,'뱃머리 사수!','crit',3.2);
     toast('세이렌의 머리가 뱃머리에 걸렸습니다 — 약점 노출! 7초간 받는 피해 +50%','gold');},x=>x);}
@@ -3692,15 +3695,16 @@ function godShard(e){const q=S.godQ;if(!q||q.st!==1||q.n>=GODQ_N)return;if(e.typ
 const SYN={zones:[],sendT:0,cd:0};
 function synMark(e){e.dmark=5;if(!e.dmfx){const r=new THREE.Mesh(new THREE.RingGeometry(.55,.72,24),new THREE.MeshBasicMaterial({color:0xa04aff,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false}));r.rotation.x=-Math.PI/2;e.mesh.add(r);r.position.y=.12/Math.max(.01,e.mesh.scale.y);e.dmfx=r;}
   if(MP.party&&Object.keys(MP.party).length&&rt>SYN.sendT){SYN.sendT=rt+.8;mpSend({t:'dmk',z:W.zone,x:+e.pos.x.toFixed(1),zz:+e.pos.z.toFixed(1)});}}
-function synZone(x,z){const m=new THREE.Mesh(new THREE.RingGeometry(3.4,4,40),new THREE.MeshBasicMaterial({color:0xa04aff,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.1,z);W.root.add(m);SYN.zones.push({x,z,t:5,m});}
+const SYN_G=new THREE.RingGeometry(3.4,4,40);
+function synZone(x,z){if(SYN.zones.length>=12)return;const m=new THREE.Mesh(SYN_G,new THREE.MeshBasicMaterial({color:0xa04aff,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.1,z);W.root.add(m);SYN.zones.push({x,z,t:5,m});}
 function synMarked(e){if(e.dmark>0)return true;return SYN.zones.some(q=>Math.hypot(q.x-e.pos.x,q.z-e.pos.z)<4);}
-function synBlast(e){if(rt<SYN.cd)return;SYN.cd=rt+1.2;e.dmark=0;const p=e.pos.clone();SYN.zones=SYN.zones.filter(q=>{if(Math.hypot(q.x-p.x,q.z-p.z)<4){killObj(q.m);return false;}return true;});
+function synBlast(e){if(rt<SYN.cd)return;SYN.cd=rt+1.2;e.dmark=0;if(e.dmfx){killObj(e.dmfx);e.dmfx=null;}const p=e.pos.clone();SYN.zones=SYN.zones.filter(q=>{if(Math.hypot(q.x-p.x,q.z-p.z)<4){killObj(q.m);return false;}return true;});
   ringFx(p.x,p.z,4,0xfff0c0,.6);ringFx(p.x,p.z,3,0xa04aff,.5);burst(p.x,1.2,p.z,0xfff0c0,40,7,.8,.5,0);burst(p.x,1.2,p.z,0x8a3aff,30,6,.8,.5,0);floatText(p,'성암 폭발!','crit',e.tagY+.6);shake(.4);auChime(.6);
   for(const q of W.enemies){if(!q.dead&&!q.d.dummy&&d2(q.pos,p)<4+q.rad)hitEnemy(q,1.5,{holy:true,syn:true,proc:true});}
   synResonance(p.x,p.z,true);if(MP.party&&Object.keys(MP.party).length)mpSend({t:'res',z:W.zone,x:+p.x.toFixed(1),zz:+p.z.toFixed(1)});}
 function synResonance(x,z,own){if(!P||P.dead||Math.hypot(P.pos.x-x,P.pos.z-z)>14)return;P.synT=6;floatText(P.pos,'공명 · 받는 피해 -20%','info',3);
-  if(S.cls==='warrior'){const v=Math.round(P.maxHp*.1);P.barrier=(P.barrier||0)+v;P.barrierT=Math.max(P.barrierT||0,6);rageGain(20);floatText(P.pos,'공명 흡수 · 보호막 +'+fmt(v),'crit',3.4);ringFx(P.pos.x,P.pos.z,2.2,0xffd070,.5);}}
-function synTick(dt){if(P&&P.synT>0)P.synT-=dt;SYN.zones=SYN.zones.filter(q=>{q.t-=dt;q.m.material.opacity=.5*Math.min(1,q.t);if(q.t<=0){killObj(q.m);return false;}return true;});
+  if(S.cls==='warrior'&&rateOk('synabs',1)){const v=Math.round(Math.max(0,Math.min(P.maxHp*.1,P.maxHp*.5-(P.barrier||0))));P.barrier=(P.barrier||0)+v;P.barrierT=Math.max(P.barrierT||0,6);rageGain(20);floatText(P.pos,'공명 흡수 · 보호막 +'+fmt(v),'crit',3.4);ringFx(P.pos.x,P.pos.z,2.2,0xffd070,.5);}}
+function synTick(dt){if(P&&P.synT>0)P.synT-=dt;SYN.zones=SYN.zones.filter(q=>{q.t-=dt;q.m.material.opacity=.5*Math.min(1,q.t);if(q.t<=0){killObj(q.m);q.m.material.dispose();return false;}return true;});
   for(const e of W.enemies){if(e.dmark>0){e.dmark-=dt;if(e.dmark<=0&&e.dmfx){killObj(e.dmfx);e.dmfx=null;}}}}
 
 /* ===================== 멸세제룡 바라카스 — Lv.99 최상위 레이드 (멸세의 둥지) =====================
@@ -4378,25 +4382,39 @@ const MK={list:{},tab:'buy',fee:.05};
 const MK_STACK=[['low','하급 강화석',()=>S.stones.low,n=>S.stones.low+=n],['mid','중급 강화석',()=>S.stones.mid,n=>S.stones.mid+=n],['high','상급 강화석',()=>S.stones.high,n=>S.stones.high+=n],['top','최고급 강화석',()=>S.stones.top||0,n=>S.stones.top=(S.stones.top||0)+n],
   ['scroll','보호의 주문서',()=>S.scrolls,n=>S.scrolls+=n],['potion','체력 물약',()=>S.potions,n=>S.potions+=n],['mpot','마나 물약',()=>S.mpots,n=>S.mpots+=n],['rez','부활의 돌',()=>S.rezStone||0,n=>S.rezStone=(S.rezStone||0)+n],
   ['awkst','각성의 돌',()=>S.stoneAwk||0,n=>S.stoneAwk=(S.stoneAwk||0)+n],['dheart','드래곤하트',()=>S.dheart||0,n=>S.dheart=(S.dheart||0)+n],['scale','용의 비늘',()=>S.scale,n=>S.scale+=n],['cryst','용의 결정',()=>S.cryst,n=>S.cryst+=n]];
+const escA=t=>String(t==null?'':t).replace(/[<>&"'`]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+const okId=id=>typeof id==='string'&&/^[a-z0-9]{4,16}$/.test(id)&&!(id in Object.prototype);  // player ids are short base-36 strings; blocks __proto__/constructor
+const RL=Object.create(null);function rateOk(k,gap){const t=RL[k]||0;if(rt-t<gap)return false;RL[k]=rt;return true;}  // per-sender message rate limit
+/* a listing arrives from other players: rebuild the item from plain numbers / short clean strings so nothing can reach the HTML or the save */
+function mkClean(it){if(!it||typeof it!=='object')return null;
+  if(it.kind==='stack'){const s=MK_STACK.find(x=>x[0]===it.id);return s?{kind:'stack',id:s[0],n:Math.max(1,Math.min(9999,it.n|0))}:null;}
+  if(it.kind!=='gear'||!it.g||typeof it.g!=='object')return null;const g0=it.g,g=Object.create(null);
+  const cleanVal=(v,d)=>typeof v==='number'?(isFinite(v)?Math.max(-1e9,Math.min(1e9,v)):0):typeof v==='string'?v.replace(/[<>&"'`\\]/g,'').slice(0,40):typeof v==='boolean'?v:
+    d<1&&v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).slice(0,24).filter(k=>/^[a-zA-Z0-9_]{1,20}$/.test(k)&&!(k in Object.prototype)).map(k=>[k,cleanVal(v[k],d+1)])):
+    Array.isArray(v)&&d<1?v.slice(0,8).map(x=>cleanVal(x,d+1)):undefined;
+  for(const k of Object.keys(g0).slice(0,40)){if(!/^[a-zA-Z0-9_]{1,20}$/.test(k)||k in Object.prototype)continue;const v=cleanVal(g0[k],0);if(v!==undefined)g[k]=v;}
+  if(!['w','a','acc'].includes(g.type))return null;if(!(g.cls==='all'||Object.hasOwn(CLASSES,g.cls)))g.cls='all';
+  g.rar=Math.max(0,Math.min(9,g.rar|0));g.enh=Math.max(0,Math.min(30,g.enh|0));g.lv=Math.max(1,Math.min(99,g.lv|0));g.name=String(g.name||'장비');return {kind:'gear',g:Object.assign({},g)};}
 function acctKey(){return Array.from(mpMyName()).map(ch=>ch.charCodeAt(0).toString(36)).join('').slice(0,24);}
 function mkTopic(lid){return netBase()+'/mk/'+lid;}
 function mkLabel(it){if(!it)return '?';if(it.kind==='gear'){const g=it.g||{};return (g.enh?'+'+g.enh+' ':'')+String(g.name||'장비');}const s=MK_STACK.find(x=>x[0]===it.id);return (s?s[1]:'?')+' ×'+(it.n|0);}
-function mkRecv(tp,buf){const lid=tp[3];if(tp[2]==='mk'){if(!buf.length){delete MK.list[lid];}else{try{const m=JSON.parse(buf.toString());if(m&&m.lid===lid&&m.item&&m.price>0)MK.list[lid]=m;}catch(e){}}if(mkOpenNow())renderMarket();return;}
-  if(tp[2]==='pay'&&tp[3]===acctKey()&&buf.length){try{const m=JSON.parse(buf.toString()),pay=Math.floor((+m.price||0)*(1-MK.fee));if(pay>0&&S){S.gold+=pay;save();refreshHud();toast('거래소 · ['+String(m.name||'').slice(0,30)+'] 판매 대금 '+fmt(pay)+' G 입금 (수수료 5%)','gold');mpChatLine(null,'['+String(m.buyer||'?').slice(0,12)+'] 님이 ['+String(m.name||'').slice(0,30)+'] 구매 · '+fmt(pay)+' G','s');}}catch(e){}
+function mkRecv(tp,buf){const lid=tp[3];if(tp[2]==='mk'){if(!buf.length){delete MK.list[lid];}else{try{const m=JSON.parse(buf.toString()),it=m&&mkClean(m.item),pr=Math.floor(+(m&&m.price)||0);if(it&&m.lid===lid&&/^[a-z0-9]{6,20}$/.test(lid)&&pr>0&&pr<=999999999)MK.list[lid]={lid,id:okId(m.id)?m.id:'',sk:String(m.sk||'').replace(/[^a-z0-9]/g,'').slice(0,24),n:String(m.n||'?').slice(0,12),item:it,price:pr,t:+m.t||0};}catch(e){}}if(mkOpenNow())renderMarket();return;}
+  if(tp[2]==='pay'&&tp[3]===acctKey()&&buf.length){try{const m=JSON.parse(buf.toString()),mine=(S&&S.mkMine||{})[tp[4]],pay=mine?Math.floor(mine.price*(1-MK.fee)):0;  // only listings I posted, at the price I set
+    if(mine)delete S.mkMine[tp[4]];if(pay>0&&S){S.gold+=pay;save();refreshHud();toast('거래소 · ['+String(m.name||'').slice(0,30)+'] 판매 대금 '+fmt(pay)+' G 입금 (수수료 5%)','gold');mpChatLine(null,'['+String(m.buyer||'?').slice(0,12)+'] 님이 ['+String(m.name||'').slice(0,30)+'] 구매 · '+fmt(pay)+' G','s');}}catch(e){}
     try{MP.client.publish(tp.join('/'),'',{retain:true,qos:1});}catch(e){}}}
 function mkOpenNow(){return !$('#panel').hidden&&$('#ptl').textContent.startsWith('거래소');}
 function openMarket(){if(!MP.client||!MP.client.connected){openPanel('거래소','<p class="note">서버에 연결되어 있어야 거래소를 쓸 수 있습니다.</p>');return;}MK.sel=null;openPanel('거래소 · 경매인 실비아','');renderMarket();}
 function renderMarket(){const L=Object.values(MK.list).sort((a,b)=>b.t-a.t),me=acctKey(),tab=MK.tab;
   let h='<div class="tabs">'+[['buy','구매'],['sell','판매 등록'],['mine','내 등록']].map(t=>'<button data-mt="'+t[0]+'" class="'+(tab===t[0]?'on':'')+'">'+t[1]+'</button>').join('')+'</div><p class="note num">보유 골드 '+fmt(S.gold)+' G · 같은 서버의 플레이어가 올린 물건입니다. 판매 대금은 수수료 5%를 떼고 판매자가 접속할 때 입금됩니다.</p>';
-  if(tab==='buy'){const rows=L.filter(m=>m.sk!==me);h+=rows.length?rows.slice(0,60).map(m=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center">'+(m.item.kind==='gear'?'<div class="islot r'+((m.item.g||{}).rar||0)+'" style="flex:none">'+itemIcon(m.item.g)+((m.item.g||{}).enh?'<i class="en">+'+m.item.g.enh+'</i>':'')+'</div>':'')+'<div><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>판매자 '+String(m.n||'?').slice(0,12).replace(/[<>&]/g,'')+(m.item.kind==='gear'?' · Lv.'+((m.item.g||{}).lv|0)+' · '+clsName((m.item.g||{}).cls):'')+'</small></div></div><button class="btn sm pri" data-buy="'+m.lid+'"'+(S.gold<m.price?' disabled':'')+'>'+fmt(m.price)+' G</button></div>').join(''):'<p class="note">등록된 물건이 없습니다. 첫 판매자가 되어 보세요!</p>';}
-  else if(tab==='mine'){const rows=L.filter(m=>m.sk===me);h+=rows.length?rows.map(m=>'<div class="row"><div class="l"><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>'+fmt(m.price)+' G · 판매 중</small></div><button class="btn sm" data-cancel="'+m.lid+'">등록 취소</button></div>').join(''):'<p class="note">판매 중인 물건이 없습니다.</p>';}
+  if(tab==='buy'){const rows=L.filter(m=>m.sk!==me);h+=rows.length?rows.slice(0,60).map(m=>'<div class="row"><div class="l" style="display:flex;gap:8px;align-items:center">'+(m.item.kind==='gear'?'<div class="islot r'+((m.item.g||{}).rar||0)+'" style="flex:none">'+itemIcon(m.item.g)+((m.item.g||{}).enh?'<i class="en">+'+m.item.g.enh+'</i>':'')+'</div>':'')+'<div><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>판매자 '+String(m.n||'?').slice(0,12).replace(/[<>&]/g,'')+(m.item.kind==='gear'?' · Lv.'+((m.item.g||{}).lv|0)+' · '+clsName((m.item.g||{}).cls):'')+'</small></div></div><button class="btn sm pri" data-buy="'+escA(m.lid)+'"'+(S.gold<m.price?' disabled':'')+'>'+fmt(m.price)+' G</button></div>').join(''):'<p class="note">등록된 물건이 없습니다. 첫 판매자가 되어 보세요!</p>';}
+  else if(tab==='mine'){const rows=L.filter(m=>m.sk===me);h+=rows.length?rows.map(m=>'<div class="row"><div class="l"><b>'+mkLabel(m.item).replace(/[<>&]/g,'')+'</b><small>'+fmt(m.price)+' G · 판매 중</small></div><button class="btn sm" data-cancel="'+escA(m.lid)+'">등록 취소</button></div>').join(''):'<p class="note">판매 중인 물건이 없습니다.</p>';}
   else{const gs=S.bag.filter(g=>!g.lock),ss=MK_STACK.filter(s=>s[2]()>0),sel=MK.sel;
     const sg=sel&&sel.k==='g'?gs.find(g=>g.id===sel.id):null,sst=sel&&sel.k==='s'?ss.find(s=>s[0]===sel.id):null;
     h+='<p class="note" style="margin:0 0 6px">① 판매할 아이템을 누르고 ② 판매 금액을 적은 뒤 ③ 판매 등록을 누르세요.</p><div class="mkgrid">'+
-      gs.map(g=>'<button class="islot r'+(g.rar||0)+(sg===g?' sel':'')+'" data-pick="g:'+g.id+'" title="'+g.name+'">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+'</button>').join('')+
+      gs.map(g=>'<button class="islot r'+(g.rar||0)+(sg===g?' sel':'')+'" data-pick="g:'+escA(g.id)+'" title="'+escA(g.name)+'">'+itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':'')+'</button>').join('')+
       ss.map(s=>'<button class="islot mkst'+(sst===s?' sel':'')+'" data-pick="s:'+s[0]+'"><span>'+s[1].replace(/\(.*\)/,'').slice(0,6)+'</span><i class="en">'+s[2]()+'</i></button>').join('')+
       (gs.length||ss.length?'':'<p class="note">판매할 아이템이 없습니다 (잠긴 장비는 제외).</p>')+'</div>';
-    if(sg||sst){h+='<div class="mkform"><div class="l"><b>'+(sg?(sg.enh?'+'+sg.enh+' ':'')+sg.name:sst[1])+'</b><small>'+(sg?'Lv.'+sg.lv+' · '+clsName(sg.cls):'보유 '+sst[2]()+'개')+'</small></div>'+
+    if(sg||sst){h+='<div class="mkform"><div class="l"><b>'+escA(sg?(sg.enh?'+'+sg.enh+' ':'')+sg.name:sst[1])+'</b><small>'+(sg?'Lv.'+sg.lv+' · '+clsName(sg.cls):'보유 '+sst[2]()+'개')+'</small></div>'+
       (sst?'<label>수량 <input id="mkQty" type="number" inputmode="numeric" min="1" max="'+sst[2]()+'" value="1"></label>':'')+
       '<label>판매 금액 <input id="mkPrice" type="number" inputmode="numeric" min="1" max="999999999" placeholder="금액 입력"> G</label><button class="btn pri" id="mkReg">판매 등록</button></div>';}
     else if(gs.length||ss.length)h+='<p class="note">위에서 아이템을 먼저 누르세요.</p>';}
@@ -4412,11 +4430,11 @@ function renderMarket(){const L=Object.values(MK.list).sort((a,b)=>b.t-a.t),me=a
 function mkGive(it){if(it.kind==='gear'){it.g.id=newId();addGear(it.g,true);}else{const s=MK_STACK.find(x=>x[0]===it.id);if(s)s[3](it.n|0);}}
 function mkList(item,price){const lid=(Date.now().toString(36)+Math.random().toString(36).slice(2,8)).slice(0,16),m={lid,id:MP.id,sk:acctKey(),n:mpMyName(),item,price,t:Date.now()};
   try{MP.client.publish(mkTopic(lid),JSON.stringify(m),{retain:true,qos:1});}catch(e){mkGive(item);toast('등록 실패','bad');return;}
-  MK.list[lid]=m;save();refreshHud();toast('거래소 등록 · ['+mkLabel(item)+'] '+fmt(price)+' G','gold');MK.tab='mine';renderMarket();}
+  (S.mkMine||(S.mkMine={}))[lid]={price};MK.list[lid]=m;save();refreshHud();toast('거래소 등록 · ['+mkLabel(item)+'] '+fmt(price)+' G','gold');MK.tab='mine';renderMarket();}
 function mkBuy(lid){const m=MK.list[lid];if(!m)return toast('이미 판매된 물건입니다');if(S.gold<m.price)return toast('골드가 부족합니다');
   const c=MP.client;delete MK.list[lid];try{c.publish(mkTopic(lid),'',{retain:true,qos:1});c.publish(netBase()+'/pay/'+m.sk+'/'+lid,JSON.stringify({id:MP.id,price:m.price,buyer:mpMyName(),name:mkLabel(m.item)}),{retain:true,qos:1});}catch(e){toast('구매 실패','bad');return;}
   S.gold-=m.price;mkGive(m.item);save();refreshHud();auCoin(1);toast('구매 완료 · ['+mkLabel(m.item)+']','gold');renderMarket();}
-function mkCancel(lid){const m=MK.list[lid];if(!m||m.sk!==acctKey())return;delete MK.list[lid];try{MP.client.publish(mkTopic(lid),'',{retain:true,qos:1});}catch(e){}mkGive(m.item);save();toast('등록을 취소했습니다 · 물건을 돌려받았습니다');renderMarket();}
+function mkCancel(lid){const m=MK.list[lid];if(!m||m.sk!==acctKey()||!(S.mkMine&&S.mkMine[lid]))return;delete S.mkMine[lid];delete MK.list[lid];try{MP.client.publish(mkTopic(lid),'',{retain:true,qos:1});}catch(e){}mkGive(m.item);save();toast('등록을 취소했습니다 · 물건을 돌려받았습니다');renderMarket();}
 
 function openGuild(){openPanel('길드 관리인 바르칸 · 길드','');renderGuild();}
 function renderGuild(){
@@ -4561,7 +4579,7 @@ async function netConnect(){if(MP.client||MP.connecting)return;MP.connecting=tru
   c.on('connect',()=>{MP.fails=0;MP.subGuild=null;MP.subW=false;MP.subPay=null;c.subscribe(['rotd1/+/hb',base+'/chat',base+'/bye'],{qos:0});c.subscribe([base+'/mk/+','rotd1/notice'],{qos:1});MP.subZone=null;mpSendHb();
     if(!MP.hello){MP.hello=true;later(3,()=>{if(!MP.client)return;const n=netCount();if(n>NET_MAX){toast('서버가 가득 찼습니다 ('+NET_MAX+'명) · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}else{toast(SERVERS[MP.srv][0]+' 서버 · 현재 '+Math.max(1,n)+'명 접속 중','gold');mpChatLine(null,SERVERS[MP.srv][0]+' 서버에 접속했습니다 · '+Math.max(1,n)+'명','s');}});}
     mpUi();});
-  c.on('message',(topic,buf)=>{const tp0=topic.split('/');if(topic==='rotd1/notice'){try{MP.notice=buf.length?JSON.parse(buf.toString()):null;}catch(e3){}return;}if(tp0[2]==='mk'||tp0[2]==='pay'){mkRecv(tp0,buf);return;}let m;try{m=JSON.parse(buf.toString());}catch(e2){return;}if(!m||typeof m!=='object'||typeof m.id!=='string'||m.id===MP.id)return;
+  c.on('message',(topic,buf)=>{const tp0=topic.split('/');if(topic==='rotd1/notice'){try{MP.notice=buf.length?JSON.parse(buf.toString()):null;}catch(e3){}return;}if(tp0[2]==='mk'||tp0[2]==='pay'){mkRecv(tp0,buf);return;}let m;try{m=JSON.parse(buf.toString());}catch(e2){return;}if(!m||typeof m!=='object'||!okId(m.id)||m.id===MP.id)return;
     const tp=topic.split('/');if(tp[2]==='hb'){const s=(+tp[1])-1;(MP.pop[s]||(MP.pop[s]={}))[m.id]=rt;if(s===MP.srv)mpRoster(m);return;}
     if(tp[1]!==base.split('/')[1])return;if(tp[2]==='w'&&tp[3]!==MP.id)return;mpRecv(m);});
   c.on('error',err=>{if(/full|Not authorized|Server unavailable/i.test(String(err&&err.message))){toast('서버가 가득 찼습니다 · 다른 서버를 선택하세요','bad');MP.full=true;netDisconnect(true);}});
@@ -4582,7 +4600,7 @@ function mpSendState(){if(!P||!S)return;
   mpSend({t:'st',n:mpMyName(),c:S.cls,a:S.awk?1:0,lv:S.level,z:W.zone,x:+P.pos.x.toFixed(2),y:+P.pos.y.toFixed(2),zz:+P.pos.z.toFixed(2),f:+P.face.toFixed(2),m:P.walk!==P._mpw?1:0,hp:Math.round(P.hp),mh:P.maxHp,dead:P.dead?1:0,rk:isRed()?1:0,g:guildKey()||'',pk:S.pkOn?1:0,ti:tierOf()});P._mpw=P.walk;}
 function mpRecv(m){const id=m.id;
   if(m.t==='s'){const r=MP.others[id];if(!r||m.z!==W.zone)return;mpMove(r,m);r.hp=m.hp;r.dead=!!m.dead;return;}
-  if(m.t==='st'){if(m.z!==W.zone||!CLASSES[m.c])return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
+  if(m.t==='st'){if(m.z!==W.zone||!Object.hasOwn(CLASSES,m.c))return;let r=MP.others[id];if(!r||r.cls!==m.c){if(r)mpRemove(id,true);r=mpAvatar(id,m);}
     r.name=String(m.n||'').slice(0,12);r.lv=m.lv|0;r.red=!!m.rk;r.g=typeof m.g==='string'?m.g.slice(0,24):'';r.pkOn=!!m.pk;r.tag.classList.toggle('red',r.red);r.awk=m.a;r.zone=m.z;mpMove(r,m);r.hp=m.hp;r.mh=m.mh;r.dead=!!m.dead;
     const ti=Math.max(0,Math.min(3,m.ti|0));if(r.ti!==ti){r.ti=ti;tierAura(r,m.c,ti);}
     const lbl=r.name.replace(/[<>&]/g,'');if(r.lbl!==lbl){r.lbl=lbl;r.tag.querySelector('.nm').innerHTML=lbl;}if(r.first){r.pos.copy(r.tgt);r.first=false;}}
@@ -4591,13 +4609,13 @@ function mpRecv(m){const id=m.id;
   else if(m.t==='heal'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<16){const v=Math.round(P.maxHp*Math.min(1,Math.max(0,+m.p||0)));P.hp=Math.min(P.maxHp,P.hp+v);floatText(P.pos,'+'+fmt(v)+' ('+String(m.n||'').slice(0,12)+')','heal',2.4);refreshHud();burst(P.pos.x,1,P.pos.z,0xfff0a0,14,2,.8,.4,2);}}
   else if(m.t==='shield'){if(m.z===W.zone&&P&&!P.dead&&Math.hypot(P.pos.x-m.x,P.pos.z-m.zz)<25){P.dshieldT=Math.max(P.dshieldT||0,Math.min(6,+m.d||0));floatText(P.pos,'신성 방패 ('+String(m.n||'').slice(0,12)+')','crit',3);}}
   else if(m.t==='ann'){const txt=String(m.txt||'').slice(0,80);mpChatLine('📢',txt,'s');toast(txt,'gold');}
-  else if(m.t==='dmk'){if(m.z===W.zone&&MP.party&&MP.party[id])synZone(+m.x||0,+m.zz||0);}
-  else if(m.t==='res'){if(m.z===W.zone&&MP.party&&MP.party[id])synResonance(+m.x||0,+m.zz||0);}
+  else if(m.t==='dmk'){if(m.z===W.zone&&MP.party&&MP.party[id]&&rateOk('dmk'+id,.7))synZone(+m.x||0,+m.zz||0);}
+  else if(m.t==='res'){if(m.z===W.zone&&MP.party&&MP.party[id]&&rateOk('res'+id,1))synResonance(+m.x||0,+m.zz||0);}
   else if(m.t==='rez'){if(m.to===MP.id&&P&&P.dead)reviveHere(.3,'['+String(m.n||'?').slice(0,12)+'] 님의 부활');}
   else if(m.t==='pvp'){pvpHit(m);}
   else if(m.t==='pk'){pvpKilled(m);}
-  else if(m.t==='pinv'){partyReply(m);}
-  else if(m.t==='pacc'){(MP.party||(MP.party={}))[id]=String(m.n||'?').slice(0,12);mpChatLine(null,'['+MP.party[id]+'] 님이 파티에 들어왔습니다','s');}
+  else if(m.t==='pinv'){if(rateOk('pinv'+id,15))partyReply(m);}
+  else if(m.t==='pacc'){if(!(MP.invited&&rt-(MP.invited[id]||-1e9)<90))return;delete MP.invited[id];(MP.party||(MP.party={}))[id]=String(m.n||'?').slice(0,12);mpChatLine(null,'['+MP.party[id]+'] 님이 파티에 들어왔습니다','s');}
   else if(m.t==='pleave'){if(MP.party&&MP.party[id]){mpChatLine(null,'['+MP.party[id]+'] 님이 파티를 떠났습니다','s');delete MP.party[id];}}
   else if(m.t==='gchat'){if(guildKey())mpChatLine('[길드] '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'g');}
   else if(m.t==='whisper'){mpChatLine('← '+String(m.n||'?').slice(0,12),String(m.txt||'').slice(0,80),'w');if(!CHAT.lastW){CHAT.lastW=1;}const to=$('#chatTo');if(to&&!to.value)to.value=String(m.n||'').slice(0,12);}
@@ -4620,16 +4638,17 @@ function pvpStrike(mult,radius,front,fx,pr){if(!MP.client||!pvpMe()||!S.pkOn||!P
     if(front){if((dx*f.x+dz*f.z)/(d||1)<.3&&d>1.2)continue;if(d<bd){bd=d;best=r;}}else hits.push(r);}
   if(best)hits.push(best);
   hits.forEach(r=>{const crit=Math.random()<(P.crit||.12),dmg=Math.round(P.atk*mult*rand(.9,1.1)*(crit?(P.critX||1.6):1));
-    mpSend({t:'pvp',to:r.id,d:dmg,c:crit?1:0,n:mpMyName(),g:guildKey()||'',lv:S.level,z:W.zone,cls:S.cls,fx:fx||'',pr:Math.min(.6,(pr||0)+((P.gs&&P.gs.pierce)||0)/100)});floatText(r.pos,(crit?'치명 ':'')+'-'+fmt(Math.round(dmg*.5)),crit?'crit':'info',2.2);burst(r.pos.x,1.1,r.pos.z,0xff5a3a,10,3,.6,.3,0);});}
+    (MP.hitT||(MP.hitT=Object.create(null)))[r.id]=rt;mpSend({t:'pvp',to:r.id,d:dmg,c:crit?1:0,n:mpMyName(),g:guildKey()||'',lv:S.level,z:W.zone,cls:S.cls,fx:fx||'',pr:Math.min(.6,(pr||0)+((P.gs&&P.gs.pierce)||0)/100)});floatText(r.pos,(crit?'치명 ':'')+'-'+fmt(Math.round(dmg*.5)),crit?'crit':'info',2.2);burst(r.pos.x,1.1,r.pos.z,0xff5a3a,10,3,.6,.3,0);});}
 function pvpHit(m){if(m.to!==MP.id||!P||P.dead)return;if(!pvpMe()||m.z!==W.zone||(m.lv|0)<PVP_LV||mpFriend(m.id,m.g))return;
-  P.lastPvp={id:m.id,n:String(m.n||'?').slice(0,12),t:rt};const ac=String(m.cls||'');let dm=Math.max(1,Math.min(1e6,+m.d||0)*.5);
+  const ar=MP.others[m.id];if(!ar||ar.zone!==W.zone||!ar.pkOn||ar.dead||Math.hypot(ar.tgt.x-P.pos.x,ar.tgt.z-P.pos.z)>14||!rateOk('pvp'+m.id,.3))return;  // only a real attacker next to me
+  P.lastPvp={id:m.id,n:String(m.n||'?').slice(0,12),t:rt};const ac=String(m.cls||'');let dm=Math.max(1,Math.min(P.maxHp*.9,Math.min(1e6,+m.d||0)*.5));
   if(ADV[ac]===S.cls)dm*=1.25;else if(ADV[S.cls]===ac)dm*=.8;  // 삼각 상성
   hurtPlayer(dm,{pvp:1,pr:Math.min(.6,+m.pr||0)},{phys:ac!=='shaman',trueFrac:ac==='shaman'?.3:0});if(P.dead)return;const imm=P.ascT>0||P.immT>0;
   if(m.fx==='stun'){breakStealth();if(!imm){P.lock=Math.max(P.lock,1.5);P.target=null;P.dest=null;floatText(P.pos,'기절','info',2.8);}}
   else if(m.fx==='silence'&&!imm){P.silT=1.5;floatText(P.pos,'침묵','info',2.8);}
   else if(m.fx==='slow'&&!imm){P.slowT=2;recalc();floatText(P.pos,'둔화','info',2.8);}
   else if(m.fx==='air'&&!imm){P.lock=Math.max(P.lock,1.2);tween(1.2,k=>{P.y=Math.sin(k*Math.PI)*2.2;},()=>{P.y=0;},x=>x);floatText(P.pos,'에어본','info',2.8);}}
-function pvpKilled(m){if(m.to!==MP.id)return;S.pkKills=(S.pkKills||0)+1;const was=isRed();if(!m.red)S.karma=(S.karma||0)+100;
+function pvpKilled(m){if(m.to!==MP.id||!(MP.hitT&&rt-(MP.hitT[m.id]||-1e9)<15))return;delete MP.hitT[m.id];S.pkKills=(S.pkKills||0)+1;const was=isRed();if(!m.red)S.karma=(S.karma||0)+100;
   toast('['+String(m.n||'?').slice(0,12)+'] 처치! (PK '+S.pkKills+')'+(m.red?' · 붉은 이름 처치는 카르마가 오르지 않습니다':''),'gold');
   if(!was&&isRed())later(.8,()=>toast('붉은 이름이 되었습니다 · 방어력 -30% · 경험치를 모으면 원래대로 돌아옵니다','bad'));recalc();refreshHud();save();}
 function karmaExp(n){if(!S.karma||!(n>0)||!isFinite(S.karma))return;const was=isRed();S.karma=Math.max(0,S.karma-n/needExp(Math.min(S.level,98))*500);
@@ -4642,7 +4661,7 @@ function pkUi(){let b=$('#pkBtn');if(!b){b=document.createElement('button');b.id
   const show=gameOn&&!CS&&pvpMe();b.hidden=!show;if(show){b.textContent=S.pkOn?'PK\nON':'PK\nOFF';b.classList.toggle('on',!!S.pkOn);}
   if(W.zone!==MP.pvpZoneSeen){MP.pvpZoneSeen=W.zone;if(pvpZone())later(1.5,()=>toast(S.level>=PVP_LV?'PvP 사냥터 · 레벨 50 이상 플레이어끼리 싸울 수 있습니다 (같은 길드·파티 제외)':'PvP 사냥터 · 레벨 50부터 플레이어 대결에 참여합니다','bad'));}}
 /* ---------- party: invite a player from the 접속자 list; party members cannot hit each other ---------- */
-function partyInvite(id,name){const c=MP.client;if(!c||!c.connected)return;try{c.publish(netBase()+'/w/'+id,JSON.stringify({t:'pinv',id:MP.id,n:mpMyName()}));}catch(e){}mpChatLine(null,'['+name+'] 님에게 파티 초대를 보냈습니다','s');}
+function partyInvite(id,name){const c=MP.client;if(!c||!c.connected)return;(MP.invited||(MP.invited=Object.create(null)))[id]=rt;try{c.publish(netBase()+'/w/'+id,JSON.stringify({t:'pinv',id:MP.id,n:mpMyName()}));}catch(e){}mpChatLine(null,'['+name+'] 님에게 파티 초대를 보냈습니다','s');}
 function partyReply(m){const c=MP.client,n=String(m.n||'?').slice(0,12);
   openPanel('파티 초대','<div class="sec"><p class="note">['+n.replace(/[<>&]/g,'')+'] 님이 파티에 초대했습니다. 파티원끼리는 PvP 공격을 할 수 없습니다.</p><div class="bbar"><button class="btn pri" id="pYes">수락</button><button class="btn" id="pNo">거절</button></div></div>');
   $('#pYes').onclick=()=>{(MP.party||(MP.party={}))[m.id]=n;try{c.publish(netBase()+'/w/'+m.id,JSON.stringify({t:'pacc',id:MP.id,n:mpMyName()}));}catch(e){}mpChatLine(null,'['+n+'] 님의 파티에 들어갔습니다','s');closePanel();};
@@ -5237,7 +5256,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.29-6';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-7';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
