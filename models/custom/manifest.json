@@ -2279,7 +2279,7 @@
         "meshy_s_thronecarpet"
       ],
       "zones": [
-        "hall"
+        "coral"
       ],
       "uniform": true,
       "userModel": "영혼의 제단 릴리스 595113162"
@@ -2317,7 +2317,7 @@
         "meshy_s_altar"
       ],
       "zones": [
-        "citadel"
+        "coral"
       ],
       "uniform": true,
       "userModel": "영혼의 제단 릴리스 595111996"
@@ -2508,6 +2508,78 @@
       ],
       "uniform": true,
       "userModel": "Arcane Circle Gate"
+    },
+    "r_grimoire": {
+      "file": "r_grimoire.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_grimoire"
+      ],
+      "zones": [
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Gargoyle Grimoire"
+    },
+    "r_athena": {
+      "file": "r_athena.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_athena"
+      ],
+      "zones": [
+        "port"
+      ],
+      "uniform": true,
+      "userModel": "Athena with Spear and Shield"
+    },
+    "r_pulpit": {
+      "file": "r_pulpit.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_pulpit"
+      ],
+      "zones": [
+        "coral"
+      ],
+      "uniform": true,
+      "userModel": "Gothic Stone Pulpit Pedestal"
+    },
+    "r_panda": {
+      "file": "r_panda.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_panda"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "Anxious Adventurer Panda"
+    },
+    "r_bench2": {
+      "file": "r_bench2.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_bench2"
+      ],
+      "zones": [
+        "village"
+      ],
+      "uniform": true,
+      "userModel": "Wooden Park Bench 2"
+    },
+    "r_seraph": {
+      "file": "r_seraph.glb.txt",
+      "kind": "prop",
+      "replace": [
+        "meshy_seraph"
+      ],
+      "zones": [
+        "clock"
+      ],
+      "uniform": true,
+      "userModel": "Gilded Seraph (statue)"
     }
   }
 }

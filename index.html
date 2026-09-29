@@ -511,7 +511,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-7</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.29-8</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2469,6 +2469,7 @@ function buildVillage(){
     ['meshy_bush',-23,-2,2.2,.8],['meshy_bush',22,-15,2.2,.8],['meshy_bush',-6,24,2.2,.8],['meshy_bush',14,24,2,.8],['meshy_bush',-22,-28,2.4,.8]]);
   portal(0,-33,'plains',[0,23],()=>S.q>qIdx('v4'),'아직 마을을 떠날 수 없습니다. 마을의 위기를 먼저 해결하세요.','바람노래 평원 ›');
   portal(-9,23.6,'inn',[4.6,0],()=>true,'','여관 ›',{door:true});
+  if(PROPS.meshy_panda){prop('meshy_panda',-3.2,7.6,{h:1.5,rot:Math.PI*.8});addCircle(-3.2,7.6,.6);}if(PROPS.meshy_bench2){prop('meshy_bench2',3.4,8,{fit:2.2,rot:Math.PI*1.15});addCircle(3.4,8,.8);}  // user Meshy panda adventurer and bench
   vDeco([['dragon',-5,-6,{h:1.6},Math.PI*.25,.8],['bench',-4,4,2.2,Math.PI,0],['bench',4,4.5,2.2,Math.PI,0],
     ['stall1',8,-4.6,4.2,0,1.6],['stall2',13,-4.6,4.2,0,1.6],['stall3',8,4.8,4.2,Math.PI,1.6],['crates2',15.5,-6.5,1.8,.3,.8],['barrel',10.6,-6.8,1.1,0,.5],
     ['lamp',2,-10,{h:3.6},0,.3],['lamp',-2,10,{h:3.6},Math.PI,.3],['lamp',2,-20,{h:3.6},0,.3],['lamp2',-2,18,{h:3.6},Math.PI,.3],['lamp',10,2,{h:3.6},0,.3],['lamp2',-10,-2,{h:3.6},0,.3],
@@ -2692,6 +2693,7 @@ function buildClock(){
   spawner('clockDoll',-20,0,5,4,8,always,null,[40,47]);spawner('clockDoll',0,-16,5,4,8,always,null,[47,56]);spawner('clockDoll',26,-14,5,3,8,always,null,[50,56]);
   spawner('clockGolem',-4,14,4,2,10,always,null,[56,62]);spawner('clockGolem',28,20,4,2,10,always,null,[62,70]);spawner('clockGolem',-24,30,4,2,10,always,null,[64,70]);
   spawner('clockBoss',-10,31,0,1,180,always);
+  if(PROPS.meshy_seraph){const st=prop('meshy_seraph',4.5,-31,{h:4.2});if(st)st.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.setHex(0xe8c878);o.material.metalness=.6;o.material.roughness=.35;}});addCircle(4.5,-31,.9);}  // the retired golden seraph as a gilded statue
   transformZone(0,-1,1,0);
   portal(36.5,0,'grave',[-32,-24],always,'','동쪽 · 원혼의 묘지 ›');
   portal(-37,10,'asura',[32,0],always,'','서쪽 · 아수라 흑야 협곡 Lv.70~99 ›');
@@ -3509,6 +3511,7 @@ function buildPort(){
   if(KIT){[['building_home_B_red',-15,-9,0,7],['building_tavern_red',-13,9,Math.PI,9],['building_market_blue',-3,10,Math.PI,6]].forEach(([k,x,z,r,f])=>{if(PROPS[k]){prop(k,x,z,{fit:f,rot:r});addBox(x,z,f*.42,f*.36);}});
     [['crates_stacked',2,-4,1.8],['barrel_large',2.6,5.5,1.1],['keg',1.4,6.2,1],['box_large',-6,-11,1.3],['crates_stacked',-8,-12,1.8],['barrel_large',3,-7,1.1]].forEach(([k,x,z,f])=>{if(PROPS[k]){prop(k,x,z,{fit:f,rot:srand()*6});addCircle(x,z,f*.4);}});}
   [[-18,-5],[-18,5],[3.4,-2.6],[3.4,3.2]].forEach(([x,z],i)=>torch(x,z,i<2));
+  if(PROPS.meshy_athena){prop('meshy_athena',-16.5,-5.5,{h:4.6,rot:Math.PI/2});addCircle(-16.5,-5.5,.9);}  // guardian statue by the citadel gate
   spawnNpc('haram',15.6,-1.6,-Math.PI/2);spawnNpc('sailor',-4,-6,Math.PI/2);spawnNpc('guard',-19.5,2.6,Math.PI/2).d=NPCS.guard;
   portal(-21,0,'citadel',[25,0],always,'','천명 성채 동문 ›');
   later(.8,()=>toast(S.coralOpen?'천명 항구 · 선장 하람에게 말을 걸면 신대륙으로 바로 항해할 수 있습니다':'천명 항구 · 선장 하람: 신대륙 「용의 바다」 행 방주 (Lv.90 이상)','gold'));}
@@ -3672,6 +3675,9 @@ function buildCoral(){
   spawner('drownedKnight',-6,6,6,4,10,always,null,[99,99]);spawner('drownedKnight',-18,-4,6,4,10,always,null,[99,99]);
   spawner('abyssCaller',-24,-16,6,3,12,always,null,[99,99]);spawner('abyssCaller',-2,18,6,3,12,always,null,[99,99]);
   spawner('coralQueen',-32,6,0,1,300,always);
+  if(PROPS.meshy_pulpit){prop('meshy_pulpit',.6,-17.4,{h:1.5});addCircle(.6,-17.4,.6);if(PROPS.meshy_grimoire)prop('meshy_grimoire',.6,-17.4,{fit:.9,y:1.5,rot:.4});}  // the pilgrim's lectern and the old god's scripture
+  if(PROPS.meshy_s_altar){prop('meshy_s_altar',-6,-26,{h:2.8});addCircle(-6,-26,1.4);}
+  if(PROPS.meshy_s_thronecarpet){prop('meshy_s_thronecarpet',-35.5,6,{fit:5,rot:Math.PI/2});addCircle(-36.2,6,1.2);}  // the Coral Queen's throne
   spawnNpc('haram',25.4,-2.4,-Math.PI/2);spawnNpc('pilgrim',-1.4,-15.2,Math.PI*.8);
   later(1,()=>{toast('신대륙 「용의 바다」 · 잊혀진 산호 항구','big');if(!S.coralSeen){S.coralSeen=true;save();later(1.2,()=>dialog([['sys','산호로 뒤덮인 버려진 항구. 거대한 용의 뼈가 숲처럼 솟아 있고, 그 안쪽 어딘가에서 희미한 황금빛이 새어 나온다.']]));}});}
 const GODQ_N=3;
@@ -5256,7 +5262,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.29-7';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.29-8';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
