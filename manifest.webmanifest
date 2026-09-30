@@ -1,11 +1,24 @@
 {
+  "id": "./",
   "name": "용의 귀환",
   "short_name": "용의 귀환",
+  "description": "휴대폰 브라우저에서 바로 즐기는 쿼터뷰 3D 판타지 MMORPG. 전사·도적·힐러로 서쪽 사냥터를 돌파하고 드래곤 레이드와 바다의 세이렌에 도전하세요.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#0c0a0d",
   "theme_color": "#0c0a0d",
-  "lang": "ko"
+  "lang": "ko",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "icons/s1_citadel.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "천명 성채" },
+    { "src": "icons/s4_siren.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "영원의 방주 호위전" },
+    { "src": "icons/s6_ignis.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "고대 드래곤 이그니스" }
+  ]
 }

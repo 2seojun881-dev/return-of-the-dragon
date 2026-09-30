@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>용의 귀환 · 개인정보처리방침</title>
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<style>
+:root{--bg:#0c0a0d;--fg:#e8dfd2;--mute:#a89a88;--gold:#e8be6e;--line:#3c2e26}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif}
+main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
+h1{color:var(--gold);font-size:26px;margin:0 0 4px}h2{color:var(--gold);font-size:18px;margin:32px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.mute{color:var(--mute);font-size:14px}ul{padding-left:20px}li{margin:4px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:#1c1517;color:var(--gold)}
+a{color:var(--gold)}
+</style>
+</head>
+<body><main>
+<h1>용의 귀환 개인정보처리방침</h1>
+<p class="mute">시행일 2026년 9월 30일</p>
+
+<p>「용의 귀환」(이하 “게임”)은 회원 가입 없이 즐기는 웹 게임입니다. 게임은 이름, 전화번호, 이메일, 위치 같은 개인정보를 요구하거나 수집하지 않습니다. 이 방침은 게임을 하는 동안 어떤 정보가 어디에 저장되고 누구에게 전달되는지 설명합니다.</p>
+
+<h2>1. 기기에만 저장되는 정보</h2>
+<p>캐릭터 이름, 직업, 레벨, 장비, 가방, 퀘스트 진행 상황, 설정은 이용자 기기의 브라우저 저장소(localStorage)에만 저장됩니다. 운영자의 서버로 보내지지 않으며, 앱을 지우거나 브라우저 데이터를 삭제하면 함께 지워집니다.</p>
+
+<h2>2. 다른 이용자에게 전달되는 정보</h2>
+<p>멀티플레이를 위해 아래 정보가 실시간 중계 서버(MQTT)를 거쳐 같은 서버에 접속한 다른 이용자에게 전달됩니다.</p>
+<table>
+<tr><th>항목</th><th>목적</th></tr>
+<tr><td>캐릭터 이름 · 직업 · 레벨 · 외형 · 위치</td><td>다른 이용자의 화면에 캐릭터 표시</td></tr>
+<tr><td>채팅 · 귓속말 내용</td><td>이용자 간 대화</td></tr>
+<tr><td>파티 · 길드 · 거래소 등록 정보</td><td>파티 사냥, 길드, 아이템 거래</td></tr>
+<tr><td>접속마다 새로 만드는 임의 식별자</td><td>메시지를 보낸 캐릭터 구분</td></tr>
+</table>
+<p>중계 서버는 메시지를 전달만 하고 보관하지 않습니다. 다만 공지처럼 “유지” 표시가 붙은 일부 메시지는 다음 접속자에게 보이도록 서버에 남습니다. 현재 공개 중계 서버(EMQX, HiveMQ)를 사용하며, 각 서버 운영사의 정책에 따라 접속 기록(IP 주소 등)이 처리될 수 있습니다.</p>
+<p>채팅에 실명, 연락처, 계좌 번호 같은 개인정보를 쓰지 마세요. 채팅은 같은 서버의 다른 이용자가 볼 수 있습니다.</p>
+
+<h2>3. 외부 서비스</h2>
+<ul>
+<li>게임 파일은 GitHub Pages에서 받습니다.</li>
+<li>3D 엔진(three.js)은 cdnjs · jsDelivr에서, 글꼴은 Google Fonts에서 받습니다.</li>
+<li>이 과정에서 각 서비스가 일반적인 접속 기록(IP 주소, 브라우저 정보)을 처리할 수 있습니다.</li>
+</ul>
+<p>게임은 광고, 분석 도구, 추적 쿠키를 쓰지 않습니다. 유료 결제가 없으므로 결제 정보도 받지 않습니다.</p>
+
+<h2>4. 아동</h2>
+<p>게임은 개인정보를 수집하지 않으므로 나이와 관계없이 별도 정보를 받지 않습니다. 보호자는 자녀가 채팅에서 개인정보를 쓰지 않도록 지도해 주세요.</p>
+
+<h2>5. 정보 삭제</h2>
+<p>기기에 저장된 게임 데이터는 앱을 삭제하거나 브라우저의 사이트 데이터를 지우면 모두 삭제됩니다. 운영자가 따로 보관하는 이용자 정보는 없습니다.</p>
+
+<h2>6. 방침 변경</h2>
+<p>수집하는 정보가 달라지면 이 페이지를 고치고 시행일을 바꿉니다.</p>
+
+<h2>7. 문의</h2>
+<p>GitHub 문의 게시판: <a href="https://github.com/2seojun881-dev/return-of-the-dragon/issues">github.com/2seojun881-dev/return-of-the-dragon/issues</a></p>
+</main></body></html>
