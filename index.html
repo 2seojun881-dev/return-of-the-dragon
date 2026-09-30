@@ -142,8 +142,9 @@ svg{display:block}
 #b-auto.on{border-color:#ffd070;color:#fff2c8;background:radial-gradient(circle at 50% 35%,#6a4a18,#1e1408 72%);box-shadow:0 0 0 3px rgba(255,200,90,.25),0 0 18px rgba(255,170,60,.55)}
 #b-auto.on::before{content:'';position:absolute;inset:3px;border-radius:50%;border:2px solid transparent;border-top-color:#ffd070;border-right-color:rgba(255,208,112,.4);animation:spin 1.2s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#autoTag{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font:700 12px 'IBM Plex Sans KR';letter-spacing:.2em;color:#ffe2a0;background:rgba(30,20,8,.7);border:1px solid rgba(255,200,90,.5);padding:4px 14px;border-radius:14px;pointer-events:none;animation:pulseT 1.8s ease-in-out infinite}
+#autoTag{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(440px,60vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px 'IBM Plex Sans KR';letter-spacing:.04em;color:#ffe2a0;background:rgba(30,20,8,.7);border:1px solid rgba(255,200,90,.5);padding:4px 14px;border-radius:14px;pointer-events:none;animation:pulseT 1.8s ease-in-out infinite}
 @media (max-width:640px){#autoTag{bottom:calc(250px + env(safe-area-inset-bottom,0px))}}
+@media (max-height:500px) and (min-width:641px){#autoTag{bottom:calc(46px + env(safe-area-inset-bottom,0px));font-size:11px;padding:3px 12px}}
 #b-pot .cnt{position:absolute;right:4px;bottom:1px;font-size:11px;z-index:5;text-shadow:0 1px 1px #000}
 .sk.flash{animation:skf .6s ease 3}
 @keyframes skf{50%{box-shadow:0 0 0 6px rgba(220,182,94,.6)}}
@@ -474,7 +475,7 @@ body.touch #joy{display:block}
   <div id="guide" hidden><span class="gl">시스템 가이드</span><span id="guideT"></span></div>
   <div id="toasts"></div>
   <div id="srvNotice" hidden></div>
-  <div id="autoTag" hidden>자동 전투 중</div>
+  <div id="autoTag" hidden>AI 자동 진행 중</div>
   <div id="skills">
     <button class="sk big" id="b-atk" aria-label="기본 공격"></button>
     <button class="sk s" id="b-s1" aria-label="스킬 1"></button>
@@ -483,7 +484,7 @@ body.touch #joy{display:block}
     <button class="sk u" id="b-ult" aria-label="궁극기"></button>
     <button class="sk s" id="b-pot" aria-label="물약"></button>
     <button class="sk s" id="b-mpot" aria-label="마나 물약"></button>
-    <button class="sk s" id="b-auto" aria-label="자동 전투" aria-pressed="false"></button>
+    <button class="sk s" id="b-auto" aria-label="AI 자동 진행" aria-pressed="false"></button>
   </div>
 </div>
 
@@ -513,7 +514,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -3952,7 +3953,7 @@ function updPlayer(dt){
       else{P.unstuck=0;P.detour=null;P.dest=null;if(!(P.target&&!P.target.isNpc))P.target=null;}}}else{P.stuck=0;if(!P.detour)P.unstuck=Math.max(0,(P.unstuck||0)-dt*.5);}}else P.stuck=0;
   P.last.copy(P.pos);
   // portals
-  for(const p of W.portals){if(Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<1.7){if(AUTO.on&&!(P.dest&&!P.hunt&&Math.hypot(P.dest.x-p.x,P.dest.z-p.z)<3))continue;if(p.unlocked()){if(!CS&&!transitioning)gotoZone(p.to,p.arrive);}else if(rt-p.lastMsg>3){p.lastMsg=rt;toast(p.lockMsg,'bad');P.dest=null;const dz=Math.sign(P.pos.z-p.z)||1;P.pos.z=p.z+dz*2.2;}}}
+  for(const p of W.portals){if(Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<1.7){if(AUTO.on&&AUTO.portalTo!==p.to&&!(P.dest&&!P.hunt&&Math.hypot(P.dest.x-p.x,P.dest.z-p.z)<3))continue;if(p.unlocked()){if(!CS&&!transitioning)gotoZone(p.to,p.arrive);}else if(rt-p.lastMsg>3){p.lastMsg=rt;toast(p.lockMsg,'bad');P.dest=null;const dz=Math.sign(P.pos.z-p.z)||1;P.pos.z=p.z+dz*2.2;}}}
   if(P.setFx)P.setFx.tick(dt,moving);
   animHumanoid(P,dt,moving);
 }
@@ -4769,7 +4770,7 @@ const AUTO={on:false,t:0,pause:0,dodge:0,navT:0};
 try{AUTO.on=localStorage.getItem('ignis.auto')==='1';}catch(e){}
 function setAuto(on,quiet){AUTO.on=on;try{localStorage.setItem('ignis.auto',on?'1':'0');}catch(e){}
   const b=$('#b-auto');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);$('#autoTag').hidden=!on;
-  if(!quiet)toast(on?'자동 전투 시작':'자동 전투 해제',on?'gold':'');if(!on&&P){P.hunt=null;}}
+  if(!quiet)toast(on?'AI 자동 진행 시작 · 퀘스트부터 사냥까지':'AI 자동 진행 해제',on?'gold':'');AUTO.expect=null;AUTO.navT=0;if(!on){$('#autoTag').textContent='AI 자동 진행 중';if(P){P.hunt=null;}}}
 function autoWanted(){
   const q=curQ(),st=curStep(),w=new Set();if(!q||!st||!st.goals||q.zone!==W.zone)return w;
   st.goals.forEach((g,i)=>{if((S.cnt[i]||0)>=g.n)return;if(g.k==='kill'){if(g.id==='raider'){w.add('raider');w.add('slinger');}else w.add(g.id);}
@@ -4780,6 +4781,7 @@ function autoPick(){
   const want=autoWanted();let best=null,bs=1e9;
   for(const e of W.enemies){if(e.dead||e.gone)continue;const q=want.has(e.type)||(e.d.tag&&want.has(e.d.tag));
     if((e.d.static||e.d.dummy)&&!q)continue;const d=d2(e.pos,P.pos);if(d>(q?26:18))continue;
+    if(!q&&!e.aggro&&(AUTO.travel||e.d.boss||(e.lv||0)>S.level+6))continue;
     const sc=d-(q?7:0)-(e.aggro?9:0)-(e.d.ranged?2:0);if(sc<bs){bs=sc;best=e;}}
   return best;
 }
@@ -4825,11 +4827,94 @@ function updAuto(dt){
   AUTO.t-=dt;if(AUTO.t>0)return;AUTO.t=.2;
   if(P.lock>0)return;
   let T=P.target;
+  if(T&&!T.isNpc&&(T.d.static||T.d.dummy)&&!autoWanted().has(T.type)){P.target=T=null;}  // quest dummy / barricade no longer needed
   if(!T||T.isNpc||T.dead||T.gone||d2(T.pos,P.pos)>30){T=autoPick();if(T){P.target=T;P.dest=null;}}
-  if(T&&!T.isNpc&&!T.dead){autoSkills(T);return;}
-  // nothing around: head for the quest's hunting ground
-  AUTO.navT-=.2;if(AUTO.navT<=0&&!P.dest){AUTO.navT=2;const o=objective();if(o&&o.hunt){P.hunt=o.hunt;P.dest={x:o.x,z:o.z};}}
+  AUTO.navT-=.2;const nav=AUTO.navT<=0;if(nav)AUTO.navT=1;
+  if(T&&!T.isNpc&&!T.dead){autoSkills(T);if(nav)$('#autoTag').textContent='AI · '+aiPlan().label;return;}
+  // nothing to fight: the AI decides where to go next (quest → level-up hunting)
+  if(nav&&!(P.target&&P.target.isNpc))aiNav();
 }
+/* ---- AI 자동 진행: follows the main quest (travel, talk, dialogs, quest kills, promotion),
+   hunts in the right zone for the character's level when a quest needs more levels or all quests are done,
+   equips better gear, restocks potions in the citadel and gets back up after dying ---- */
+const AI_ZONES=[[15,'beasts','야수 서식지'],[40,'grave','원혼의 묘지'],[70,'clock','태엽 미로'],[999,'asura','아수라 흑야 협곡']];
+function aiHuntZone(){return AI_ZONES.find(z=>S.level<=z[0]);}
+function aiPlan(){
+  const q=curQ(),st=curStep();
+  if(!q||!st){const z=aiHuntZone();return {k:'grind',z:z[1],label:'사냥 · '+z[2]};}
+  const g=st.goals&&st.goals.find((g,i)=>(S.cnt[i]||0)<g.n);
+  if(g&&g.k==='promote'&&S.cls==='novice'&&S.level>=15&&!(S.want&&CLASSES[S.want]))return {k:'choose',label:'진급할 직업을 골라주세요'};
+  const m=st.note&&st.note.match(/권장 Lv\.(\d+)/),gate=m?+m[1]:0;
+  if(g&&g.k==='level'){const z=aiHuntZone();return {k:'grind',z:z[1],label:'사냥 · '+z[2]+' · Lv.'+g.id+' 달성까지'};}
+  if(gate&&S.level<gate){const z=aiHuntZone();return {k:'grind',z:z[1],label:'사냥 · '+z[2]+' · 「'+q.title+'」 권장 Lv.'+gate+'까지'};}
+  return {k:'quest',label:'퀘스트 · '+(st.text||(g&&g.t)||q.title)};
+}
+function aiGo(zone){const nz=nextZone(W.zone,zone),p=nz&&W.portals.find(p=>p.to===nz);if(!p)return false;AUTO.travel=true;AUTO.portalTo=p.to;P.hunt=null;P.target=null;P.dest={x:p.x,z:p.z};return true;}
+function aiGrind(zone){
+  if(W.zone!==zone){aiGo(zone);return;}
+  let best=null,bs=-1e9;
+  for(const sp of W.spawners){const d=MOBS[sp.mob];if(!d||d.boss||d.static||d.dummy||(sp.cond&&!sp.cond()))continue;
+    const lr=sp.lvr||d.lvr||[d.lv||1,d.lv||1],sc=lr[0]<=S.level+1?lr[0]:-lr[0];if(sc>bs){bs=sc;best=sp;}}
+  if(best){P.hunt=[best.mob];if(!nearestEnemy(12,P.hunt))P.dest={x:best.x,z:best.z};}
+}
+function aiScore(g){return ((g.base||0)+(g.def||0)*2)*(1+(g.enh||0)*.08)*(1+(g.rar||0)*.25)+(g.subs?g.subs.length*3:0)+(g.lv||1)*.3;}
+function aiGear(){
+  for(const g of S.bag.slice()){if(canEquip(g)||g.destroyed)continue;let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';
+    const old=getEq(slot);if(old&&(old.set||old.db||old.u||(old.tier||0)>=7||!(aiScore(g)>aiScore(old)*1.08)))continue;
+    if(equipItem(g))return true;}
+  return false;
+}
+function aiNav(){
+  if(!P||P.dead||CS||transitioning)return;
+  AUTO.travel=false;AUTO.portalTo=null;AUTO.expect=null;
+  if(tierOf()===1&&S.level>=50&&(S.stoneAwk||0)>0){promote2();return;}
+  if(tierOf()===2&&S.level>=99&&(S.dheart||0)>0&&!S.awk){awaken();return;}
+  if(rt-(AUTO.gearT||0)>4||AUTO.bagN!==S.bag.length){AUTO.gearT=rt;if(aiGear())return;AUTO.bagN=S.bag.length;}
+  const plan=aiPlan();$('#autoTag').textContent='AI · '+plan.label;
+  // restock potions at the citadel shop on the way
+  const hpc=20+S.level*3;
+  if(W.zone==='citadel'&&(S.potions<5||S.mpots<3)&&S.gold>=hpc*10&&rt-(AUTO.shopT||-1e9)>90){const n=W.npcs.find(n=>n.d&&n.d.service==='shop');
+    if(n){AUTO.travel=true;AUTO.expect='shop';P.hunt=null;P.dest=null;P.target=n;$('#autoTag').textContent='AI · 잡화점에서 물약 보충';return;}}
+  if(plan.k==='choose'){if(rt-(AUTO.askT||-1e9)>20){AUTO.askT=rt;aiAskClass();}return;}
+  if(plan.k==='grind'){aiGrind(plan.z);return;}
+  const st=curStep();
+  if(st.goals&&st.goals.some((g,i)=>g.k==='equip'&&(S.cnt[i]||0)<g.n)){const w=S.bag.find(g=>g.type==='w'&&!canEquip(g));if(w)equipItem(w);return;}
+  const o=objective();if(!o)return;
+  P.hunt=null;
+  if(o.npc){AUTO.travel=true;P.target=o.npc;P.dest=null;if(o.npc.d&&o.npc.d.service==='promo')AUTO.expect='promo';}
+  else if(o.hunt){P.hunt=o.hunt;if(!nearestEnemy(12,o.hunt))P.dest={x:o.x,z:o.z};}
+  else{AUTO.travel=!o.near;const pt=o.portal||W.portals.find(p=>Math.hypot(p.x-o.x,p.z-o.z)<3);if(pt)AUTO.portalTo=pt.to;P.dest=pt?{x:pt.x,z:pt.z}:{x:o.x,z:o.z};}
+}
+function aiAskClass(){
+  openPanel('AI 자동 · 진급할 직업 선택','<p class="note">진급은 되돌릴 수 없어서 직업은 직접 골라주세요. 고르면 AI가 진급의 전당까지 가서 진급합니다.</p>'+
+    ['warrior','rogue','shaman'].map(k=>'<div class="row"><div class="l"><b>'+CLASSES[k].name+'</b><small>'+CLASSES[k].role+'</small></div><button class="btn sm pri" data-aicls="'+k+'">선택</button></div>').join(''));
+  document.querySelectorAll('[data-aicls]').forEach(b=>b.onclick=()=>{S.want=b.dataset.aicls;save();closePanel();toast('AI: ['+CLASSES[S.want].name+'](으)로 진급하러 갑니다','gold');AUTO.navT=0;});
+}
+// dialogs, pop-ups and the death screen stop the game loop, so the AI handles them on its own timer
+function aiUi(){
+  if(!AUTO.on||!gameOn||!S||!P)return;
+  const now=performance.now();
+  if(P.dead){if(!AUTO.deadAt)AUTO.deadAt=now;else if(now-AUTO.deadAt>4000){AUTO.deadAt=0;AUTO.expect=null;deadToVillage();}return;}
+  AUTO.deadAt=0;
+  if(DL){if(now-(AUTO.dlT||0)<(DL.typing?500:1000))return;AUTO.dlT=now;
+    if(DL.typing){DL.full();return;}
+    const ch=DL.lines[DL.i][2];
+    if(ch){const ex=AUTO.expect;let i=ch.length-1;
+      if(ex==='promo'||ex==='shop'){const j=ch.findIndex(c=>c.fn&&(ex==='promo'?/진급/.test(c.t):c.t===SERVICE_LABEL.shop));if(j>=0)i=j;}
+      AUTO.expect=(ex==='promo'||ex==='shop')&&ch[i].fn?ex+'P':null;const c=ch[i];closeDialog();if(c.fn)c.fn();return;}
+    DL.i++;if(DL.i>=DL.lines.length)closeDialog();else showLine();return;}
+  if(!panelOpen)return;
+  if(now-(AUTO.pnT||0)<500)return;AUTO.pnT=now;
+  const qa=$('#qaccept');if(qa){qa.click();return;}
+  if(AUTO.expect==='promoP'){const b=$('#prGo');if(b&&S.want&&b.textContent.includes(CLASSES[S.want].name)){b.click();return;}AUTO.expect=null;closePanel();return;}
+  if(AUTO.expect==='shopP'){const hpc=20+S.level*3,mpc=25+S.level*3;
+    const bh=document.querySelector('[data-bh="10"]'),bm=document.querySelector('[data-bm="10"]'),sell=$('#shSell');
+    if(sell&&!sell.disabled){sell.click();return;}
+    if(bh&&S.potions<20&&S.gold>=hpc*10){bh.click();return;}
+    if(bm&&S.mpots<15&&S.gold>=mpc*10){bm.click();return;}
+    AUTO.expect=null;AUTO.shopT=rt;closePanel();toast('AI: 물약을 보충했습니다');return;}
+}
+setInterval(aiUi,250);
 
 /* =========================================================
    input
@@ -4856,7 +4941,7 @@ const tDist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 canvas.addEventListener('touchstart',e=>{if(e.targetTouches.length===2){PINCH.d=tDist(e.targetTouches);PINCH.z=cam.zoom;if(P&&performance.now()-PINCH.t<400){P.dest=PINCH.dest;}}else if(e.targetTouches.length===1){PINCH.t=performance.now();PINCH.dest=P?P.dest:null;}},{passive:true});
 canvas.addEventListener('touchmove',e=>{if(e.targetTouches.length===2&&PINCH.d>10){e.preventDefault();cam.zoom=clamp(PINCH.z*PINCH.d/Math.max(10,tDist(e.targetTouches)),.55,1.6);}},{passive:false});
 canvas.addEventListener('touchend',e=>{if(e.targetTouches.length<2)PINCH.d=0;},{passive:true});
-$('#b-auto').innerHTML=ICON.auto+'<span class="al">자동</span>';$('#b-auto').onclick=()=>{if(!paused())setAuto(!AUTO.on);};
+$('#b-auto').innerHTML=ICON.auto+'<span class="al">AI</span>';$('#b-auto').onclick=()=>{if(!paused())setAuto(!AUTO.on);};
 /* action buttons fire on touch-down (a second finger while the other thumb is on the joystick); holding attack keeps attacking */
 let ATK_HOLD=false;
 const btnDown=(sel,fn)=>{const b=$(sel);b.style.touchAction='none';b.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();fn();});b.addEventListener('click',ev=>{if(ev.detail===0)fn();});};  // keyboard/accessibility click only
@@ -5264,7 +5349,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.30-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.30-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
