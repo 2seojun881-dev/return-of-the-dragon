@@ -514,7 +514,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-2</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-3</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4219,9 +4219,9 @@ function itemIcon(g){const k=g&&ART_KEY[itemSlot(g)],c=g&&(ART_CLS.includes(g.cl
 function subText(o){if(o.u)return '<span class="uq">★ '+UNIQ[o.u][0]+'</span> <small>'+UNIQ[o.u][1]+'</small>';const d=SUBS[o.k];return d[0]+' +'+(d[1]?o.v.toFixed(1)+'%':fmt(o.v))+' <b class="gr g'+o.g+'">'+o.g+'</b>';}
 function findItem(id){for(const s of EQ_SLOTS){const g=getEq(s);if(g&&g.id===id)return {g,slot:s};}const i=S.bag.findIndex(b=>b.id===id);return i>=0?{g:S.bag[i],idx:i}:null;}
 function equipItem(g){const why=canEquip(g);if(why){toast(why,'bad');return false;}let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';
-  const i=S.bag.indexOf(g);if(i>=0)S.bag.splice(i,1);const old=getEq(slot);if(old&&!(slot==='weapon'&&old.destroyed))S.bag.push(old);setEq(slot,g);
+  const i=S.bag.indexOf(g);if(i>=0)S.bag.splice(i,1);const old=getEq(slot);if(old){old.aiSkip=1;if(!(slot==='weapon'&&old.destroyed))S.bag.push(old);}setEq(slot,g);
   recalc();if(slot==='weapon'){setWeaponModel();progress('equip','w');}toast('['+g.name+'] 장착');save();refreshHud();return true;}
-function unequip(slot){const g=getEq(slot);if(!g)return;if(slot==='weapon'){toast('무기는 해제할 수 없습니다. 다른 무기를 장착하세요.');return;}if(S.bag.length>=S.bagMax){toast('가방이 가득 찼습니다.','bad');return;}setEq(slot,null);S.bag.push(g);recalc();save();refreshHud();}
+function unequip(slot){const g=getEq(slot);if(!g)return;if(slot==='weapon'){toast('무기는 해제할 수 없습니다. 다른 무기를 장착하세요.');return;}if(S.bag.length>=S.bagMax){toast('가방이 가득 찼습니다.','bad');return;}setEq(slot,null);g.aiSkip=1;S.bag.push(g);recalc();save();refreshHud();}
 function setInfo(cls){const d=DSET[cls];if(!d)return '';const n=(P.gs||gearStats()).setN*(S.cls===cls?1:0);
   return '<div class="setb"><b>['+d.n+'] 세트 '+n+'/5</b><div class="'+(n>=3?'on':'')+'">3세트 · '+d.p[0]+': '+d.p[1]+'</div><div class="'+(n>=5?'on':'')+'">5세트 · '+d.q[0]+': '+d.q[1]+'</div></div>';}
 function slotHtml(s){const g=getEq(s);return '<button class="eslot'+(g?' r'+(g.rar||0):'')+(INV.sel&&g&&INV.sel===g.id?' sel':'')+'" data-es="'+s+'">'+(g?itemIcon(g)+(g.enh?'<i class="en">+'+g.enh+'</i>':''):'<span>'+SLOT_KO[s]+'</span>')+'</button>';}
@@ -4859,7 +4859,7 @@ function aiGrind(zone){
 }
 function aiScore(g){return ((g.base||0)+(g.def||0)*2)*(1+(g.enh||0)*.08)*(1+(g.rar||0)*.25)+(g.subs?g.subs.length*3:0)+(g.lv||1)*.3;}
 function aiGear(){
-  for(const g of S.bag.slice()){if(canEquip(g)||g.destroyed)continue;let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';
+  for(const g of S.bag.slice()){if(g.aiSkip||canEquip(g)||g.destroyed)continue;let slot=itemSlot(g);if(slot==='ring')slot=!getEq('ring1')?'ring1':!getEq('ring2')?'ring2':'ring1';
     const old=getEq(slot);if(old&&(old.set||old.db||old.u||(old.tier||0)>=7||!(aiScore(g)>aiScore(old)*1.08)))continue;
     if(equipItem(g))return true;}
   return false;
@@ -4906,6 +4906,8 @@ function aiUi(){
   if(!panelOpen)return;
   if(now-(AUTO.pnT||0)<500)return;AUTO.pnT=now;
   const qa=$('#qaccept');if(qa){qa.click();return;}
+  const ttl=$('#ptl').textContent;
+  if(AUTO.expect==='promoP'&&!ttl.startsWith('진급의 전당')||AUTO.expect==='shopP'&&!ttl.startsWith('잡화점')){AUTO.expect=null;return;}
   if(AUTO.expect==='promoP'){const b=$('#prGo');if(b&&S.want&&b.textContent.includes(CLASSES[S.want].name)){b.click();return;}AUTO.expect=null;closePanel();return;}
   if(AUTO.expect==='shopP'){const hpc=20+S.level*3,mpc=25+S.level*3;
     const bh=document.querySelector('[data-bh="10"]'),bm=document.querySelector('[data-bm="10"]'),sell=$('#shSell');
@@ -5349,7 +5351,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.30-2';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.30-3';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
