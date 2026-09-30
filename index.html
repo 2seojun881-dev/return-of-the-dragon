@@ -144,6 +144,11 @@ svg{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
 #autoTag{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(440px,60vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px 'IBM Plex Sans KR';letter-spacing:.04em;color:#ffe2a0;background:rgba(30,20,8,.7);border:1px solid rgba(255,200,90,.5);padding:4px 14px;border-radius:14px;pointer-events:none;animation:pulseT 1.8s ease-in-out infinite}
 @media (max-width:640px){#autoTag{bottom:calc(250px + env(safe-area-inset-bottom,0px))}}
+#saver{position:fixed;inset:0;z-index:9999;background:#000;color:#a89878;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#saver[hidden]{display:none}
+#saver .sv-in{display:flex;flex-direction:column;gap:8px;transition:transform 2s}
+#saver b{color:#d8b870;font-size:15px;letter-spacing:.06em}#saver small{color:#6a5e4a;font-size:12px;margin-top:6px}
+#svInfo{display:grid;grid-template-columns:auto auto;gap:3px 18px;font-size:13px;text-align:left;margin:4px auto 0}#svInfo span:nth-child(odd){color:#7a6c56}#svInfo .l{grid-column:1/3;color:#c8b890;text-align:center;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-height:500px) and (min-width:641px){#autoTag{bottom:calc(46px + env(safe-area-inset-bottom,0px));font-size:11px;padding:3px 12px}}
 #b-pot .cnt{position:absolute;right:4px;bottom:1px;font-size:11px;z-index:5;text-shadow:0 1px 1px #000}
 .sk.flash{animation:skf .6s ease 3}
@@ -466,6 +471,7 @@ body.touch #joy{display:block}
     <div id="zname"></div>
     <div id="mpBadge" hidden></div>
     <div id="trbtns">
+      <button class="rbtn" id="saverBtn" aria-label="절전 모드" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
       <button class="rbtn" id="bagBtn" aria-label="가방"></button>
       <button class="rbtn" id="menuBtn" aria-label="메뉴"></button>
     </div>
@@ -474,6 +480,7 @@ body.touch #joy{display:block}
   <div id="raidT" hidden></div>
   <div id="guide" hidden><span class="gl">시스템 가이드</span><span id="guideT"></span></div>
   <div id="toasts"></div>
+  <div id="saver" hidden><div class="sv-in"><b>절전 모드 · AI 자동 진행 중</b><div id="svInfo"></div><small>화면을 두 번 탭하면 돌아갑니다</small></div></div>
   <div id="srvNotice" hidden></div>
   <div id="autoTag" hidden>AI 자동 진행 중</div>
   <div id="skills">
@@ -514,7 +521,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2935,8 +2942,8 @@ function killEnemy(e){
   if(e.sp)e.sp.cd=Math.max(e.sp.cd,e.sp.respawn);
   const d=e.d;
   if(d.static){burst(e.pos.x,1,e.pos.z,e.type==='tent'?0xff7a2a:0x8a6a4a,30,5,1,.6);if(e.type==='tent'){discFx(e.pos.x,e.pos.z,2,0xff6a1a,1.2,.7);}progress('destroy',e.type);if(e.col)e.col.off=true;return;}
-  if(e.exp)gainExp(e.exp*(inBazaar()?1.15:1));
-  if(e.goldR){const g=Math.round(rand(e.goldR[0],e.goldR[1])*goldMul());S.gold+=g;floatText(e.pos,'+'+fmt(g)+' G','info',1.2);}
+  if(e.exp){const x=e.exp*(inBazaar()?1.15:1);gainExp(x);aiTrack(x,0);}
+  if(e.goldR){const g=Math.round(rand(e.goldR[0],e.goldR[1])*goldMul());S.gold+=g;aiTrack(0,g);floatText(e.pos,'+'+fmt(g)+' G','info',1.2);}
   if(d.junk&&Math.random()<.6){S.junk[d.junk]=(S.junk[d.junk]||0)+1;}
   if(e.type==='ignis'){ignisLoot(e);if(!S.ignisDown){S.ignisDown=true;toast('용혈의 제단 북쪽 · [멸세의 둥지] 문이 열렸습니다','gold');}}
   if(e.type==='barakas')barakasLoot(e);
@@ -4770,7 +4777,7 @@ const AUTO={on:false,t:0,pause:0,dodge:0,navT:0};
 try{AUTO.on=localStorage.getItem('ignis.auto')==='1';}catch(e){}
 function setAuto(on,quiet){AUTO.on=on;try{localStorage.setItem('ignis.auto',on?'1':'0');}catch(e){}
   const b=$('#b-auto');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);$('#autoTag').hidden=!on;
-  if(!quiet)toast(on?'AI 자동 진행 시작 · 퀘스트부터 사냥까지':'AI 자동 진행 해제',on?'gold':'');AUTO.expect=null;AUTO.navT=0;if(!on){$('#autoTag').textContent='AI 자동 진행 중';if(P){P.hunt=null;}}}
+  if(!quiet)toast(on?'AI 자동 진행 시작 · 퀘스트부터 사냥까지':'AI 자동 진행 해제',on?'gold':'');AUTO.expect=null;AUTO.navT=0;$('#saverBtn').hidden=!on;if(on)wakeOn();else{wakeOff();if(SV.on)saverOff();}if(!on){$('#autoTag').textContent='AI 자동 진행 중';if(P){P.hunt=null;}}}
 function autoWanted(){
   const q=curQ(),st=curStep(),w=new Set();if(!q||!st||!st.goals||q.zone!==W.zone)return w;
   st.goals.forEach((g,i)=>{if((S.cnt[i]||0)>=g.n)return;if(g.k==='kill'){if(g.id==='raider'){w.add('raider');w.add('slinger');}else w.add(g.id);}
@@ -4817,6 +4824,7 @@ function autoSkills(T){
 }
 function updAuto(dt){
   if(!AUTO.on||!P||P.dead)return;
+  const st=S.aiStat||(S.aiStat={exp:0,gold:0,kills:0,sec:0}),wn=performance.now()/1000;st.sec+=Math.min(1,Math.max(0,wn-(AUTO.wt||wn)));AUTO.wt=wn;if(st.sec>1800){const k=1800/st.sec;st.exp*=k;st.gold*=k;st.kills*=k;st.sec=1800;}  // hunting speed over the last ~30 min
   if(AUTO.pause>0){AUTO.pause-=dt;return;}
   // potion first
   if(P.hp/P.maxHp<.45&&S.potions>0&&P.potCd<=0)usePotion();
@@ -4917,6 +4925,44 @@ function aiUi(){
     AUTO.expect=null;AUTO.shopT=rt;closePanel();toast('AI: 물약을 보충했습니다');return;}
 }
 setInterval(aiUi,250);
+/* ---- keep going while the player is away ----
+   A web page stops running when the phone screen turns off, so:
+   1) while AI is on the screen is kept awake (Wake Lock),
+   2) a black power-save screen stops drawing but keeps the game running (auto after 3 min without touching),
+   3) if the page is hidden anyway, coming back grants hunting rewards for the time away,
+      estimated from the AI's own hunting speed (70%, at most 8 hours). */
+const SV={on:false,t0:0,exp:0,gold:0,kills:0,lv0:1,tap:0};
+document.body.appendChild($('#saver'));  // above every HUD layer (chat included)
+let WL=null;
+async function wakeOn(){try{if(AUTO.on&&!WL&&navigator.wakeLock&&document.visibilityState==='visible'){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null;});}}catch(err){}}
+function wakeOff(){try{if(WL)WL.release();}catch(err){}WL=null;}
+function aiTrack(x,g){if(!AUTO.on||!S)return;const a=S.aiStat||(S.aiStat={exp:0,gold:0,kills:0,sec:0});a.exp+=x;a.gold+=g;if(x>0)a.kills++;if(SV.on){SV.exp+=x;SV.gold+=g;if(x>0)SV.kills++;}}
+const hms=sec=>{sec=Math.floor(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);return h?h+'시간 '+m+'분':m?m+'분 '+(sec%60)+'초':sec+'초';};
+function saverOn(){if(SV.on||!gameOn||!AUTO.on)return;Object.assign(SV,{on:true,t0:Date.now(),exp:0,gold:0,kills:0,lv0:S.level});$('#saver').hidden=false;saverInfo();}
+function saverOff(){if(!SV.on)return;SV.on=false;$('#saver').hidden=true;AUTO.lastIn=performance.now();
+  if(SV.kills)toast('절전 모드 '+hms((Date.now()-SV.t0)/1000)+' · 처치 '+fmt(SV.kills)+' · 경험치 +'+fmt(Math.round(SV.exp))+' · 골드 +'+fmt(SV.gold),'gold');}
+function saverInfo(){if(!SV.on)return;const pct=S.level>=99?100:Math.floor(S.exp/needExp(S.level)*1000)/10;
+  $('#svInfo').innerHTML='<span>경과</span><span>'+hms((Date.now()-SV.t0)/1000)+'</span><span>레벨</span><span>Lv.'+S.level+' ('+pct+'%)'+(S.level>SV.lv0?' · +'+(S.level-SV.lv0):'')+'</span>'+
+    '<span>처치</span><span>'+fmt(SV.kills)+'</span><span>경험치</span><span>+'+fmt(Math.round(SV.exp))+'</span><span>골드</span><span>+'+fmt(SV.gold)+'</span>'+
+    '<span>체력</span><span>'+(P?Math.round(P.hp/P.maxHp*100):0)+'% · 물약 '+S.potions+'</span><span class="l"></span>';
+  $('#svInfo .l').textContent=$('#autoTag').textContent+' · '+(ZONES[W.zone]?ZONES[W.zone].name:'');
+  const t=Math.floor(Date.now()/30000);$('#saver .sv-in').style.transform='translate('+((t*37)%41-20)+'px,'+((t*53)%31-15)+'px)';}  // drift so an OLED screen doesn't burn in
+setInterval(()=>{saverInfo();if(AUTO.on&&!SV.on&&gameOn&&!paused()&&P&&!P.dead&&performance.now()-(AUTO.lastIn||performance.now())>180000)saverOn();},1000);
+$('#saverBtn').onclick=e=>{e.stopPropagation();saverOn();};
+$('#saver').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const n=performance.now();if(n-SV.tap<450)saverOff();SV.tap=n;});
+addEventListener('pointerdown',()=>{AUTO.lastIn=performance.now();},{capture:true});addEventListener('keydown',()=>{AUTO.lastIn=performance.now();},{capture:true});
+AUTO.lastIn=performance.now();
+function aiAwayMark(){if(AUTO.on&&gameOn&&S&&P&&!P.dead&&!S.aiAway){S.aiAway=Date.now();save();}}
+function aiAwayClaim(){if(!S||!S.aiAway)return;const sec=Math.min(8*3600,(Date.now()-S.aiAway)/1000);S.aiAway=0;save();const a=S.aiStat;
+  if(sec<60||!a||a.sec<120||a.kills<3)return;
+  const k=sec/a.sec*.7,L=Math.min(99,aiHuntZone()[0]);let cap=S.level>=L?0:needExp(S.level)-S.exp;for(let l=S.level+1;l<L;l++)cap+=needExp(l);cap=Math.max(0,cap/(1+guildLv()*.015));  // offline levels stop at the top of the current hunting zone
+  const exp=Math.round(Math.min(a.exp*k,cap)),gold=Math.round(a.gold*k),kills=Math.round(a.kills*k);if(exp<=0&&gold<=0)return;
+  const lv0=S.level;gainExp(exp);S.gold+=gold;save();refreshHud();
+  openPanel('자리를 비운 동안의 AI 사냥','<div class="sec"><div class="row"><div class="l"><b>자리를 비운 시간</b><small>'+hms(sec)+(sec>=8*3600?' (최대 8시간까지 계산)':'')+'</small></div></div>'+
+    '<div class="row"><div class="l"><b>처치</b><small>약 '+fmt(kills)+'마리</small></div></div><div class="row"><div class="l"><b>경험치</b><small>+'+fmt(exp)+(S.level>lv0?' · Lv.'+lv0+' → Lv.'+S.level:'')+(exp<a.exp*k-1?' · 이 사냥터에서는 Lv.'+L+'까지만 오릅니다':'')+'</small></div></div>'+
+    '<div class="row"><div class="l"><b>골드</b><small>+'+fmt(gold)+'</small></div></div></div><p class="note">화면이 꺼져 있는 동안은 게임이 멈추기 때문에, 최근 AI 사냥 속도의 70%로 계산해 드립니다. 퀘스트 진행과 아이템은 쌓이지 않습니다. 화면을 켜 둔 채 절전 모드(달 버튼)를 쓰면 실제로 계속 사냥합니다.</p>');}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')aiAwayMark();else if(gameOn){aiAwayClaim();wakeOn();}});
+addEventListener('pagehide',aiAwayMark);
 
 /* =========================================================
    input
@@ -5009,6 +5055,7 @@ function loop(now){
     saveT+=dt;if(saveT>8){saveT=0;save();}
     updBeacon();
   }
+  if(SV.on)return;  // power-save screen: the game keeps running, nothing is drawn
   if(composer)composer.render();else renderer.render(scene,camera);
 }
 function updBoss(){const b=W.enemies.find(e=>e.d.boss&&!e.dead&&(e.aggro||e.cast));const el=$('#bossbar');document.body.classList.toggle('bossOn',!!b&&!CS);if(!b||CS){el.hidden=true;return;}el.hidden=false;el.querySelector('.bn').textContent=b.d.name+'  Lv.'+(b.lv||b.d.lv);el.querySelector('i').style.transform='scaleX('+clamp(b.hp/b.maxHp,0,1)+')';el.querySelector('span').textContent=fmt(b.hp)+' / '+fmt(b.maxHp);el.querySelector('i').style.transformOrigin='left';}
@@ -5351,7 +5398,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.30-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.09.30-4';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
@@ -5393,7 +5440,7 @@ async function startGame(s,resume){
     await needZone(S.zone);
     buildZone(S.zone);const a=S.pos||ZONES[S.zone].spawn.map(v=>v*ZS(S.zone));P.pos.set(a[0],0,a[1]);resolve(P.pos,P.rad);
     cam.pos.copy(P.pos).add(CAM_OFF);cam.look.copy(P.pos);
-    gameOn=true;$('#hud').hidden=false;setAuto(AUTO.on,true);$('#zname').textContent=ZONES[S.zone].name;refreshHud();refreshQuest();
+    gameOn=true;$('#hud').hidden=false;setAuto(AUTO.on,true);$('#zname').textContent=ZONES[S.zone].name;refreshHud();refreshQuest();later(2.5,aiAwayClaim);
     fade(0,.8);startStep(true);toast(ZONES[S.zone].name,'big');
   }
 }
