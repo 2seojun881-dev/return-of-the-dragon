@@ -13,7 +13,15 @@ const perServer = new Map();                    // 서버 번호 → 접속자 �
 // 게임 클라이언트 ID 형식: rotd_<서버번호>_<무작위>
 const srvOf = id => { const m = /^rotd_(\d{1,2})_[a-z0-9]{4,16}$/.exec(id || ''); return m ? m[1] : null; };
 
+// 자리 비움 사냥 서버(idle.js)는 IDLE_KEY 를 비밀번호로 접속하고, 인원 수·메시지 수 제한을 받지 않습니다
+const IDLE_KEY = process.env.IDLE_KEY || '';
+const isIdle = c => !!(c && c.idle);
 aedes.authenticate = (client, username, password, done) => {
+  if (/^rotdidle_[a-f0-9]{10}$/.test(client.id || '')) {
+    const ok = IDLE_KEY.length >= 16 && password && password.toString() === IDLE_KEY;
+    if (!ok) return done(Object.assign(new Error('bad idle key'), { returnCode: 4 }), false);
+    client.idle = true; return done(null, true);
+  }
   const s = srvOf(client.id);
   if (s === null) return done(Object.assign(new Error('bad client id'), { returnCode: 2 }), false);
   if ((perServer.get(s) || 0) >= MAX_PER_SERVER) return done(Object.assign(new Error('server full'), { returnCode: 3 }), false);
@@ -35,7 +43,7 @@ function rateOk(client) {
 const LIVE = /^rotd1\/\d{1,2}\/(hb|chat|bye|z\/[a-z]+(\/\d{1,3}_\d{1,3})?|w\/[a-z0-9]{4,16}|g\/[a-z0-9]{1,24})$/;
 const KEPT = /^rotd1\/(\d{1,2}\/(mk\/[a-z0-9]{6,20}|pay\/[a-z0-9]{1,24}\/[a-z0-9]{6,20})|notice)$/;
 aedes.authorizePublish = (client, packet, done) => {
-  if (client && !rateOk(client)) return done(new Error('rate'));
+  if (client && !isIdle(client) && !rateOk(client)) return done(new Error('rate'));
   const kept = KEPT.test(packet.topic);
   if (!kept && !LIVE.test(packet.topic)) return done(new Error('topic'));
   if (packet.payload && packet.payload.length > (kept ? 8192 : MAX_PAYLOAD)) return done(new Error('too large'));

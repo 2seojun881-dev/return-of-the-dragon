@@ -521,7 +521,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.09.30-5</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.01-1</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4952,8 +4952,41 @@ $('#saverBtn').onclick=e=>{e.stopPropagation();saverOn();};
 $('#saver').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const n=performance.now();if(n-SV.tap<450)saverOff();SV.tap=n;});
 addEventListener('pointerdown',()=>{AUTO.lastIn=performance.now();},{capture:true});addEventListener('keydown',()=>{AUTO.lastIn=performance.now();},{capture:true});
 AUTO.lastIn=performance.now();
-function aiAwayMark(){if(AUTO.on&&gameOn&&S&&P&&!P.dead&&!S.aiAway&&W.zone!=='title'){S.aiAway=Date.now();save();}}
-function aiAwayClaim(){if(!S||!S.aiAway)return;const sec=Math.min(8*3600,(Date.now()-S.aiAway)/1000);S.aiAway=0;save();const a=S.aiStat;
+/* server hunting: with an idle server configured, closing the game hands the character to it (dragon-raid/server/idle.js);
+   it keeps fighting there (other players see it as "이름·AI") and the results are collected on the next visit */
+const IDLE_DEFAULT='';  // 자리 비움 사냥 서버 주소 (https://…). 비어 있으면 화면이 꺼진 시간으로 보상을 계산합니다
+const IDLE_SRV=(()=>{try{const q=new URLSearchParams(location.search).get('idle');if(q)localStorage.setItem('ignis.idle',q);return (q||localStorage.getItem('ignis.idle')||window.IDLE_SERVER||IDLE_DEFAULT).replace(/\/+$/,'');}catch(err){return window.IDLE_SERVER||IDLE_DEFAULT;}})();
+function idleSnapshot(){
+  const mobs=[];const seen=new Set();
+  for(const sp of W.spawners){const d=MOBS[sp.mob],lr=sp.lvr||(d&&d.lvr);if(!d||!lr||d.boss||d.static||d.dummy||(sp.cond&&!sp.cond())||seen.has(sp.mob+lr[0]))continue;seen.add(sp.mob+lr[0]);
+    mobs.push({type:sp.mob,name:d.name,lo:lr[0],hi:lr[1],role:d.role||1,bm:d.bm||{hp:1,exp:1,gold:1},junk:d.junk||'',x:+sp.x.toFixed(1),z:+sp.z.toFixed(1)});}
+  if(!mobs.length)return null;
+  const cur={atk:P.atk,def:P.def,maxHp:P.maxHp};S.level++;recalc();const nx={atk:P.atk,def:P.def,maxHp:P.maxHp};S.level--;recalc();
+  if(!S.idleTok){const a=new Uint8Array(16);crypto.getRandomValues(a);S.idleTok=[...a].map(v=>v.toString(16).padStart(2,'0')).join('');}
+  return {name:mpMyName(),token:S.idleTok,cls:S.cls,srv:MP.srv,zone:W.zone,awk:S.awk?1:0,ti:tierOf(),level:S.level,exp:S.exp,
+    stats:{atk:P.atk,def:P.def,maxHp:P.maxHp,aspd:P.aspd,crit:P.crit,critX:P.critX},grow:{atk:Math.max(0,nx.atk-cur.atk),def:Math.max(0,nx.def-cur.def),maxHp:Math.max(0,nx.maxHp-cur.maxHp)},
+    potions:S.potions,guildMul:1+guildLv()*.015,mobs};
+}
+function aiAwayMark(){if(AUTO.on&&gameOn&&S&&P&&!P.dead&&!S.aiAway&&W.zone!=='title'){S.aiAway=Date.now();S.srvHunt=0;
+  if(IDLE_SRV){try{const snap=idleSnapshot();if(snap&&navigator.sendBeacon(IDLE_SRV+'/idle/start',JSON.stringify(snap)))S.srvHunt=1;}catch(err){}}
+  save();}}
+async function idleCollect(){  // → true when the server had the character
+  if(!IDLE_SRV||!S.srvHunt||!S.idleTok)return false;
+  let r;try{const res=await fetch(IDLE_SRV+'/idle/stop',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({name:mpMyName(),token:S.idleTok})});r=await res.json();}catch(err){return false;}
+  S.srvHunt=0;if(!r||r.none||r.error)return false;
+  const lv0=S.level,exp=Math.max(0,Math.round(r.exp/(1+guildLv()*.015))),gold=Math.max(0,Math.round(r.gold||0));
+  gainExp(exp);S.gold+=gold;S.potions=Math.max(0,S.potions-(r.potUsed|0));
+  const jk=[];for(const k in (r.junk||{})){const n=r.junk[k]|0;if(n>0&&typeof k==='string'&&k.length<25){S.junk[k]=(S.junk[k]||0)+n;jk.push(k+' ×'+n);}}
+  save();refreshHud();refreshSkills();
+  const row=(a,b)=>'<div class="row"><div class="l"><b>'+a+'</b><small>'+b+'</small></div></div>';
+  openPanel('서버에서 사냥한 결과','<div class="sec">'+row('사냥한 시간',hms(r.sec)+(r.ended?' (최대 시간까지 사냥)':''))+row('처치',fmt(r.kills)+'마리'+(r.deaths?' · 쓰러짐 '+r.deaths+'번':''))+
+    row('경험치','+'+fmt(exp)+(S.level>lv0?' · Lv.'+lv0+' → Lv.'+S.level:''))+row('골드','+'+fmt(gold))+(jk.length?row('잡템',escA(jk.join(', '))):'')+row('물약','사용 '+fmt(r.potUsed|0)+'개 · 남은 물약 '+S.potions)+'</div>'+
+    (r.log&&r.log.length?'<p class="note">'+r.log.map(escA).join('<br>')+'</p>':'')+'<p class="note">게임을 끈 동안 캐릭터가 서버에서 실제로 사냥했습니다. 다른 플레이어에게는 「'+escA(mpMyName())+'·AI」로 보였습니다.</p>');
+  return true;}
+let CLAIMING=false;
+async function aiAwayClaim(){if(!S||!S.aiAway||CLAIMING)return;CLAIMING=true;let viaSrv=false;try{viaSrv=await idleCollect();}finally{CLAIMING=false;}
+  const away=S.aiAway;S.aiAway=0;save();if(viaSrv)return;
+  const sec=Math.min(8*3600,(Date.now()-away)/1000),a=S.aiStat;
   if(sec<60)return;
   if(!a||a.sec<60||a.kills<1){toast('AI가 사냥한 기록이 부족해 자리 비움 보상이 없습니다 · AI로 1분 이상 사냥한 뒤 나가면 쌓입니다','bad');return;}
   const k=sec/a.sec*.7,L=Math.min(99,aiHuntZone()[0]);let cap=S.level>=L?0:needExp(S.level)-S.exp;for(let l=S.level+1;l<L;l++)cap+=needExp(l);cap=Math.max(0,cap/(1+guildLv()*.015));  // offline levels stop at the top of the current hunting zone
@@ -5399,7 +5432,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.09.30-5';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.01-1';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
