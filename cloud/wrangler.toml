@@ -1,0 +1,15 @@
+# 용의 귀환 · 계정 서버 설정 (GitHub Actions 가 자동으로 배포합니다: .github/workflows/cloud.yml)
+name = "rotd-api"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+routes = [{ pattern = "api.faceforking.com", custom_domain = true }]
+
+[vars]
+ADMIN_NAME = "서준"
+ADMIN_HASH = "4f9dffeae89b4ef6b8e65eb25fabcc2968d7e86f76a472ce0a9e8acd19266cb2"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rotd"
+database_id = "__D1_ID__"   # 배포할 때 실제 값으로 바뀝니다
+migrations_dir = "migrations"
