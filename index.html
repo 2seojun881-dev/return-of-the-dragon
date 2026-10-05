@@ -525,7 +525,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-5</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-6</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4975,8 +4975,10 @@ function quitGame(){
   $('#quitScr .qs-ai').textContent=!ai?'진행 상황을 저장했습니다.':S.srvHunt?'AI가 켜져 있어 캐릭터가 서버에서 계속 사냥합니다. 다시 접속하면 그동안 얻은 경험치·골드·잡템을 받습니다.':
     'AI가 켜져 있어 자리를 비운 동안 사냥한 것으로 계산합니다. 다시 접속하면 최근 AI 사냥 속도로 보상을 받습니다 (최대 8시간).';
   $('#quitScr').hidden=false;
-  try{window.close();}catch(err){}}  // closes the installed app window where the browser allows it
-$('#qsBack').onclick=()=>location.reload();
+  if(matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches){try{window.close();}catch(err){}}}  // closes the installed app window; a normal browser tab stays on the end screen
+{const back=e=>{if(e){e.preventDefault();e.stopPropagation();}const b=$('#qsBack');if(b.dataset.go)return;b.dataset.go=1;b.textContent='접속하는 중…';
+    setTimeout(()=>location.replace(location.origin+location.pathname+'?r='+Date.now()),50);setTimeout(()=>location.reload(),2500);};  // a fresh load of the game page (reload kept as a fallback)
+  $('#qsBack').addEventListener('click',back);$('#qsBack').addEventListener('touchend',back,{passive:false});}
 /* 캐릭터 옮기기: saves live in this browser per web address, so moving the game to a new address
    (game.faceforking.com) or to another phone carries them over as a link / code (gzip + base64) */
 const MOVE_TO='https://game.faceforking.com/';
@@ -5028,14 +5030,24 @@ AUTO.lastIn=performance.now();
    it keeps fighting there (other players see it as "이름·AI") and the results are collected on the next visit */
 const IDLE_DEFAULT='https://api.faceforking.com';  // 자리 비움 사냥 서버 (dragon-raid/cloud/hunt.js). 연결할 수 없으면 화면이 꺼진 시간으로 보상을 계산합니다
 const IDLE_SRV=(()=>{try{const q=new URLSearchParams(location.search).get('idle');if(q)localStorage.setItem('ignis.idle',q);return (q||localStorage.getItem('ignis.idle')||window.IDLE_SERVER||IDLE_DEFAULT).replace(/\/+$/,'');}catch(err){return window.IDLE_SERVER||IDLE_DEFAULT;}})();
+// hunting grounds the server can use when the game is closed somewhere else (town, quest zone): spawner spots as in the build
+// functions, in pre-transform coordinates, with each zone's mirror/turn (transformZone) and 2x scale applied below
+const HUNT_SPOTS={beasts:[['beastBoar',22,15,2,6],['beastBoar',18,-17,4,8],['beastWolf',-6,-20,8,11],['beastWolf',-20,14,10,13],['beastWolf',-26,-6,12,15]],
+  grave:[['graveSkel',-12,-14,15,21],['graveSkel',-14,16,20,26],['graveSkel',6,0,25,30],['graveGhost',18,-16,28,34],['graveGhost',22,16,34,40]],
+  clock:[['clockDoll',-20,0,40,47],['clockDoll',0,-16,47,56],['clockDoll',26,-14,50,56],['clockGolem',-4,14,56,62],['clockGolem',28,20,62,70],['clockGolem',-24,30,64,70]],
+  asura:[['asuraGoblin',-10,18,70,76],['asuraGoblin',12,4,76,84],['asuraWarrior',-12,-18,84,90],['asuraWarrior',10,-34,90,97]]};
+const HUNT_T={beasts:(x,z)=>[x,z],grave:(x,z)=>[-x,z],clock:(x,z)=>[-z,x],asura:(x,z)=>[z,-x]};
 function idleSnapshot(){
-  const mobs=[];const seen=new Set();
-  for(const sp of W.spawners){const d=MOBS[sp.mob],lr=sp.lvr||(d&&d.lvr);if(!d||!lr||d.boss||d.static||d.dummy||(sp.cond&&!sp.cond())||seen.has(sp.mob+lr[0]))continue;seen.add(sp.mob+lr[0]);
+  const mobs=[];const seen=new Set();let zone=W.zone;
+  if(!W.spawners.some(sp=>{const d=MOBS[sp.mob];return d&&!d.boss&&!d.static&&!d.dummy&&(sp.lvr||d.lvr);})){  // not in a hunting ground: hunt where the AI would
+    zone=aiHuntZone()[1];for(const [m,x,z,lo,hi] of HUNT_SPOTS[zone]||[]){const d=MOBS[m];if(!d)continue;const t=HUNT_T[zone](x,z),k=ZS(zone);
+      mobs.push({type:m,name:d.name,lo,hi,role:d.role||1,bm:d.bm||{hp:1,exp:1,gold:1},junk:d.junk||'',x:+(t[0]*k).toFixed(1),z:+(t[1]*k).toFixed(1)});}}
+  if(!mobs.length)for(const sp of W.spawners){const d=MOBS[sp.mob],lr=sp.lvr||(d&&d.lvr);if(!d||!lr||d.boss||d.static||d.dummy||(sp.cond&&!sp.cond())||seen.has(sp.mob+lr[0]))continue;seen.add(sp.mob+lr[0]);
     mobs.push({type:sp.mob,name:d.name,lo:lr[0],hi:lr[1],role:d.role||1,bm:d.bm||{hp:1,exp:1,gold:1},junk:d.junk||'',x:+sp.x.toFixed(1),z:+sp.z.toFixed(1)});}
   if(!mobs.length)return null;
   const cur={atk:P.atk,def:P.def,maxHp:P.maxHp};S.level++;recalc();const nx={atk:P.atk,def:P.def,maxHp:P.maxHp};S.level--;recalc();
   if(!S.idleTok){const a=new Uint8Array(16);crypto.getRandomValues(a);S.idleTok=[...a].map(v=>v.toString(16).padStart(2,'0')).join('');}
-  return {name:mpMyName(),token:S.idleTok,cls:S.cls,srv:MP.srv,zone:W.zone,awk:S.awk?1:0,ti:tierOf(),level:S.level,exp:S.exp,
+  return {name:mpMyName(),token:S.idleTok,cls:S.cls,srv:MP.srv,zone,awk:S.awk?1:0,ti:tierOf(),level:S.level,exp:S.exp,
     stats:{atk:P.atk,def:P.def,maxHp:P.maxHp,aspd:P.aspd,crit:P.crit,critX:P.critX},grow:{atk:Math.max(0,nx.atk-cur.atk),def:Math.max(0,nx.def-cur.def),maxHp:Math.max(0,nx.maxHp-cur.maxHp)},
     potions:S.potions,guildMul:1+guildLv()*.015,mobs};
 }
@@ -5547,7 +5559,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.05-5';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.05-6';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
