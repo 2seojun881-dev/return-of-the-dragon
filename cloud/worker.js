@@ -10,6 +10,10 @@
 //   /save/put      { tok, save }    → { ok, updated }
 //   /acct/logout   { tok }          → { ok }
 //   /acct/delete   { tok, pw }      → { ok }                  캐릭터와 저장을 지움
+//   /idle/start · /idle/stop · /idle/peek · /idle/health      자리 비움 사냥 (hunt.js)
+import { Hunt } from './hunt.js';
+export { Hunt };
+
 const MAX_SAVE = 512 * 1024;
 const PBKDF2_ITER = 10000;   // Workers 무료 요금제의 CPU 시간 안에 들어가는 값
 const ORIGINS = [/^https:\/\/game\.faceforking\.com$/, /^https:\/\/2seojun881-dev\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
@@ -62,6 +66,13 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     const path = new URL(req.url).pathname;
     if (path === '/health') return json(req, 200, { ok: true });
+    if (path.startsWith('/idle/')) {   // 자리 비움 사냥: one Durable Object runs every hunting character
+      const body = req.method === 'POST' ? await req.text() : '{}';
+      if (body.length > 32768) return json(req, 413, { error: 'too large' });
+      const stub = env.HUNT.get(env.HUNT.idFromName('world'));
+      const r = await stub.fetch(new Request('https://hunt' + path, { method: 'POST', body }));
+      return new Response(r.body, { status: r.status, headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, cors(req)) });
+    }
     if (req.method !== 'POST') return json(req, 405, { error: 'method' });
     let b;
     try { const t = await req.text(); if (t.length > MAX_SAVE + 4096) return json(req, 413, { error: 'too large' }); b = JSON.parse(t || '{}'); } catch (e) { return json(req, 400, { error: 'bad json' }); }

@@ -186,7 +186,7 @@ svg{display:block}
 #guide{box-sizing:border-box;position:absolute;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(520px,calc(100% - 32px));background:linear-gradient(rgba(34,26,18,.94),rgba(22,17,14,.94));border:1px solid var(--gold);border-radius:6px;padding:8px 14px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.5);pointer-events:none}
 #guide{pointer-events:auto;cursor:pointer}
 #guide .gl{font-size:10px;letter-spacing:.14em;color:var(--gold);display:block}
-#toasts{position:absolute;left:50%;top:34%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;width:min(520px,calc(100% - 32px))}
+#toasts{position:fixed;z-index:9000;left:50%;top:34%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;width:min(520px,calc(100% - 32px))}
 .toast{background:rgba(16,12,12,.88);border:1px solid var(--line2);padding:5px 14px;border-radius:16px;font-size:13px;animation:tin .25s ease both;text-align:center}
 .toast.gold{border-color:var(--gold);color:#ffe3a0}
 .toast.big{font:700 20px 'Gowun Batang',serif;color:var(--gold);border-color:var(--gold);padding:8px 22px}
@@ -525,7 +525,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-4</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-5</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4966,7 +4966,7 @@ setInterval(aiUi,250);
       estimated from the AI's own hunting speed (70%, at most 8 hours). */
 const SV={on:false,t0:0,exp:0,gold:0,kills:0,lv0:1,tap:0};
 let QUIT=false;
-document.body.appendChild($('#quitScr'));
+document.body.appendChild($('#quitScr'));document.body.appendChild($('#toasts'));  // messages show above open windows too
 /* 게임 종료: save, hand the character to AI hunting (server, or the away estimate), stop everything, try to close the app window */
 function quitGame(){
   const ai=AUTO.on&&gameOn&&P&&!P.dead;closePanel();if(SV.on)saverOff();
@@ -5026,7 +5026,7 @@ addEventListener('pointerdown',()=>{AUTO.lastIn=performance.now();},{capture:tru
 AUTO.lastIn=performance.now();
 /* server hunting: with an idle server configured, closing the game hands the character to it (dragon-raid/server/idle.js);
    it keeps fighting there (other players see it as "이름·AI") and the results are collected on the next visit */
-const IDLE_DEFAULT='';  // 자리 비움 사냥 서버 주소 (https://…). 비어 있으면 화면이 꺼진 시간으로 보상을 계산합니다
+const IDLE_DEFAULT='https://api.faceforking.com';  // 자리 비움 사냥 서버 (dragon-raid/cloud/hunt.js). 연결할 수 없으면 화면이 꺼진 시간으로 보상을 계산합니다
 const IDLE_SRV=(()=>{try{const q=new URLSearchParams(location.search).get('idle');if(q)localStorage.setItem('ignis.idle',q);return (q||localStorage.getItem('ignis.idle')||window.IDLE_SERVER||IDLE_DEFAULT).replace(/\/+$/,'');}catch(err){return window.IDLE_SERVER||IDLE_DEFAULT;}})();
 function idleSnapshot(){
   const mobs=[];const seen=new Set();
@@ -5513,8 +5513,12 @@ function openCloudLogin(ev,pre){
     if(!r.tok){if(r.status===409){creating=false;refresh();return msg('이미 있는 이름입니다. 비밀번호를 입력해 접속하세요.',true);}if(r.status===404){refresh();return msg('없는 캐릭터입니다. 비밀번호를 두 번 입력해 새로 만드세요.',true);}
       if(r.status===429)return msg('비밀번호를 여러 번 틀려 10분 동안 접속할 수 없습니다.',true);if(r.status===403)return msg(r.error==='reserved'?'쓸 수 없는 이름입니다.':'비밀번호가 맞지 않습니다.',true);return msg('접속하지 못했습니다. 잠시 뒤 다시 해 보세요.',true);}
     CLOUD.tok=r.tok;CLOUD.name=n;CLOUD.save=r.save&&r.save.cls?r.save:null;
-    if(loc&&locOk&&(!CLOUD.save||(loc.t||0)>(CLOUD.save.t||0))){CLOUD.save=loc;await cloudPush();toast('이 기기의 캐릭터를 서버로 옮겼습니다','gold');}
-    if(loc&&locOk)accDel(n);  // the server has it now: nothing stays in this browser
+    if(loc&&locOk){  // a character still saved in this browser: never lose it to an emptier server copy
+      const sv=CLOUD.save,desc=o=>'Lv.'+(o.level||1)+' · '+fmt(o.gold||0)+' G'+(QUESTS[o.q]?' · '+QUESTS[o.q].title:''),prog=o=>(o.level||1)*1e12+(o.q||0)*1e9+(o.exp||0);
+      let useLocal=!sv;
+      if(sv&&prog(loc)!==prog(sv))useLocal=confirm('['+n+'] 캐릭터가 두 곳에 있습니다.\n\n이 기기: '+desc(loc)+'\n서버: '+desc(sv)+'\n\n[확인] 이 기기의 캐릭터로 이어서 하기 (서버 것은 바뀝니다)\n[취소] 서버의 캐릭터로 하기 (이 기기 것은 지워집니다)');
+      if(useLocal){CLOUD.save=loc;await cloudPush();if(CLOUD.dirty){msg('서버에 저장하지 못했습니다. 잠시 뒤 다시 접속하세요.',true);CLOUD.tok=null;return;}toast('이 기기의 캐릭터를 서버로 옮겼습니다','gold');}
+      accDel(n);}  // the server has the chosen one now: nothing stays in this browser
     ACCOUNT=n;closePanel();titleTouch(ev,false);};
   $('#lgGo').onclick=go;
   [nameIn,pwIn,$('#lgPw2')].forEach(i=>i.onkeydown=k=>{if(k.key==='Enter')go();});
@@ -5543,7 +5547,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.05-4';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.05-5';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once

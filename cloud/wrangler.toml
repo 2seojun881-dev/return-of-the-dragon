@@ -5,6 +5,9 @@ compatibility_date = "2025-09-01"
 routes = [{ pattern = "api.faceforking.com", custom_domain = true }]
 
 [vars]
+MQTT_HOST = "broker.emqx.io"   # 사냥 중인 캐릭터를 다른 플레이어에게 보여 줄 게임 브로커 (TCP+TLS)
+MQTT_PORT = "8883"
+MQTT_TLS = "1"
 ADMIN_NAME = "서준"
 ADMIN_HASH = "4f9dffeae89b4ef6b8e65eb25fabcc2968d7e86f76a472ce0a9e8acd19266cb2"
 
@@ -13,3 +16,12 @@ binding = "DB"
 database_name = "rotd"
 database_id = "__D1_ID__"   # 배포할 때 실제 값으로 바뀝니다
 migrations_dir = "migrations"
+
+# 자리 비움 사냥 (hunt.js)
+[[durable_objects.bindings]]
+name = "HUNT"
+class_name = "Hunt"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Hunt"]
