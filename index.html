@@ -145,7 +145,9 @@ svg{display:block}
 #autoTag{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(440px,60vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px 'IBM Plex Sans KR';letter-spacing:.04em;color:#ffe2a0;background:rgba(30,20,8,.7);border:1px solid rgba(255,200,90,.5);padding:4px 14px;border-radius:14px;pointer-events:none;animation:pulseT 1.8s ease-in-out infinite}
 @media (max-width:640px){#autoTag{bottom:calc(250px + env(safe-area-inset-bottom,0px))}}
 #saver{position:fixed;inset:0;z-index:9999;background:#000;color:#a89878;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-#saver[hidden]{display:none}
+#saver[hidden],#quitScr[hidden]{display:none}
+#quitScr{position:fixed;inset:0;z-index:9999;background:#0c0a0d;color:#c8b890;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;padding:16px}
+#quitScr b{color:#e8be6e;font-size:18px}#quitScr .qs-ai{max-width:440px;margin:10px auto 14px;line-height:1.6;font-size:14px}#quitScr small{display:block;margin-top:12px;color:#7a6c56}
 #saver .sv-in{display:flex;flex-direction:column;gap:8px;transition:transform 2s}
 #saver b{color:#d8b870;font-size:15px;letter-spacing:.06em}#saver small{color:#6a5e4a;font-size:12px;margin-top:6px}
 #svInfo{display:grid;grid-template-columns:auto auto;gap:3px 18px;font-size:13px;text-align:left;margin:4px auto 0}#svInfo span:nth-child(odd){color:#7a6c56}#svInfo .l{grid-column:1/3;color:#c8b890;text-align:center;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -480,6 +482,7 @@ body.touch #joy{display:block}
   <div id="raidT" hidden></div>
   <div id="guide" hidden><span class="gl">시스템 가이드</span><span id="guideT"></span></div>
   <div id="toasts"></div>
+  <div id="quitScr" hidden><div class="sv-in"><b>게임을 종료했습니다</b><p class="qs-ai"></p><button class="btn pri" id="qsBack">다시 접속</button><small>이제 이 창을 닫아도 됩니다</small></div></div>
   <div id="saver" hidden><div class="sv-in"><b>절전 모드 · AI 자동 진행 중</b><div id="svInfo"></div><small>화면을 두 번 탭하면 돌아갑니다</small></div></div>
   <div id="srvNotice" hidden></div>
   <div id="autoTag" hidden>AI 자동 진행 중</div>
@@ -521,7 +524,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.01-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-1</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4082,8 +4085,8 @@ function showChoices(ch){dlgCh.innerHTML='';ch.forEach(c=>{const b=document.crea
 function closeDialog(){if(!DL)return;clearInterval(DL.typing);const r=DL.res;DL=null;dlgLayer.hidden=true;r();}
 dlgLayer.addEventListener('pointerdown',e=>{if(!DL)return;e.preventDefault();if(e.target.closest('.choices'))return;if(DL.typing){DL.full();return;}if(DL.lines[DL.i][2])return;DL.i++;if(DL.i>=DL.lines.length)closeDialog();else showLine();});
 
-let panelOpen=false,panelOnClose=null;
-function openPanel(title,html,onClose){$('#panel .pcard').classList.remove('wide','login');$('#ptl').textContent=title;$('#pbody').innerHTML=html||'';$('#panel').hidden=false;panelOpen=true;panelOnClose=onClose||null;}
+let panelOpen=false,panelLive=false,panelOnClose=null;  // panelLive: the game keeps running behind this panel (menu)
+function openPanel(title,html,onClose){$('#panel .pcard').classList.remove('wide','login');$('#ptl').textContent=title;$('#pbody').innerHTML=html||'';$('#panel').hidden=false;panelOpen=true;panelLive=false;panelOnClose=onClose||null;}
 function closePanel(){$('#panel').hidden=true;panelOpen=false;if(typeof invPrevStop==='function')invPrevStop();const f=panelOnClose;panelOnClose=null;f&&f();}
 $('#pclose').onclick=closePanel;
 $('#panel').addEventListener('pointerdown',e=>{if(e.target.id==='panel')closePanel();});
@@ -4109,7 +4112,7 @@ async function cutscene(fn){
   finally{CS=null;document.body.classList.remove('cine');$('#skip').hidden=true;caption('');hideChapter();cam.mode='follow';}
 }
 $('#skip').onclick=()=>{if(!CS)return;CS.skip=true;tasks.forEach(t=>{if(t.cs)t.t=0;});tweens.forEach(w=>{if(w.cs)w.t0=-1e9;});if(DL)closeDialog();};
-const paused=()=>!!(DL||panelOpen||CS||transitioning);
+const paused=()=>!!(DL||(panelOpen&&!panelLive)||CS||transitioning);
 
 /* zone transitions */
 let transitioning=false;
@@ -4747,6 +4750,7 @@ function adminClass(k){if(!S.admin||!CLASSES[k]||S.cls===k)return;const pos=P.po
   ringFx(pos.x,pos.z,3,CLASSES[k].color||0xffd070,.6);toast('운영자 · 직업 변경: '+heroClsName(),'gold');}
 function openMenu(){
   openPanel('메뉴','<div class="sec"><h3>서버</h3><div class="row"><div class="l"><b>접속자 · 서버 채팅</b><small>'+SERVERS[MP.srv][0]+' · '+(MP.client&&MP.client.connected?Math.max(1,netCount())+'/'+NET_MAX+'명 접속 중':'연결 안 됨')+'</small></div><button class="btn sm pri" id="mMp">열기</button></div></div><div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
+   '<div class="row"><div class="l"><b>게임 종료</b><small>'+(AUTO.on?'AI가 켜져 있어 종료한 뒤에도 사냥을 이어갑니다':'저장하고 게임을 끝냅니다 (AI를 켜 두면 종료한 뒤에도 사냥합니다)')+'</small></div><button class="btn sm pri" id="mQuit">종료</button></div>'+
    '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
@@ -4755,6 +4759,7 @@ function openMenu(){
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
    (S.admin?'<div class="sec"><h3>운영자 · 공지사항</h3><button class="btn sm pri" id="adNotice">공지 작성 · 관리</button></div><div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
+  panelLive=true;$('#mQuit').onclick=quitGame;
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
@@ -4932,6 +4937,18 @@ setInterval(aiUi,250);
    3) if the page is hidden anyway, coming back grants hunting rewards for the time away,
       estimated from the AI's own hunting speed (70%, at most 8 hours). */
 const SV={on:false,t0:0,exp:0,gold:0,kills:0,lv0:1,tap:0};
+let QUIT=false;
+document.body.appendChild($('#quitScr'));
+/* 게임 종료: save, hand the character to AI hunting (server, or the away estimate), stop everything, try to close the app window */
+function quitGame(){
+  const ai=AUTO.on&&gameOn&&P&&!P.dead;closePanel();if(SV.on)saverOff();
+  if(ai)aiAwayMark();save();
+  QUIT=true;gameOn=false;netDisconnect(true);wakeOff();try{auStopMusic(1);}catch(err){}
+  $('#quitScr .qs-ai').textContent=!ai?'진행 상황을 저장했습니다.':S.srvHunt?'AI가 켜져 있어 캐릭터가 서버에서 계속 사냥합니다. 다시 접속하면 그동안 얻은 경험치·골드·잡템을 받습니다.':
+    'AI가 켜져 있어 자리를 비운 동안 사냥한 것으로 계산합니다. 다시 접속하면 최근 AI 사냥 속도로 보상을 받습니다 (최대 8시간).';
+  $('#quitScr').hidden=false;
+  try{window.close();}catch(err){}}  // closes the installed app window where the browser allows it
+$('#qsBack').onclick=()=>location.reload();
 document.body.appendChild($('#saver'));  // above every HUD layer (chat included)
 let WL=null;
 async function wakeOn(){try{if(AUTO.on&&!WL&&navigator.wakeLock&&document.visibilityState==='visible'){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null;});}}catch(err){}}
@@ -5089,7 +5106,7 @@ function loop(now){
     saveT+=dt;if(saveT>8){saveT=0;save();}
     updBeacon();
   }
-  if(SV.on)return;  // power-save screen: the game keeps running, nothing is drawn
+  if(SV.on||QUIT)return;  // power-save / quit screen: the game keeps running, nothing is drawn
   if(composer)composer.render();else renderer.render(scene,camera);
 }
 function updBoss(){const b=W.enemies.find(e=>e.d.boss&&!e.dead&&(e.aggro||e.cast));const el=$('#bossbar');document.body.classList.toggle('bossOn',!!b&&!CS);if(!b||CS){el.hidden=true;return;}el.hidden=false;el.querySelector('.bn').textContent=b.d.name+'  Lv.'+(b.lv||b.d.lv);el.querySelector('i').style.transform='scaleX('+clamp(b.hp/b.maxHp,0,1)+')';el.querySelector('span').textContent=fmt(b.hp)+' / '+fmt(b.maxHp);el.querySelector('i').style.transformOrigin='left';}
@@ -5432,7 +5449,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.01-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.05-1';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
