@@ -32,4 +32,7 @@ jobs:
       - name: 배포
         run: wrangler deploy
       - name: 확인
-        run: sleep 20 && curl -fsS -X POST https://api.faceforking.com/health
+        run: |
+          sleep 20
+          curl -fsS -X POST https://api.faceforking.com/health
+          curl -fsS -X POST https://api.faceforking.com/idle/health
