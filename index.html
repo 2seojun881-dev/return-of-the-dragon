@@ -524,7 +524,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -4751,6 +4751,7 @@ function adminClass(k){if(!S.admin||!CLASSES[k]||S.cls===k)return;const pos=P.po
 function openMenu(){
   openPanel('메뉴','<div class="sec"><h3>서버</h3><div class="row"><div class="l"><b>접속자 · 서버 채팅</b><small>'+SERVERS[MP.srv][0]+' · '+(MP.client&&MP.client.connected?Math.max(1,netCount())+'/'+NET_MAX+'명 접속 중':'연결 안 됨')+'</small></div><button class="btn sm pri" id="mMp">열기</button></div></div><div class="sec"><h3>진행</h3><div class="row"><div class="l"><b>저장</b><small>이 브라우저에 진행 상황을 저장합니다 (자동 저장 포함)</small></div><button class="btn sm" id="mSave">저장</button></div>'+
    '<div class="row"><div class="l"><b>게임 종료</b><small>'+(AUTO.on?'AI가 켜져 있어 종료한 뒤에도 사냥을 이어갑니다':'저장하고 게임을 끝냅니다 (AI를 켜 두면 종료한 뒤에도 사냥합니다)')+'</small></div><button class="btn sm pri" id="mQuit">종료</button></div>'+
+   '<div class="row"><div class="l"><b>캐릭터 옮기기</b><small>새 게임 주소나 다른 기기로 이 기기의 캐릭터를 모두 옮깁니다</small></div><button class="btn sm" id="mMove">옮기기</button></div>'+
    '<div class="row"><div class="l"><b>캐릭터 변경 (로그아웃)</b><small>저장하고 접속 화면으로 돌아갑니다</small></div><button class="btn sm" id="mOut">로그아웃</button></div>'+
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
@@ -4759,7 +4760,7 @@ function openMenu(){
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
    (S.admin?'<div class="sec"><h3>운영자 · 공지사항</h3><button class="btn sm pri" id="adNotice">공지 작성 · 관리</button></div><div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
-  panelLive=true;$('#mQuit').onclick=quitGame;
+  panelLive=true;$('#mQuit').onclick=quitGame;$('#mMove').onclick=()=>{save();openMove();};
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
@@ -4949,6 +4950,33 @@ function quitGame(){
   $('#quitScr').hidden=false;
   try{window.close();}catch(err){}}  // closes the installed app window where the browser allows it
 $('#qsBack').onclick=()=>location.reload();
+/* 캐릭터 옮기기: saves live in this browser per web address, so moving the game to a new address
+   (game.faceforking.com) or to another phone carries them over as a link / code (gzip + base64) */
+const MOVE_TO='https://game.faceforking.com/';
+async function packSaves(){const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('ignis.'))o[k]=localStorage.getItem(k);}
+  const raw=new TextEncoder().encode(JSON.stringify(o));let bytes=raw,z=0;
+  if(window.CompressionStream){bytes=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());z=1;}
+  let b='';for(let i=0;i<bytes.length;i+=8192)b+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
+  return 'R'+z+btoa(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+async function unpackSaves(code){const m=/^R([01])([A-Za-z0-9_-]+)$/.exec(String(code||'').trim());if(!m)throw new Error('code');
+  const b=atob(m[2].replace(/-/g,'+').replace(/_/g,'/')),u=Uint8Array.from(b,c=>c.charCodeAt(0));
+  const raw=m[1]==='1'?new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()):u;
+  const o=JSON.parse(new TextDecoder().decode(raw));if(!o||typeof o!=='object'||Array.isArray(o))throw new Error('code');return o;}
+const saveNames=o=>Object.keys(o).filter(k=>k.startsWith(SAVE_KEY+':')).map(k=>k.slice(SAVE_KEY.length+1));
+function applySaves(o){let n=0;for(const k of Object.keys(o)){if(k.startsWith('ignis.')&&typeof o[k]==='string'&&o[k].length<4e6){try{localStorage.setItem(k,o[k]);n++;}catch(err){}}}return n;}
+async function openMove(){
+  openPanel('캐릭터 옮기기','<div class="sec"><h3>보내기</h3><p class="note">이 기기의 캐릭터를 모두 담은 링크를 만듭니다. 새 주소나 다른 폰에서 이 링크를 열면 캐릭터가 그대로 옮겨집니다.</p>'+
+    '<button class="btn pri" id="mvCopy" style="width:100%">옮기기 링크 복사</button><textarea id="mvOut" readonly style="width:100%;height:64px;margin-top:8px;font-size:11px;background:#120e10;color:#c8b890;border:1px solid var(--line);border-radius:6px"></textarea></div>'+
+    '<div class="sec"><h3>받기</h3><p class="note">복사해 둔 링크나 코드를 붙여 넣으세요. 같은 이름의 캐릭터는 덮어씁니다.</p><textarea id="mvIn" style="width:100%;height:64px;font-size:11px;background:#120e10;color:#e8dfd2;border:1px solid var(--line);border-radius:6px"></textarea><button class="btn" id="mvGo" style="width:100%;margin-top:6px">가져오기</button></div>');
+  const link=MOVE_TO+'#import='+await packSaves();$('#mvOut').value=link;
+  $('#mvCopy').onclick=async()=>{try{await navigator.clipboard.writeText(link);toast('옮기기 링크를 복사했습니다 · 새 주소에서 열어 주세요','gold');}catch(err){$('#mvOut').select();toast('아래 칸의 링크를 길게 눌러 복사해 주세요');}};
+  $('#mvGo').onclick=()=>importSaves(($('#mvIn').value.split('#import=')[1]||$('#mvIn').value));}
+async function importSaves(code){let o;try{o=await unpackSaves(code);}catch(err){toast('옮기기 코드가 올바르지 않습니다','bad');return false;}
+  const names=saveNames(o);if(!names.length){toast('옮길 캐릭터가 없습니다','bad');return false;}
+  if(!confirm('캐릭터 '+names.length+'개를 이 기기로 가져옵니다: '+names.join(', ')+'\n같은 이름의 캐릭터는 덮어씁니다. 가져올까요?'))return false;
+  applySaves(o);try{history.replaceState(null,'',location.pathname+location.search);}catch(err){}
+  alert('캐릭터를 가져왔습니다. 접속 화면에서 같은 이름과 비밀번호로 들어가세요.');location.reload();return true;}
+if(/^#import=/.test(location.hash))setTimeout(()=>importSaves(location.hash.slice(8)),600);  // opened from a 옮기기 link
 document.body.appendChild($('#saver'));  // above every HUD layer (chat included)
 let WL=null;
 async function wakeOn(){try{if(AUTO.on&&!WL&&navigator.wakeLock&&document.visibilityState==='visible'){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null;});}}catch(err){}}
@@ -5449,7 +5477,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.05-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.05-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
