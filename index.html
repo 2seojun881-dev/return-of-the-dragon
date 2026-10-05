@@ -525,7 +525,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.05-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -2005,8 +2005,30 @@ function ensureSave(s){
   fix(s.weapon);fix(s.armor);(s.bag||[]).forEach(fix);Object.values(s.gear||{}).forEach(fix);[s.weapon,s.armor,...(s.bag||[]),...Object.values(s.gear||{})].forEach(w=>{if(w&&!w.id)w.id=newId();});
   const d={name:CLASSES[s.cls].name,mpots:3,junk:{},store:{},home:false,stat:{str:0,vit:0,def:0,agi:0},lb:0,buffs:{war:0,bless:0},blessDate:'',scale:0,cryst:0,dbLog:[]};
   for(const k in d)if(s[k]===undefined)s[k]=d[k];if(s.weapon&&s.weapon.dur===undefined)s.weapon.dur=100;s.bag.forEach(w=>{if(w.dur===undefined)w.dur=100;});return s;}
-function save(){if(!S||CS)return;if(P&&!P.dead&&W.zone===S.zone)S.pos=[+P.pos.x.toFixed(1),+P.pos.z.toFixed(1)];try{const n=ACCOUNT||S.name;localStorage.setItem(saveKey(n),JSON.stringify(S));}catch(e){}}
-function loadSave(n){n=n||ACCOUNT;if(!n)return null;try{const s=JSON.parse(localStorage.getItem(saveKey(n)));return s&&s.cls&&(CLASSES[s.cls]||OLD_CLS[s.cls])?s:null;}catch(e){return null;}}
+/* ---- 계정 서버 (dragon-raid/cloud, Cloudflare Worker + D1): characters live on the server, not in the browser,
+   so the same name + password opens the same character on any phone. Without the server the game keeps the old
+   per-browser saves. ---- */
+const CLOUD_API=(()=>{const d='https://api.faceforking.com';try{const q=new URLSearchParams(location.search).get('api');if(q)localStorage.setItem('ignis.api',q);return (q||localStorage.getItem('ignis.api')||d).replace(/\/+$/,'');}catch(e){return d;}})();
+const CLOUD={ok:false,checked:false,tok:null,name:null,save:null,dirty:false,busy:false,kicked:false};
+async function cloudCall(path,body,opt){const r=await fetch(CLOUD_API+path,Object.assign({method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body||{})},opt||{}));
+  let j={};try{j=await r.json();}catch(e){}j.status=r.status;return j;}
+const cloudReady=(async()=>{try{const c=new AbortController();setTimeout(()=>c.abort(),5000);const r=await fetch(CLOUD_API+'/health',{method:'POST',signal:c.signal});CLOUD.ok=r.ok;}catch(e){CLOUD.ok=false;}CLOUD.checked=true;return CLOUD.ok;})();
+const cloudOn=()=>CLOUD.ok&&!!CLOUD.tok;
+async function cloudPush(leaving){
+  if(!cloudOn()||!CLOUD.save||CLOUD.kicked||(CLOUD.busy&&!leaving))return;
+  const body=JSON.stringify({tok:CLOUD.tok,save:CLOUD.save});CLOUD.dirty=false;
+  if(leaving){try{fetch(CLOUD_API+'/save/put',{method:'POST',headers:{'Content-Type':'text/plain'},body,keepalive:body.length<60000});}catch(e){}return;}
+  CLOUD.busy=true;
+  try{const r=await fetch(CLOUD_API+'/save/put',{method:'POST',headers:{'Content-Type':'text/plain'},body});if(r.status===401)cloudKicked();else if(!r.ok)CLOUD.dirty=true;}
+  catch(e){CLOUD.dirty=true;}finally{CLOUD.busy=false;}}
+function cloudKicked(){if(CLOUD.kicked)return;CLOUD.kicked=true;gameOn=false;QUIT=true;try{netDisconnect(true);}catch(e){}
+  $('#quitScr b').textContent='다른 기기에서 접속했습니다';$('#quitScr .qs-ai').textContent='['+(CLOUD.name||'')+'] 캐릭터로 다른 폰에서 접속해 이 기기의 접속이 끝났습니다. 다시 접속하면 이 기기로 돌아옵니다.';$('#quitScr').hidden=false;}
+setInterval(()=>{if(CLOUD.dirty)cloudPush();},15000);
+function save(){if(!S||CS)return;if(P&&!P.dead&&W.zone===S.zone)S.pos=[+P.pos.x.toFixed(1),+P.pos.z.toFixed(1)];S.t=Date.now();
+  if(cloudOn()){CLOUD.save=S;CLOUD.dirty=true;return;}  // server keeps it (pushed every 15 s and when the page closes)
+  try{const n=ACCOUNT||S.name;localStorage.setItem(saveKey(n),JSON.stringify(S));}catch(e){}}
+function loadSave(n){n=n||ACCOUNT;if(!n)return null;if(cloudOn())return n===CLOUD.name&&CLOUD.save&&CLOUD.save.cls?CLOUD.save:null;return loadLocal(n);}
+function loadLocal(n){if(!n)return null;try{const s=JSON.parse(localStorage.getItem(saveKey(n)));return s&&s.cls&&(CLASSES[s.cls]||OLD_CLS[s.cls])?s:null;}catch(e){return null;}}
 
 /* =========================================================
    player
@@ -4767,7 +4789,7 @@ function openMenu(){
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
-  $('#mOut').onclick=()=>{save();location.reload();};
+  $('#mOut').onclick=async()=>{save();if(cloudOn()){await cloudPush();try{await cloudCall('/acct/logout',{tok:CLOUD.tok});}catch(e){}}location.reload();};
   document.querySelectorAll('[data-adcls]').forEach(b=>b.onclick=()=>adminClass(b.dataset.adcls));const an=$('#adNotice');if(an)an.onclick=openNotice;
   if(S.admin){const k=S.cls==='novice'?'warrior':S.cls,give=(g,q)=>{g.lv=Math.min(g.lv,S.level);addGear(g,q);};
     $('#adSet').onclick=()=>{ARMOR_PARTS.forEach(p=>{const g=makeDragonGear('a',k,3);g.part=p;g.name=DSET[k].n+' '+(p==='body'?'갑주':PART_SUF[p]);g.def=Math.round(TIERS[7].def*PART_DEF[p]*RAR[3].m);give(g,true);});toast('['+DSET[k].n+'] 영웅 세트 5부위 지급 · 가방에서 장착하세요','gold');save();};
@@ -4775,7 +4797,9 @@ function openMenu(){
     $('#adAcc').onclick=()=>{['neck','ring','ring','belt'].forEach(a=>{let g;do{g=makeDragonGear('acc',k,3);}while(g.acc!==a);give(g,true);});toast('영웅 장신구 4개 지급','gold');save();};
     $('#adMix').onclick=()=>{for(let i=0;i<6;i++){const x=Math.random();give(makeDragonGear(x<.3?'w':x<.8?'a':'acc',k,i%2?2:1),true);}toast('고급·전설 장비 6개 지급','gold');save();};
     $('#adMat').onclick=()=>{S.scale+=100;S.cryst+=100;toast('용의 비늘·결정 +100','gold');save();};}
-  $('#mReset').onclick=function(){if(this.dataset.c){ACCOUNT&&accDel(ACCOUNT);S=null;location.reload();}else{this.dataset.c=1;this.textContent='한 번 더 눌러 확인';}};
+  $('#mReset').onclick=async function(){if(!this.dataset.c){this.dataset.c=1;this.textContent='한 번 더 눌러 확인';return;}
+    if(cloudOn()){const pw=prompt('['+ACCOUNT+'] 캐릭터를 서버에서 지웁니다. 비밀번호를 입력하세요.');if(!pw)return;const r=await cloudCall('/acct/delete',{tok:CLOUD.tok,pw}).catch(()=>({}));if(!r.ok){toast('비밀번호가 맞지 않거나 서버에 연결할 수 없습니다','bad');return;}CLOUD.kicked=true;}
+    ACCOUNT&&accDel(ACCOUNT);S=null;location.reload();};
 }
 
 
@@ -4946,7 +4970,7 @@ document.body.appendChild($('#quitScr'));
 /* 게임 종료: save, hand the character to AI hunting (server, or the away estimate), stop everything, try to close the app window */
 function quitGame(){
   const ai=AUTO.on&&gameOn&&P&&!P.dead;closePanel();if(SV.on)saverOff();
-  if(ai)aiAwayMark();save();
+  if(ai)aiAwayMark();save();if(cloudOn())cloudPush(true);
   QUIT=true;gameOn=false;netDisconnect(true);wakeOff();try{auStopMusic(1);}catch(err){}
   $('#quitScr .qs-ai').textContent=!ai?'진행 상황을 저장했습니다.':S.srvHunt?'AI가 켜져 있어 캐릭터가 서버에서 계속 사냥합니다. 다시 접속하면 그동안 얻은 경험치·골드·잡템을 받습니다.':
     'AI가 켜져 있어 자리를 비운 동안 사냥한 것으로 계산합니다. 다시 접속하면 최근 AI 사냥 속도로 보상을 받습니다 (최대 8시간).';
@@ -5430,6 +5454,8 @@ async function titleTouch(ev,fresh){
 $('#title').addEventListener('pointerdown',e=>{if(e.target.closest('.t-top,.t-link'))return;if(AU.on){auInit();if(!kitReady){auStartMusic();return;}}if(!titleBusy&&kitReady&&!panelOpen)openLogin(e);});
 function accSummary(n){const s=loadSave(n);if(!s)return '저장 데이터 없음';const c=CLASSES[s.cls]||CLASSES[OLD_CLS[s.cls]]||CLASSES.novice;return c.name.replace(/\(.*\)/,'')+' · Lv.'+(n===ADMIN_NAME?99:s.level)+(ZONES[s.zone]&&ZONES[s.zone].name?' · '+ZONES[s.zone].name:'');}
 function openLogin(ev,pre){
+  if(!CLOUD.checked){cloudReady.then(()=>openLogin(ev,pre));return;}
+  if(CLOUD.ok)return openCloudLogin(ev,pre);
   const list=accList().filter(n=>loadSave(n));
   const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   openPanel('캐릭터 접속','<div class="sec login"><div class="lgf"><label class="cs-name login"><span>캐릭터 이름 (아이디)</span><input type="text" id="lgName" maxlength="8" placeholder="이름 (최대 8자)" autocomplete="username"></label>'+
@@ -5460,10 +5486,47 @@ function openLogin(ev,pre){
   if(pre){nameIn.value=pre;}refresh();
   setTimeout(()=>{(nameIn.value?pwIn:nameIn).focus();},50);
 }
+function openCloudLogin(ev,pre){
+  const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const local=accList().filter(n=>loadLocal(n));
+  openPanel('캐릭터 접속','<div class="sec login"><div class="lgf"><label class="cs-name login"><span>캐릭터 이름 (아이디)</span><input type="text" id="lgName" maxlength="8" placeholder="이름 (최대 8자)" autocomplete="username"></label>'+
+    '<label class="cs-name login"><span>비밀번호</span><input type="password" id="lgPw" maxlength="32" placeholder="비밀번호 (4자 이상)" autocomplete="current-password"></label>'+
+    '<label class="cs-name login" id="lgPw2Row" hidden><span>비밀번호 확인</span><input type="password" id="lgPw2" maxlength="32" placeholder="비밀번호 다시 입력" autocomplete="new-password"></label></div>'+
+    '<button class="btn pri" id="lgGo" style="width:100%;margin-top:10px">접속</button><p class="note" id="lgMsg">이름과 비밀번호를 입력하세요.</p></div>'+
+    (local.length?'<div class="sec"><h3>이 기기에 남아 있는 캐릭터</h3>'+local.map((n,i)=>'<div class="row"><div class="l"><b>'+esc(n)+'</b><small>'+esc(accSummary(n))+' · 접속하면 서버로 옮겨집니다</small></div><button class="btn sm pri" data-lg="'+i+'">선택</button></div>').join('')+'</div>':'')+
+    '<p class="note">캐릭터는 서버에 저장됩니다. 어느 폰에서든 같은 이름과 비밀번호로 접속하세요. 한 캐릭터는 한 기기에서만 접속됩니다.</p>');$('#panel .pcard').classList.add('login');
+  const msg=(t,bad)=>{const m=$('#lgMsg');m.textContent=t;m.style.color=bad?'#ff8a7a':'';};
+  const nameIn=$('#lgName'),pwIn=$('#lgPw'),pw2Row=$('#lgPw2Row');let creating=false,qn=0,busy=false;
+  const refresh=async()=>{const n=(nameIn.value||'').trim(),my=++qn;if(!n){creating=false;pw2Row.hidden=true;$('#lgGo').textContent='접속';return;}
+    let ex=false;try{ex=(await cloudCall('/acct/exists',{name:n})).exists;}catch(e){}if(my!==qn)return;
+    creating=!ex;pw2Row.hidden=!creating;$('#lgGo').textContent=creating?'새 캐릭터 만들기':'접속';
+    msg(creating?(loadLocal(n)?'이 기기의 ['+n+'] 캐릭터를 서버로 옮깁니다. 이 기기에서 쓰던 비밀번호를 두 번 입력하세요.':'처음 쓰는 이름입니다. 비밀번호를 두 번 입력해 새 캐릭터를 만드세요.'):'이름과 비밀번호로 접속합니다.');};
+  let dt=0;nameIn.oninput=()=>{clearTimeout(dt);dt=setTimeout(refresh,250);};
+  const go=async()=>{if(busy)return;const n=(nameIn.value||'').trim().slice(0,8),pw=pwIn.value||'';
+    if(!n)return msg('이름을 입력하세요.',true);if(/[<>"'&]/.test(n))return msg('이름에 쓸 수 없는 문자가 있습니다.',true);
+    if(pw.length<4)return msg('비밀번호는 4자 이상이어야 합니다.',true);
+    const loc=loadLocal(n),locOk=loc&&(n===ADMIN_NAME||!pwHas(n)||pwCheck(n,pw));
+    if(creating){if(pw!==$('#lgPw2').value)return msg('비밀번호 확인이 일치하지 않습니다.',true);if(loc&&!locOk)return msg('이 기기의 ['+n+'] 캐릭터 비밀번호와 다릅니다.',true);}
+    busy=true;msg('서버에 접속하는 중…');let r;
+    try{r=await cloudCall(creating?'/acct/register':'/acct/login',{name:n,pw});}catch(e){busy=false;return msg('서버에 연결할 수 없습니다. 인터넷 연결을 확인하세요.',true);}
+    busy=false;
+    if(!r.tok){if(r.status===409){creating=false;refresh();return msg('이미 있는 이름입니다. 비밀번호를 입력해 접속하세요.',true);}if(r.status===404){refresh();return msg('없는 캐릭터입니다. 비밀번호를 두 번 입력해 새로 만드세요.',true);}
+      if(r.status===429)return msg('비밀번호를 여러 번 틀려 10분 동안 접속할 수 없습니다.',true);if(r.status===403)return msg(r.error==='reserved'?'쓸 수 없는 이름입니다.':'비밀번호가 맞지 않습니다.',true);return msg('접속하지 못했습니다. 잠시 뒤 다시 해 보세요.',true);}
+    CLOUD.tok=r.tok;CLOUD.name=n;CLOUD.save=r.save&&r.save.cls?r.save:null;
+    if(loc&&locOk&&(!CLOUD.save||(loc.t||0)>(CLOUD.save.t||0))){CLOUD.save=loc;await cloudPush();toast('이 기기의 캐릭터를 서버로 옮겼습니다','gold');}
+    if(loc&&locOk)accDel(n);  // the server has it now: nothing stays in this browser
+    ACCOUNT=n;closePanel();titleTouch(ev,false);};
+  $('#lgGo').onclick=go;
+  [nameIn,pwIn,$('#lgPw2')].forEach(i=>i.onkeydown=k=>{if(k.key==='Enter')go();});
+  document.querySelectorAll('[data-lg]').forEach(b=>b.onclick=()=>{nameIn.value=local[+b.dataset.lg];refresh();pwIn.focus();});
+  if(pre)nameIn.value=pre;refresh();setTimeout(()=>{(nameIn.value?pwIn:nameIn).focus();},50);
+}
+addEventListener('pagehide',()=>{if(cloudOn()&&S){save();cloudPush(true);}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&cloudOn()&&S){save();cloudPush(true);}});
 $('#tNew').onclick=e=>{e.stopPropagation();titleTouch(e,true);};
 $('#tSound').onclick=e=>{e.stopPropagation();const on=!AU.on;auSetOn(on);if(on){auInit();auStartMusic();}};
 $('#tNotice').onclick=e=>{e.stopPropagation();openNotice();};
-$('#tAccount').onclick=e=>{e.stopPropagation();openPanel('계정 연동','<div class="sec"><h3>현재 계정</h3><div class="row"><div class="l"><b>게스트</b><small>진행 상황은 이 기기의 이 브라우저에만 저장됩니다. 브라우저 데이터를 지우면 사라집니다.</small></div></div></div><div class="sec"><h3>연동</h3><div class="row"><div class="l"><b>Google 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div><div class="row"><div class="l"><b>Apple 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div></div>');};
+$('#tAccount').onclick=e=>{e.stopPropagation();openPanel('계정 연동','<div class="sec"><h3>현재 계정</h3>'+(CLOUD.ok?'<div class="row"><div class="l"><b>서버 계정</b><small>캐릭터는 서버에 저장됩니다. 어느 폰에서든 캐릭터 이름과 비밀번호로 접속하세요.</small></div></div>':'<div class="row"><div class="l"><b>게스트</b><small>계정 서버에 연결할 수 없어 진행 상황을 이 기기의 브라우저에 저장합니다.</small></div></div>')+'</div><div class="sec"><h3>연동</h3><div class="row"><div class="l"><b>Google 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div><div class="row"><div class="l"><b>Apple 계정</b><small>프로토타입에서는 지원하지 않습니다</small></div><button class="btn sm" disabled>연동</button></div></div>');};
 const SERVERS=[['01. 이그니스']];  // one server for now
 /* live status from the presence channel: 원활 < 60 ≤ 혼잡 < 100 = 가득 (unknown until the first heartbeat arrives) */
 function srvState(i){const on=MP.client&&MP.client.connected,n=netCount(i)+(on&&i===MP.srv?0:0);if(!on)return ['확인 중','#9a9a9a',n];return n>=NET_MAX?['가득',"#d9544a",n]:n>=120?['혼잡','#e0c040',n]:['원활','#6fdc6a',n];}
@@ -5480,7 +5543,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.05-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.05-4';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
@@ -5514,7 +5577,7 @@ canvas.addEventListener('pointerup',e=>{if(!csActive||_swx==null)return;const dx
     const hs=ray.intersectObjects(W.heroes.map(o=>o.h.g),true);if(hs.length){const i=W.heroes.findIndex(o=>{let f=false;o.h.g.traverse(q=>{if(q===hs[0].object)f=true;});return f;});if(i>=0){SEL=i;renderCsel();}}}});
 addEventListener('keydown',e=>{if(!csActive)return;if(e.key==='ArrowRight'){SEL=(SEL+1)%SHOW_N;renderCsel();}if(e.key==='ArrowLeft'){SEL=(SEL+SHOW_N-1)%SHOW_N;renderCsel();}if(e.key==='Enter')$('#csGo').click();});
 async function startGame(s,resume){
-  S=applyAdmin(ensureSave(s));ACCOUNT=S.name;accAdd(S.name);makePlayer();refreshSkills();if(S.admin)later(1.5,()=>toast('운영자 계정 · Lv.99 · 모든 몬스터 한 방','gold'));
+  S=applyAdmin(ensureSave(s));ACCOUNT=S.name;if(!cloudOn())accAdd(S.name);makePlayer();refreshSkills();if(S.admin)later(1.5,()=>toast('운영자 계정 · Lv.99 · 모든 몬스터 한 방','gold'));
   if(!resume){
     await runPrologue();
   }else{
