@@ -170,6 +170,7 @@ svg{display:block}
 @media (max-width:640px){#autoTag{bottom:calc(250px + env(safe-area-inset-bottom,0px))}}
 #saver{position:fixed;inset:0;z-index:9999;background:#000;color:#a89878;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 #saver[hidden],#quitScr[hidden]{display:none}
+#recallBtn .rcd{position:absolute;inset:0;border-radius:10px;background:rgba(0,0,0,.6);transform-origin:bottom;transform:scaleY(0);pointer-events:none;font-style:normal}#recallBtn.cast{border-color:#8ad0ff;box-shadow:0 0 12px rgba(120,200,255,.7)}
 #quitScr{position:fixed;inset:0;z-index:9999;background:#0c0a0d;color:#c8b890;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'IBM Plex Sans KR',sans-serif;padding:16px}
 #quitScr b{color:#e8be6e;font-size:18px}#quitScr .qs-ai{max-width:440px;margin:10px auto 14px;line-height:1.6;font-size:14px}#quitScr small{display:block;margin-top:12px;color:#7a6c56}
 #saver .sv-in{display:flex;flex-direction:column;gap:8px;transition:transform 2s}
@@ -498,6 +499,7 @@ body.touch #joy{display:block}
     <div id="zname"></div>
     <div id="mpBadge" hidden></div>
     <div id="trbtns">
+      <button class="rbtn" id="recallBtn" aria-label="마을 귀환 (V)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><i class="rcd"></i></button>
       <button class="rbtn" id="saverBtn" aria-label="절전 모드" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
       <button class="rbtn" id="skBtn" aria-label="스킬"></button>
       <button class="rbtn" id="bagBtn" aria-label="가방"></button>
@@ -552,7 +554,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.06-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.06-4</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -5160,7 +5162,7 @@ function autoSkills(T){
   return autoDeck(T,dT,big,near);
 }
 function updAuto(dt){
-  if(!AUTO.on||!P||P.dead)return;
+  if(!AUTO.on||!P||P.dead||RECALL.cast)return;
   const st=S.aiStat||(S.aiStat={exp:0,gold:0,kills:0,sec:0}),wn=performance.now()/1000;st.sec+=Math.min(1,Math.max(0,wn-(AUTO.wt||wn)));AUTO.wt=wn;if(st.sec>1800){const k=1800/st.sec;st.exp*=k;st.gold*=k;st.kills*=k;st.sec=1800;}  // hunting speed over the last ~30 min
   if(AUTO.pause>0){AUTO.pause-=dt;return;}
   // potion first
@@ -5184,7 +5186,7 @@ function updAuto(dt){
   if(T&&!T.isNpc&&(T.d.static||T.d.dummy)&&!autoWanted().has(T.type)){P.target=T=null;}  // quest dummy / barricade no longer needed
   if(!T||T.isNpc||T.dead||T.gone||d2(T.pos,P.pos)>30){T=autoPick();if(T){P.target=T;P.dest=null;}}
   AUTO.navT-=.2;const nav=AUTO.navT<=0;if(nav)AUTO.navT=1;
-  if(T&&!T.isNpc&&!T.dead){autoSkills(T);if(nav)$('#autoTag').textContent=AUTO.mode==='hunt'?'자동 사냥 중 · '+(T.d.name||'')+(T.d.boss?' (보스)':''):'AI · '+aiPlan().label;return;}
+  if(T&&!T.isNpc&&!T.dead){autoSkills(T);if(nav)$('#autoTag').textContent=AUTO.mode==='hunt'?'자동 사냥 중 · '+(T.d.name||'')+(T.d.boss?' (보스)':''):'AI · '+(AUTO.restock?'물약이 떨어져 천명 성채로 보충하러 갑니다':aiPlan().label);return;}
   if(AUTO.mode==='hunt'){  // 자동 사냥: nothing near → walk back to the spot where it was turned on and wait
     if(W.zone!==AUTO.homeZone||!AUTO.home){AUTO.home={x:P.pos.x,z:P.pos.z};AUTO.homeZone=W.zone;}
     if(nav&&!P.dest&&Math.hypot(P.pos.x-AUTO.home.x,P.pos.z-AUTO.home.z)>4)P.dest={x:AUTO.home.x,z:AUTO.home.z};
@@ -5238,7 +5240,7 @@ function aiNav(){
   // restock potions at the citadel shop on the way
   const hpc=20+S.level*3;
   if((S.potions<3||(S.cls==='shaman'&&S.mpots<2))&&S.gold>=hpc*10&&W.zone!=='citadel')AUTO.restock=true;  // nearly out: go back to town
-  if(AUTO.restock&&W.zone!=='citadel'){$('#autoTag').textContent='AI · 물약이 떨어져 천명 성채로 보충하러 갑니다';if(!aiGo('citadel'))AUTO.restock=false;return;}
+  if(AUTO.restock&&W.zone!=='citadel'){$('#autoTag').textContent='AI · 물약이 떨어져 천명 성채로 보충하러 갑니다';if(recallDest()[0]==='citadel'&&rt-(RECALL.failT||-99)>20&&!recallWhy()&&startRecall())return;  /* interrupted lately → walk */if(!aiGo('citadel'))AUTO.restock=false;return;}
   if(W.zone==='citadel'&&(S.potions<5||S.mpots<3)&&S.gold>=hpc*10&&rt-(AUTO.shopT||-1e9)>90){const n=W.npcs.find(n=>n.d&&n.d.service==='shop');
     if(n){AUTO.travel=true;AUTO.expect='shop';P.hunt=null;P.dest=null;P.target=n;$('#autoTag').textContent='AI · 잡화점에서 물약 보충';return;}}
   if(plan.k==='choose'){if(rt-(AUTO.askT||-1e9)>20){AUTO.askT=rt;aiAskClass();}return;}
@@ -5377,6 +5379,26 @@ function idleSnapshot(){
     stats:{atk:P.atk,def:P.def,maxHp:P.maxHp,aspd:P.aspd,crit:P.crit,critX:P.critX},grow:{atk:Math.max(0,nx.atk-cur.atk),def:Math.max(0,nx.def-cur.def),maxHp:Math.max(0,nx.maxHp-cur.maxHp)},
     potions:S.potions,guildMul:1+guildLv()*.015,mobs};
 }
+/* ---- 마을 귀환: 3 s cast (moving or getting hit cancels it), 30 s cooldown → 천명 성채 (village before the citadel opens) ---- */
+const RECALL={cast:null,cd:0};
+function recallWhy(){if(!P||P.dead||!gameOn)return '지금은 쓸 수 없습니다';if(CS||transitioning)return '지금은 쓸 수 없습니다';
+  if(RECALL.cast)return '';if(rt<RECALL.cd)return '마을 귀환 재사용까지 '+Math.ceil(RECALL.cd-rt)+'초';
+  if(['sea','title','prologue'].includes(W.zone))return '여기서는 마을 귀환을 쓸 수 없습니다';
+  if(W.enemies.some(e=>!e.dead&&e.d.boss&&e.aggro))return '보스와 싸우는 중에는 마을 귀환을 쓸 수 없습니다';
+  if(W.zone===recallDest()[0])return '이미 '+ZONES[W.zone].name+'에 있습니다';return '';}
+function recallDest(){return S.q>qIdx('p5')?['citadel',[0,5]]:['village',null];}
+function startRecall(){const why=recallWhy();if(why){toast(why,'bad');return false;}if(RECALL.cast)return true;
+  RECALL.cast={t:0,x:P.pos.x,z:P.pos.z,hp:P.hp};P.target=null;P.dest=null;P.hunt=null;$('#recallBtn').classList.add('cast');
+  ringFx(P.pos.x,P.pos.z,2.2,0x8ad0ff,3);burst(P.pos.x,1.2,P.pos.z,0xbfe8ff,30,2,1.2,.6,2);toast('마을 귀환 중… (3초, 움직이거나 맞으면 취소)','gold');return true;}
+function updRecall(dt){const c=RECALL.cast,ov=$('#recallBtn .rcd');
+  if(ov)ov.style.transform='scaleY('+(c?0:Math.max(0,Math.min(1,(RECALL.cd-rt)/30)))+')';
+  if(!c)return;
+  if(!P||P.dead||Math.hypot(P.pos.x-c.x,P.pos.z-c.z)>.6||P.hp<c.hp-1||transitioning){RECALL.cast=null;RECALL.failT=rt;$('#recallBtn').classList.remove('cast');toast('마을 귀환이 취소되었습니다','bad');return;}
+  c.t+=dt;if(Math.floor(c.t*4)%2===0&&Math.random()<.3)burst(P.pos.x,.3,P.pos.z,0x8ad0ff,4,1,1.4,.5,3);
+  if(c.t>=3){RECALL.cast=null;RECALL.cd=rt+30;$('#recallBtn').classList.remove('cast');const d=recallDest();
+    const pil=new THREE.Mesh(new THREE.CylinderGeometry(1,1,18,16,1,true),new THREE.MeshBasicMaterial({color:0x8ad0ff,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));pil.position.set(P.pos.x,9,P.pos.z);W.root.add(pil);addFx(pil,.6,q=>{pil.material.opacity=.5*(1-q);});
+    gotoZone(d[0],d[1]||undefined);}}
+$('#recallBtn').onclick=e=>{e.stopPropagation();if(!paused())startRecall();};
 function aiAwayMark(){if(AUTO.on&&AUTO.mode!=='hunt'&&gameOn&&S&&P&&!P.dead&&!S.aiAway&&W.zone!=='title'){S.aiAway=Date.now();S.srvHunt=0;
   if(IDLE_SRV){try{const snap=idleSnapshot();if(snap&&navigator.sendBeacon(IDLE_SRV+'/idle/start',JSON.stringify(snap)))S.srvHunt=1;}catch(err){}}
   save();}}
@@ -5454,6 +5476,7 @@ addEventListener('keydown',e=>{
   if(DL&&(e.key===' '||e.key==='Enter')){e.preventDefault();dlgLayer.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));return;}
   if(e.key==='Escape'&&panelOpen){closePanel();return;}
   const k=e.key.toLowerCase();
+  if(k==='v'){startRecall();return;}
   if(k==='t'){setAuto(!AUTO.on);return;}if(k==='a'||k===' '){e.preventDefault();pressAttack();}else if(k==='1'||k==='q')useSkill('s1');else if(k==='2'||k==='w')useSkill('s2');else if(k==='3'||k==='e')useSkill('s3');else if(k==='4'||k==='r')useSkill('ult');else if(k>='5'&&k<='8')useDeck(+k-5);else if(k==='9')useDeck(0,true);else if(k==='k'&&!paused())openSkills();else if(k==='h')usePotion();else if(k==='m')useMpPotion();else if(k==='b'&&!paused())openBag();
 });
 
@@ -5467,7 +5490,7 @@ function loop(now){
   runTimers();
   const pz=paused();
   if(P&&gameOn&&!pz){
-    updAuto(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();if(P.tag){if(CS||W.zone==='title'||W.zone==='prologue')P.tag.style.display='none';else placeTag(P.tag,P.pos,P.tagY+(P.y||0));}
+    updAuto(dt);updRecall(dt);updPlayer(dt);updMerc(dt);updGrassCarpet();if(P.tag){if(CS||W.zone==='title'||W.zone==='prologue')P.tag.style.display='none';else placeTag(P.tag,P.pos,P.tagY+(P.y||0));}
     for(let i=W.enemies.length-1;i>=0;i--){const e=W.enemies[i];if(e)updEnemy(e,dt);}
     updProj(dt);updAreas(dt);updSpawners(dt,false);if(W.tick)W.tick(dt);synTick(dt);
     // reach goals
@@ -5887,7 +5910,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.06-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.06-4';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
