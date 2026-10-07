@@ -553,7 +553,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.07-2</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.07-3</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -5131,7 +5131,9 @@ function autoWanted(){
 }
 function autoPick(){
   const want=autoWanted();let best=null,bs=1e9;
-  for(const e of W.enemies){if(e.dead||e.gone)continue;const q=want.has(e.type)||(e.d.tag&&want.has(e.d.tag));
+  const must=W.enemies.filter(e=>e.channel&&!e.dead&&!e.gone);  /* raid objectives (바라카스 제단 주술사): nearest first, anywhere in the arena */
+  if(must.length){for(const e of must){const d=d2(e.pos,P.pos);if(d<bs){bs=d;best=e;}}return best;}
+  for(const e of W.enemies){if(e.dead||e.gone||e.invuln)continue;const q=want.has(e.type)||(e.d.tag&&want.has(e.d.tag));
     if((e.d.static||e.d.dummy)&&!q)continue;const d=d2(e.pos,P.pos);if(d>(q?26:18))continue;
     if(AUTO.mode==='hunt'){if(AUTO.home&&W.zone===AUTO.homeZone&&Math.hypot(e.pos.x-AUTO.home.x,e.pos.z-AUTO.home.z)>28)continue;}
     else if(!q&&!e.aggro&&(AUTO.travel||e.d.boss||(e.lv||0)>S.level+6))continue;
@@ -5187,11 +5189,12 @@ function updAuto(dt){
   if(!near&&hpR<.6&&S.potions>0&&P.potCd<=0)usePotion();  // top up before the next fight
   // step out of red telegraphs
   if(AUTO.dodge>0){AUTO.dodge-=dt;return;}
-  for(const g of TELES){if(!g.parent||!g.parent.parent){TELES.delete(g);continue;}const out=inTele(g);if(out){const o={x:out.x,z:out.z};resolve(o,P.rad);P.target=null;P.hunt=null;P.dest=o;AUTO.dodge=.7;return;}}
+  for(const g of TELES){if(!g.parent||!g.parent.parent){TELES.delete(g);continue;}const out=inTele(g);if(out){const o={x:out.x,z:out.z};resolve(o,P.rad);if(P.target&&P.target.channel){if(g.userData.kind==='c'){const T=P.target,dx=T.pos.x-g.position.x,dz=T.pos.z-g.position.z,L=Math.hypot(dx,dz)||1,r=g.userData.r+1.8;if(L>r){o.x=g.position.x+dx/L*r;o.z=g.position.z+dz/L*r;resolve(o,P.rad);}}P.detour={x:o.x,z:o.z,t:.7};}else{P.target=null;P.hunt=null;P.dest=o;}AUTO.dodge=.7;return;}}  /* raid objective: sidestep but keep the target */
   AUTO.t-=dt;if(AUTO.t>0)return;AUTO.t=.2;
   if(P.lock>0)return;
   let T=P.target;
   if(T&&!T.isNpc&&(T.d.static||T.d.dummy)&&!autoWanted().has(T.type)){P.target=T=null;}  // quest dummy / barricade no longer needed
+  if(T&&!T.isNpc&&!T.channel&&(T.invuln||W.enemies.some(e=>e.channel&&!e.dead&&!e.gone))){P.target=T=null;}  /* invulnerable boss: go for what breaks it */
   if(!T||T.isNpc||T.dead||T.gone||d2(T.pos,P.pos)>30){T=autoPick();if(T){P.target=T;P.dest=null;}}
   AUTO.navT-=.2;const nav=AUTO.navT<=0;if(nav)AUTO.navT=1;
   if(T&&!T.isNpc&&!T.dead){autoSkills(T);if(nav)$('#autoTag').textContent=AUTO.mode==='hunt'?'자동 사냥 중 · '+(T.d.name||'')+(T.d.boss?' (보스)':''):'AI · '+(AUTO.restock?'물약이 떨어져 천명 성채로 보충하러 갑니다':aiPlan().label);return;}
@@ -5918,7 +5921,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.07-2';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.07-3';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
