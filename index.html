@@ -146,7 +146,7 @@ svg{display:block}
 #skBan.ult::before{content:'';position:absolute;left:-60vw;right:-60vw;top:6px;bottom:-4px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 30%,rgba(0,0,0,.55) 70%,transparent);z-index:-1;border-top:1px solid var(--c);border-bottom:1px solid var(--c)}
 #skBan.on{animation:skban 1.15s ease-out forwards}#skBan.ult.on{animation-duration:1.7s}
 @keyframes skban{0%{opacity:0;transform:translate(-50%,-50%) scale(1.9);filter:blur(6px)}12%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-62%) scale(1.04)}}
-#skFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen}#skFlash.on{animation:skfl .45s ease-out}
+#skFlash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;mix-blend-mode:screen}body.brightfx #skFlash{mix-blend-mode:normal}#skFlash.on{animation:skfl .45s ease-out}
 @keyframes skfl{0%{opacity:var(--a,.4)}100%{opacity:0}}
 @media (max-height:380px){#skBan{top:20%}#skBan b{font-size:22px}#skBan.ult b{font-size:30px}}
 .skrow .ski{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;border:1px solid var(--sc,var(--line));color:var(--sc,#f4e2bb);background:rgba(0,0,0,.35)}.skrow .ski svg{width:22px;height:22px}
@@ -468,7 +468,6 @@ body.touch #joy{display:block}
 #joy.on .jb{border-color:rgba(255,210,130,.9)}
 </style>
 </head><body>
-
 <div id="enrage" hidden></div>
 <canvas id="cv"></canvas>
 <div id="vig"></div>
@@ -554,7 +553,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.07-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.07-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1050,7 +1049,13 @@ function shake(a){if(!REDUCED)cam.shake=Math.max(cam.shake,a);}
    ========================================================= */
 let W={root:new THREE.Group(),cols:[],enemies:[],npcs:[],portals:[],spawners:[],zonesA:[],proj:[],anim:[],hts:[],bounds:[-30,30,-30,30],zone:''};
 const FX=[];
-function addFx(obj,life,upd,par){(par||W.root).add(obj);FX.push({obj,t:0,life,upd});return obj;}
+/* light-adding (additive) effects wash out on bright ground (white citadel stone, grass): there every effect is drawn
+   with normal blending instead, so skills keep their colour; dark zones keep the glowing look */
+const BRIGHT_Z=new Set(['village','plains','citadel','hall','inn','port','eternal','coral','beasts','showcase']);
+function fxBright(obj){obj.traverse(o=>{if(o.renderOrder<5)o.renderOrder=5;});/* draw after the layered ground patches (renderOrder 1-2) */if(!BRIGHT_Z.has(W.zone))return obj;obj.traverse(o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];
+  for(const m of ms)if(m.blending===THREE.AdditiveBlending&&!m.userData.keep){m.blending=THREE.NormalBlending;m.needsUpdate=true;
+    if(m.color){const h={};m.color.getHSL(h);if(h.s>.15&&h.l>.55)m.color.setHSL(h.h,Math.min(1,h.s+.25),.5);}}});return obj;}
+function addFx(obj,life,upd,par){fxBright(obj);(par||W.root).add(obj);FX.push({obj,t:0,life,upd});return obj;}
 function updFx(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.t+=dt;const k=f.t/f.life;if(k>=1){f.obj.parent&&f.obj.parent.remove(f.obj);FX.splice(i,1);continue;}f.upd&&f.upd(k,dt,f);}}
 
 /* walkable height: flat plateaus, plus ramps (stairs) that climb from z=rz (ground) to z=rz1 (top) */
@@ -1310,7 +1315,7 @@ function HM(c,o){const k=c+'|'+JSON.stringify(o||{});if(HMC[k])return HMC[k];
   const env=ENV();if(env){m.envMap=env;m.envMapIntensity=(o&&o.metalness>.4)?1.25:.3;}
   MC['h'+k]=m;return HMC[k]=m;}
 const GMC={};
-function glowM(c,op){const k=c+'|'+op;return GMC[k]||(GMC[k]=new THREE.MeshBasicMaterial(op==null?{color:c}:{color:c,transparent:true,opacity:op,depthWrite:false,blending:THREE.AdditiveBlending}));}
+function glowM(c,op){const k=c+'|'+op;return GMC[k]||(GMC[k]=new THREE.MeshBasicMaterial(op==null?{color:c}:{color:c,transparent:true,opacity:op,depthWrite:false,blending:THREE.AdditiveBlending}),GMC[k].userData.keep=1,GMC[k]);}
 const STEEL=0x3b4049,STEEL2=0x262a31,GOLD=0xc99a3e,CRIMSON=0x4a1216,LEATHER=0x3a281c,BONE=0xd2c6a8;
 function heroMat(c){
   if(c===STEEL||c===STEEL2)return HM(c,{metalness:.82,roughness:.32});
@@ -2128,7 +2133,7 @@ function spawnWanderer(x,z){
   W.npcs.push(n);return n;
 }
 function spawnEnemy(type,x,z,sp){
-  let d=MOBS[type];const m=enemyModel(d,type),K=type==='barakas'?2.4:type==='ignis'?IGNIS_K:d.boss?BOSS_K:1;m.g.position.set(x,0,z);W.root.add(m.g);
+  let d=MOBS[type];const m=enemyModel(d,type),K=type==='barakas'?1.8:type==='ignis'?IGNIS_K:d.boss?BOSS_K:1;m.g.position.set(x,0,z);W.root.add(m.g);
   if(K!==1){m.g.scale.multiplyScalar(K);d=Object.assign({},d,{range:d.range*(1+(K-1)*.7),rad:(d.rad||.5)*K});}
   const lr=(sp&&sp.lvr)||d.lvr,lv=lr?Math.floor(rand(lr[0],lr[1]+1)):d.lv,rl=d.role||1;
   const bm=d.bm||{hp:1,exp:1,gold:1};
@@ -2253,7 +2258,7 @@ function transformZone(a,b,c,d){const T=(x,z)=>[a*x+b*z,c*x+d*z],mir=a*d-b*c<0,s
   W.portals.forEach(p=>{[p.x,p.z]=T(p.x,p.z);});
   W.spawners.forEach(sp=>{[sp.x,sp.z]=T(sp.x,sp.z);if(sp.pts)sp.pts=sp.pts.map(([x,z])=>T(x,z));});
   if(W.shrine)[W.shrine.x,W.shrine.z]=T(W.shrine.x,W.shrine.z);}
-function buildZone(z){clearZone();$('#raidT').hidden=true;$('#enrage').hidden=true;_s=12345;W.zone=z;ZONES[z].build();expandZone(z);if(z!=='prologue')updSpawners(0,true);}
+function buildZone(z){clearZone();document.body.classList.toggle('brightfx',BRIGHT_Z.has(z));$('#raidT').hidden=true;$('#enrage').hidden=true;_s=12345;W.zone=z;ZONES[z].build();expandZone(z);if(z!=='prologue')updSpawners(0,true);}
 
 
 const SHOW_CLS=['novice'],SHOW_MID=0,SHOW_GAP=3.1,SHOW_START=SHOW_CLS.indexOf('novice'),SHOW_N=SHOW_CLS.length;
@@ -3237,7 +3242,7 @@ function blinkTo(t,behind){const dir=new V(t.pos.x-P.pos.x,0,t.pos.z-P.pos.z);co
 function bleed(t,m,dur){areaFx({life:dur+.05,tick:1,onTick:a=>{if(a.t<.05||t.dead||t.gone)return;hitEnemy(t,m,{fixed:true,proc:true,dot:true});burst(t.pos.x,1,t.pos.z,0xa01a2a,5,2,.5,.3,1);}});}
 function sanctR(){return Math.min(24,8*(P.ascT>0?2:1)*(S.cls==='shaman'&&P.lset&&P.lset.two?2:1));}
 function sanctuary(c){if(P.sanct&&P.sanct.a)P.sanct.a.t=P.sanct.a.life;const r0=8,tex=sealTexture();
-  const seal=new THREE.Mesh(new THREE.PlaneGeometry(r0*2,r0*2),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending,color:0xffe08a}));seal.rotation.x=-Math.PI/2;seal.position.set(c.x,.07,c.z);W.root.add(seal);
+  const seal=new THREE.Mesh(new THREE.PlaneGeometry(r0*2,r0*2),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending,color:0xffe08a}));seal.rotation.x=-Math.PI/2;seal.position.set(c.x,.07,c.z);W.root.add(fxBright(seal));
   const lt=new THREE.PointLight(0xffe8a0,1.4,16,2);lt.position.set(c.x,3,c.z);W.root.add(lt);
   const s={x:c.x,z:c.z};P.sanct=s;floatText(P.pos,'성역 선포','lvl',3);
   s.a=areaFx({x:c.x,z:c.z,life:8,tick:1,objs:[seal,lt],upd:(a)=>{const r=sanctR();seal.scale.setScalar(r/r0);seal.rotation.z=a.t*.4;seal.material.opacity=a.t<.2?a.t*4.5:.7+Math.sin(a.t*5)*.1;if(Math.random()<.5)burst(c.x+rand(-r,r)*.6,.3,c.z+rand(-r,r)*.6,0xfff0a0,2,1,1,.3,3);},
@@ -3295,8 +3300,8 @@ const SKILLS={
   s1(){const t=autoTarget(14),c=t?t.pos.clone():P.pos.clone();P.res-=40;P.lock=.4;playAnim('cast3',.7);sanctuary(c);},
   // 천벌의 심판: 1 s cast, 480% holy + 1.2 s knock-up at the sanctuary centre
   s2(){const t=autoTarget(16),c=P.sanct?new V(P.sanct.x,0,P.sanct.z):t?t.pos.clone():P.pos.clone().addScaledVector(fwd(),6);P.res-=35;P.lock=1;P.dest=null;P.target=null;faceTo(c.x,c.z);playAnim('cast2',1);
-    const r=4.2*(P.ascT>0?1.5:1),rg=new THREE.Mesh(new THREE.RingGeometry(r-.15,r,48),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));rg.rotation.x=-Math.PI/2;rg.position.set(c.x,.1,c.z);W.root.add(rg);
-    const fl=new THREE.Mesh(new THREE.CircleGeometry(r,48),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));fl.rotation.x=-Math.PI/2;fl.position.set(c.x,.11,c.z);W.root.add(fl);
+    const r=4.2*(P.ascT>0?1.5:1),rg=new THREE.Mesh(new THREE.RingGeometry(r-.15,r,48),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.9,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));rg.rotation.x=-Math.PI/2;rg.position.set(c.x,.1,c.z);W.root.add(fxBright(rg));
+    const fl=new THREE.Mesh(new THREE.CircleGeometry(r,48),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));fl.rotation.x=-Math.PI/2;fl.position.set(c.x,.11,c.z);W.root.add(fxBright(fl));
     tween(1,k=>{fl.scale.setScalar(Math.max(.01,k));},()=>{killObj(rg);killObj(fl);if(P.dead)return;
       const col=new THREE.Mesh(new THREE.CylinderGeometry(r*.6,r,26,24,1,true),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));col.position.set(c.x,13,c.z);W.root.add(col);addFx(col,.8,k=>{col.material.opacity=.6*(1-k);col.scale.x=col.scale.z=1-k*.6;});
       shake(.55);ringFx(c.x,c.z,r,0xfff0b0,.6);burst(c.x,1.5,c.z,0xfff6d0,60,8,1,.5,-4);roundHit(c,r,4.8,{holy:true,skill:1,knock:1.2});},e=>e);},
@@ -3308,7 +3313,7 @@ const SKILLS={
     const x=P.pos.x,z=P.pos.z;const col=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,30,20,1,true),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));col.position.set(x,15,z);W.root.add(col);addFx(col,1.4,k=>{col.material.opacity=.5*(1-k);col.scale.x=col.scale.z=1+k*2;});
     burst(x,2,z,0xfff0c0,80,8,1.2,.5,-2);ringFx(x,z,6,0xfff0b0,.8);for(const k in P.cd)P.cd[k]*=.5;
     if(!P.aura){const a=new THREE.Group();const r1=new THREE.Mesh(new THREE.RingGeometry(1,1.25,40),new THREE.MeshBasicMaterial({color:0xfff0b0,transparent:true,opacity:.7,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));r1.rotation.x=-Math.PI/2;r1.position.y=.08;a.add(r1);
-      const halo=new THREE.Mesh(new THREE.TorusGeometry(.42,.04,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=2.75;a.add(halo);const lt=new THREE.PointLight(0xfff0c0,1.2,8,2);lt.position.y=2;a.add(lt);P.mesh.add(a);P.aura=a;}
+      const halo=new THREE.Mesh(new THREE.TorusGeometry(.42,.04,6,24),glowM(0xfff0b0));halo.rotation.x=Math.PI/2;halo.position.y=2.75;a.add(halo);const lt=new THREE.PointLight(0xfff0c0,1.2,8,2);lt.position.y=2;a.add(lt);P.mesh.add(fxBright(a));P.aura=a;}
     P.aura.visible=true;recalc();}
  },
 };
@@ -5504,7 +5509,7 @@ function loop(now){
   // camera
   if(P&&cam.mode==='follow'){/* pull back and tilt toward an airborne boss so the air breath stays on screen */
     let ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34);let zf=ab?(ab.airborne?1.8:1.6):1;const lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
-    if(ab&&ab.type==='barakas'){lk.set(P.pos.x,1,P.pos.z);zf=1.15;}
+    if(ab&&ab.type==='barakas'){if(ab.airborne){lk.set(P.pos.x,1,P.pos.z);zf=1.6;}else{lk.set(P.pos.x+(ab.pos.x-P.pos.x)*.3,2.5,P.pos.z+(ab.pos.z-P.pos.z)*.3);zf=2.1;}}
     if(W.zone==='sea'&&typeof SEA!=='undefined'&&SEA.k&&SEA.k.surf&&!SEA.k.dead){lk.set(P.pos.x*.6,7,P.pos.z+(SEA.k.pos.z-P.pos.z)*.55);zf=2;}  // frame the deck and the Siren rising off the bow  // Barakas in the air: the altars are the job, keep the camera on the player
     const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab||W.zone==='sea'?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
@@ -5913,7 +5918,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.07-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.07-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
