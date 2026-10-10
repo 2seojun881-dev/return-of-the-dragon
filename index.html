@@ -553,7 +553,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.10-1</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.10-2</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -1580,7 +1580,8 @@ function animDragonBones(bn,T,dt,mv,air,one,k){const s=Math.sin;
     bn.wl2.rotation.z=-(flap*.45+fold*.5)+dead*.4;bn.wr2.rotation.z=(flap*.45+fold*.5)-dead*.4;
     bn.wl1.rotation.y=-fold*.25;bn.wr1.rotation.y=fold*.25;}
   const bite=one==='attack'?s(k*Math.PI):0,roar=one==='roar'?s(k*Math.PI):0;
-  if(bn.neck){bn.neck.rotation.x=s(T*1.3)*.05+bite*.35-roar*.45+dead*.5;bn.neck.rotation.y=s(T*.7)*.12*(1-bite);bn.head.rotation.x=-bite*.25-roar*.3+s(T*1.3+1)*.04;}
+  const br=one==='breath',rear=br?(k<.35?s(k/.35*Math.PI/2):Math.max(0,1-(k-.35)/.15)):0,thr=br&&k>.35?s(Math.min(1,(k-.35)/.65)*Math.PI):0;
+  if(bn.neck){bn.neck.rotation.x=s(T*1.3)*.05+bite*.35-roar*.45+dead*.5-rear*.5+thr*.3;bn.neck.rotation.y=s(T*.7)*.12*(1-bite)*(1-thr);bn.head.rotation.x=-bite*.25-roar*.3-rear*.35-thr*.3+s(T*1.3+1)*.04;}
   const sway=mv?1.6:.8;if(bn.t1){bn.t1.rotation.y=s(T*sway)*.18;bn.t2.rotation.y=s(T*sway-.7)*.25;bn.t3.rotation.y=s(T*sway-1.4)*.32;bn.t1.rotation.x=-.05+s(T*.9)*.04;}}
 /* scale (and turn) a Meshy prop to the KayKit prop's footprint so every existing layout keeps its sizes */
 function fitToKit(src,mb,kb,uniform){if(!kb)return {obj:src,box:mb};const ks=kb.getSize(new V()),ms0=mb.getSize(new V());
@@ -1619,7 +1620,8 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
     legL:new THREE.Group(),legR:new THREE.Group(),armL:new THREE.Group(),armR:new THREE.Group(),head:new THREE.Group()};
   h.armL.userData.hand=new THREE.Group();h.armR.userData.hand=new THREE.Group();
   h.setBase=n=>{st.mv=/Run|Walk/.test(n||'');if(st.mv&&runN)play(runN,1);else if(idleN)play(idleN,1);else if(runN)play(runN,.0001);};
-  h.playOnce=(n,dur,hold)=>{n=n||'';const direct=n!=='_base'&&!!acts[n];
+  h.playOnce=(n,dur,hold)=>{n=n||'';if(n==='_breath'){st.one='breath';st.t=0;st.dur=dur||1;st.hold=false;h.oneShot={custom:'breath'};h.hold=false;st.clip=false;return;}
+    const direct=n!=='_base'&&!!acts[n];
     st.one=direct?(n==='death'?'death':n==='hit'?'hit':'attack'):/Death/.test(n)?'death':/Hit/.test(n)?'hit':/Summon|Cheer|Taunt|Long|Raise|Spellcasting/.test(n)?'roar':'attack';st.t=0;st.dur=dur||(st.one==='death'?.6:.5);st.hold=!!hold;h.oneShot={custom:st.one};h.hold=!!hold;
     st.clip=shot(direct?n:st.one==='roar'?(acts.cast?'cast':'attack'):st.one,st.dur,st.hold||st.one==='death');};
   h.release=()=>{const was=st.clip;st.one=null;st.clip=false;h.oneShot=null;h.hold=false;pose.position.set(0,0,0);pose.rotation.set(0,0,0);pose.scale.setScalar(1);
@@ -1648,6 +1650,7 @@ function customRig(e,opt){opt=opt||{};const model=e.skinned?THREE.SkeletonUtils.
     if(st.clip){st.clipLeft-=dt;if(st.clipLeft<=0&&!st.hold&&st.one!=='death')h.release();return;}
     const k=Math.min(1,st.t/st.dur),s=Math.sin(k*Math.PI);
     if(st.one==='attack'){pose.position.z=s*.18*Math.min(3,H);pose.rotation.x=s*.22;}
+    else if(st.one==='breath'){pose.position.z=0;pose.rotation.x=-s*.05;}  /* breath: the body stays planted, the neck does the work */
     else if(st.one==='hit'){pose.rotation.x=-s*.14;}
     else if(st.one==='roar'){pose.rotation.x=-s*.3;pose.scale.setScalar(1+s*.06);}
     else if(st.one==='death'){pose.rotation.z=k*1.45;pose.position.y=k*.1;}
@@ -3700,11 +3703,22 @@ function updEnemy(e,dt){
 function sealMul(e){return e.sealT>0&&S.cls==='shaman'&&P.lset&&P.lset.two?.7:1;}
 function specMul(e){return e.type==='ignis'?Math.max(1,1+(99-S.level)*.35):1;}
 function enemyAttack(e){
+  if(e.parts.ignis)return dragonBreathAtk(e);
   e.anim={t:0,dur:.5};
   if(e.d.ranged){later(.25,()=>{if(e.dead||e.gone||P.dead)return;const m=KIT?new THREE.Mesh(new THREE.BoxGeometry(.06,.06,.8),glowM(e.d.bolt||0xffb060)):new THREE.Mesh(new THREE.DodecahedronGeometry(.16,0),M(0x8a8a80));
     const from=e.pos.clone().add(new V(0,1.3,0)),dir=new V(P.pos.x-from.x,0,P.pos.z-from.z).normalize();projectile({mesh:m,from,dir,speed:14,life:1,enemy:true,onHit:()=>hurtPlayer(e.atk*sealMul(e),e,{phys:1})});});}
   else later(.25,()=>{if(e.dead||e.gone||e.stun>0||e.freeze>0)return;if(d2(e.pos,P.pos)<e.d.range+P.rad+e.rad+.6)hurtPlayer(e.atk*specMul(e)*sealMul(e)*(e.frenzy?1.5:1),e,{phys:1,ignoreDef:e.frenzy?.3:0});});
 }
+/* boss dragons' basic attack: rear the neck back, then a short jet of fire from the mouth onto the target (same hit check as a melee swing) */
+function dragonBreathAtk(e){const dur=1.15;e.anim={t:0,dur,kind:'breath'};
+  later(.4,()=>{if(e.dead||e.gone||e.stun>0||e.freeze>0||e.airborne)return;const k=(e.sizeK||1)/2,to=P.pos.clone();auRoar(.25);
+    const jet=new THREE.Mesh(new THREE.ConeGeometry(1,1,14,1,true),new THREE.MeshBasicMaterial({color:0xff6a1a,transparent:true,opacity:.75,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    const core=new THREE.Mesh(new THREE.ConeGeometry(.45,1,10,1,true),new THREE.MeshBasicMaterial({color:0xffe08a,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));jet.add(core);
+    const up=new V(0,1,0),aim=(m)=>{to.lerp(P.pos,.08);const d=new V().subVectors(new V(to.x,.6,to.z),m),L=Math.max(1,d.length());jet.position.copy(m).addScaledVector(d,.5);jet.quaternion.setFromUnitVectors(up,d.clone().normalize().negate());jet.scale.set(1.3*k+L*.12,L,1.3*k+L*.12);return {d,L};};
+    aim(mouthPos(e));addFx(jet,.6,q=>{const m=mouthPos(e),{d}=aim(m);jet.material.opacity=.5*(1-q*q)*(.8+Math.random()*.4);core.material.opacity=.7*(1-q);jet.rotation.y+=.3;
+      for(let j=0;j<fxN(3);j++){const t=Math.random();burst(m.x+d.x*t+rand(-.4,.4)*t*k,m.y+d.y*t,m.z+d.z*t+rand(-.4,.4)*t*k,Math.random()<.55?0xff4a10:0xffb040,2,2+t*2,.5,.6*k+.5*t+.3,1);}});
+    later(.12,()=>{burst(to.x,.5,to.z,0xff5a1a,22,5,.6,.6,-3);ringFx(to.x,to.z,1.6+k,0xff7a2a,.45);
+      if(!e.dead&&!P.dead&&d2(e.pos,P.pos)<e.d.range+P.rad+e.rad+.6)hurtPlayer(e.atk*specMul(e)*sealMul(e)*(e.frenzy?1.5:1),e,{phys:1,ignoreDef:e.frenzy?.3:0});});});}
 /* an unrigged Meshy model used as a floating caster: a glow at the staff head and a rune circle at her feet */
 function casterModel(name,h){const g=new THREE.Group(),b=new THREE.Group();g.add(b);prop(name,0,0,{h,par:b});
   const orb=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshBasicMaterial({color:0x9a5aff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));orb.position.set(-.53*h/1.9,.944*h,.467*h/1.9);orb.scale.setScalar(.7);  b.add(orb);  // the staff's gem (measured on the model)
@@ -4161,7 +4175,9 @@ const AIRB={h:6.5,up:1.2,charge:1.5,breath:2.6,down:.9,cd:8,L:20,W:8};
 function ignisFly(e,on){const fm=CUSTOM.mobs.ignisFly;if(!fm||e.parts.dragonRig)return;  // the rigged Ignis flaps its own wings
   if(on&&!e.flyH){e.flyH=customRig(fm);e.mesh.add(e.flyH.g);}
   if(e.flyH){e.flyH.g.visible=on;e.parts.model.visible=!on;}}
-function mouthPos(e){const f=new V(Math.sin(e.face),0,Math.cos(e.face)),k=(e.sizeK||1)/(e.type==='ignis'?IGNIS_K:1);return new V(e.pos.x+f.x*4.2*k,e.mesh.position.y+3.2*k,e.pos.z+f.z*4.2*k);}
+function mouthPos(e){const f=new V(Math.sin(e.face),0,Math.cos(e.face)),k=(e.sizeK||1)/(e.type==='ignis'?IGNIS_K:1);
+  const p=e.parts;if(p.dragonRig){if(p._hb===undefined){p._hb=null;e.mesh.traverse(o=>{if(o.isBone&&o.name==='D_head')p._hb=o;});}  /* rigged Meshy dragon: the real head bone, a little past it for the jaw */
+    if(p._hb){e.mesh.updateMatrixWorld(true);return p._hb.getWorldPosition(new V()).addScaledVector(f,.9*(e.sizeK||1));}}return new V(e.pos.x+f.x*4.2*k,e.mesh.position.y+3.2*k,e.pos.z+f.z*4.2*k);}
 /* 그랜드 오라클 · 신탁의 예지: 2 s before the breath, show where it will not reach (both flanks of its line and behind the dragon) */
 function oracleForesight(e,A){if(!P||P.dead||e.dead)return;const f=new V(Math.sin(e.face),0,Math.cos(e.face)),sd=new V(f.z,0,-f.x),off=A.W/2+3.2;
   const spots=[[P.pos.x+sd.x*off,P.pos.z+sd.z*off],[P.pos.x-sd.x*off,P.pos.z-sd.z*off],[e.pos.x-f.x*7,e.pos.z-f.z*7]];
@@ -4350,7 +4366,7 @@ function animEnemy(e,dt){
   if(sp.skinned){if(!e.dead){e.mesh.rotation.y=lerpAng(e.mesh.rotation.y,e.face,1-Math.exp(-dt*(e.d.rad>2?2.5:10)));/* huge bosses turn slowly */const mv=e.walk!==e._lw;e._lw=e.walk;
     if(sp.cfg.dormant){if((e.aggro||e.returning)&&!e.woke){e.woke=true;sp.playOnce('Skeletons_Awaken_Floor',1.1);e.stun=Math.max(e.stun,1.1);}else if(!e.aggro&&!e.returning&&e.woke&&!mv){e.woke=false;}}
     sp.setBase(mv?sp.cfg.run:(sp.cfg.dormant&&!e.woke?'Skeletons_Inactive_Floor_Pose':sp.cfg.dormant?'Idle_Combat':sp.cfg.idle));
-    if(e.anim&&!e.anim.started){e.anim.started=true;if(e.anim.kind==='rear')sp.playOnce('Spellcast_Summon',1.2);else sp.playOnce(sp.cfg.atk,.55);}if(e.anim){e.anim.t+=dt;if(e.anim.t>=e.anim.dur)e.anim=null;}}
+    if(e.anim&&!e.anim.started){e.anim.started=true;if(e.anim.kind==='breath'&&sp.dragonRig)sp.playOnce('_breath',e.anim.dur);else if(e.anim.kind==='rear')sp.playOnce('Spellcast_Summon',1.2);else sp.playOnce(sp.cfg.atk,.55);}if(e.anim){e.anim.t+=dt;if(e.anim.t>=e.anim.dur)e.anim=null;}}
     sp.mixer.update(dt);if(sp.tick)sp.tick(rt);if(sp.ignis)ignisFade(e,dt);return;}
   if(e.dead)return;e.mesh.rotation.y=lerpAng(e.mesh.rotation.y,e.face,1-Math.exp(-dt*10));
   const p=e.parts;if(p.ignis){
@@ -5934,7 +5950,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.10-1';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.10-2';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
