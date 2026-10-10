@@ -325,7 +325,7 @@ svg{display:block}
 .tbl th:first-child,.tbl td:first-child{text-align:left}
 .tbl tr.cur td{background:rgba(220,182,94,.14);color:#fff}
 details summary{cursor:pointer;color:var(--gold);font-size:13px;margin-top:10px}
-.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.vrow{display:flex;align-items:center;gap:8px;margin:6px 0}.vrow span{min-width:58px;font-weight:600}.vrow small{color:var(--dim);font-size:11px}.vrow input{flex:1;accent-color:#d8a84a}#vReset{color:#e8c070}
 .tabs button{padding:6px 14px;border-radius:14px;border:1px solid var(--line2);font-size:13px}
 .tabs button.on{background:var(--gold);color:#1d130a;border-color:var(--gold);font-weight:700}
 canvas.pspark{width:90px;height:30px;flex:none}
@@ -553,7 +553,7 @@ body.touch #joy{display:block}
   <div class="t-bottom">
     <div id="tStatus" class="t-status"></div>
     <div id="tTouch" class="t-touch">화면을 터치하여 접속</div>
-    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.07-3</div>
+    <div style="position:absolute;right:10px;bottom:6px;font-size:11px;opacity:.55;color:#d8c8a8">ver 2026.10.10-1</div>
     <button class="t-link" id="tNew" hidden>새 캐릭터로 시작</button>
     <div class="t-foot">© 용의 귀환 · 3D 모델 Meshy AI · 대체 모델 KayKit CC0 (Kay Lousberg)</div>
   </div>
@@ -960,6 +960,11 @@ Object.assign(sun.shadow.camera,{left:-28,right:28,top:28,bottom:-28,near:1,far:
 scene.add(sun);scene.add(sun.target);
 /* ---- art bible: post-processing (ACES grade + bloom), quality levels ---- */
 const GFX={q:'high'};
+/* 화면 설정: 시야 거리(카메라 줌, 클수록 캐릭터가 작고 넓게 보임)와 밝기. 기기마다 저장 */
+const VIEW={zoom:1.5,br:1,MIN:.6,MAX:2.2};
+try{const z=parseFloat(localStorage.getItem('ignis.zoom'));if(z>0)VIEW.zoom=Math.min(VIEW.MAX,Math.max(VIEW.MIN,z));const b=parseFloat(localStorage.getItem('ignis.bright'));if(b>0)VIEW.br=Math.min(1.5,Math.max(.6,b));}catch(e){}
+function viewSave(){try{localStorage.setItem('ignis.zoom',cam.zoom.toFixed(2));localStorage.setItem('ignis.bright',VIEW.br.toFixed(2));}catch(e){}}
+function applyBright(){if(gradePass)gradePass.uniforms.exposure.value=VIEW.br;if(!composer)renderer.toneMappingExposure=.95*VIEW.br;}
 try{GFX.q=localStorage.getItem('ignis.gfx')||(matchMedia('(pointer: coarse)').matches?'mid':'high');}catch(e){GFX.q=matchMedia('(pointer: coarse)').matches?'mid':'high';}
 const GRADE={uniforms:{tDiffuse:{value:null},exposure:{value:1.0}},
   vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
@@ -969,7 +974,7 @@ const GRADE={uniforms:{tDiffuse:{value:null},exposure:{value:1.0}},
    'float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,1.12);'+
    'c+=vec3(-.018,-.004,.026)*(1.-l)+vec3(.03,.012,-.018)*l*l;'+
    'gl_FragColor=vec4(c,1.);}'};
-let composer=null,bloomPass=null;
+let composer=null,bloomPass=null,gradePass=null;
 function applyGfx(){
   const q=GFX.q,dpr=devicePixelRatio||1;
   renderer.setPixelRatio(Math.min(dpr,q==='high'?2:q==='mid'?1.5:1));
@@ -980,10 +985,11 @@ function applyGfx(){
       renderer.toneMapping=THREE.NoToneMapping;
       composer=new THREE.EffectComposer(renderer);composer.addPass(new THREE.RenderPass(scene,camera));
       bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth/2,innerHeight/2),q==='high'?.7:.6,.45,.9);composer.addPass(bloomPass);
-      composer.addPass(new THREE.ShaderPass(GRADE));
+      gradePass=new THREE.ShaderPass(GRADE);composer.addPass(gradePass);
     }catch(e){console.warn('post-processing disabled',e);composer=null;}
   }
-  if(!composer){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;}
+  if(!composer){gradePass=null;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;}
+  applyBright();
   scene.traverse(o=>{if(o.material&&!Array.isArray(o.material))o.material.needsUpdate=true;});
   for(const k in MC)MC[k].needsUpdate=true;
   resize();
@@ -1038,7 +1044,7 @@ function runTimers(){
 const wait=s=>new Promise(r=>later(CS&&CS.skip?0:s,r));
 
 /* camera */
-const cam={mode:'follow',pos:new V(0,20,20),look:new V(),zoom:1,shake:0};
+const cam={mode:'follow',pos:new V(0,20,20),look:new V(),zoom:VIEW.zoom,shake:0};
 const CAM_OFF=new V(0,15.5,12.5);
 function camTo(p,l,dur){const p0=cam.pos.clone(),l0=cam.look.clone();cam.mode='free';
   return new Promise(r=>{if(CS&&CS.skip){cam.pos.copy(p);cam.look.copy(l);return r();}tween(dur,k=>{cam.pos.lerpVectors(p0,p,k);cam.look.lerpVectors(l0,l,k);},r);});}
@@ -1989,7 +1995,7 @@ function updAsh(dt,center){const pos=ash.userData.pos,up=ash.userData.up;for(let
   if(pos[i+1]<0)pos[i+1]=20;if(pos[i+1]>20)pos[i+1]=0;if(pos[i]-center.x>30)pos[i]-=60;if(pos[i]-center.x<-30)pos[i]+=60;if(pos[i+2]-center.z>30)pos[i+2]-=60;if(pos[i+2]-center.z<-30)pos[i+2]+=60;}
   ash.geometry.attributes.position.needsUpdate=true;}
 
-function setEnv(o){scene.background=new THREE.Color(o.sky);scene.fog=new THREE.Fog(o.sky,o.fog[0],o.fog[1]);hemi.color.set(o.ht);hemi.groundColor.set(o.hb);hemi.intensity=o.hi;sun.color.set(o.sun);sun.intensity=o.si;
+function setEnv(o){scene.background=new THREE.Color(o.sky);scene.fog=new THREE.Fog(o.sky,o.fog[0],o.fog[1]);scene.fog.base=[o.fog[0],o.fog[1]];hemi.color.set(o.ht);hemi.groundColor.set(o.hb);hemi.intensity=o.hi;sun.color.set(o.sun);sun.intensity=o.si;
   ash.visible=!!o.ash;ash.material.color.set(o.ashCol||0x9a9290);ash.material.size=o.ashSize||.18;ash.userData.up=!!o.ashUp;}
 
 /* =========================================================
@@ -5092,12 +5098,17 @@ function openMenu(){
    '<div class="row"><div class="l"><b>이 캐릭터 삭제</b><small>['+(ACCOUNT||'')+']의 저장된 진행 상황이 삭제됩니다</small></div><button class="btn sm" id="mReset">삭제</button></div></div>'+
    '<div class="sec"><h3>사운드</h3><div class="tabs" id="sndTabs"><button data-s="1">켜기</button><button data-s="0">끄기</button></div></div>'+
    (CUSTOM.n?'<div class="sec"><h3>Meshy AI 모델</h3><p class="note">커스텀 모델 '+CUSTOM.n+'개 적용 중: '+[...Object.keys(CUSTOM.props),...Object.keys(CUSTOM.mobs),...Object.keys(CUSTOM.npcs)].join(', ')+'</p></div>':'')+
+   '<div class="sec"><h3>화면</h3><div class="vrow"><span>시야 거리</span><small>가깝게</small><input type="range" id="vZoom" min="'+VIEW.MIN+'" max="'+VIEW.MAX+'" step=".05" value="'+cam.zoom.toFixed(2)+'"><small>멀리</small></div>'+
+   '<div class="vrow"><span>밝기</span><small>어둡게</small><input type="range" id="vBr" min=".6" max="1.5" step=".05" value="'+VIEW.br.toFixed(2)+'"><small>밝게</small></div>'+
+   '<p class="note">시야를 멀리 하면 캐릭터가 작아지고 주변이 넓게 보입니다 (두 손가락으로 벌리고 오므려도 됩니다) · <a href="#" id="vReset">기본값</a></p></div>'+
    '<div class="sec"><h3>그래픽 품질</h3><div class="tabs" id="gfxTabs"><button data-g="high">높음</button><button data-g="mid">보통</button><button data-g="low">낮음 (발열 최소)</button></div><p class="note">높음: 블룸·고해상도 그림자 · 보통: 블룸, 해상도 1.5배 · 낮음: 후처리 끔, 배터리 절약</p></div>'+
    '<div class="sec"><h3>조작</h3><p class="note">화면 터치: 이동 · 몬스터/NPC 터치: 타겟 지정 및 대화 · 우측 하단 버튼: 공격/스킬/물약 · 좌측 퀘스트 창 탭: 자동 이동<br>PC 단축키: A 또는 Space 공격, 1·2·3·4 스킬, H 물약, T 자동 전투, B 가방, 마우스 휠 줌<br>자동 전투: 퀘스트 몬스터 우선 타겟, 스킬·기본 공격·물약(체력 45% 이하) 자동, 보스의 붉은 장판 회피, 주변에 적이 없으면 퀘스트 사냥터로 이동. 바닥을 직접 터치하면 2.5초간 수동 조작</p></div>'+
    (S.admin?'<div class="sec"><h3>운영자 · 공지사항</h3><button class="btn sm pri" id="adNotice">공지 작성 · 관리</button></div><div class="sec"><h3>운영자 · 직업 변경</h3><div class="bbar">'+PROMO.map(k=>'<button class="btn sm'+(S.cls===k?' pri':'')+'" data-adcls="'+k+'">'+CLASSES[k].name.replace(/\(.*\)/,'')+(S.awk&&AWK[k]?' ('+AWK[k].name+')':'')+'</button>').join('')+'</div><p class="note">운영자 아이디는 전사 · 도적 · 신을 언제든 바꿀 수 있습니다. 레벨·장비·각성은 그대로 유지됩니다.</p></div><div class="sec"><h3>운영자 도구</h3><div class="bbar"><button class="btn sm pri" id="adSet">영웅 세트 5부위 지급</button><button class="btn sm" id="adW">영웅 무기</button><button class="btn sm" id="adAcc">영웅 장신구 4개</button><button class="btn sm" id="adMix">고급·전설 장비 6개</button><button class="btn sm" id="adMat">용의 비늘·결정 +100</button></div><p class="note">'+(S.cls==='novice'?'초보자는 세트를 입을 수 없습니다. 천명 성채 진급의 전당에서 먼저 진급하세요.':'현재 직업 ['+CLASSES[S.cls].name+'] 기준으로 지급합니다.')+'</p></div>':'')+
    '<div class="sec"><h3>현재 캐릭터 · '+(S.name||'')+'</h3><div class="grid2 num"><div class="chip">공격력<b>'+Math.round(P.atk)+'</b></div><div class="chip">최대 마력<b>'+P.maxMp+'</b></div><div class="chip">한계 돌파<b>'+(S.lb||0)+'</b></div><div class="chip">스탯<b>힘'+S.stat.str+' 체'+S.stat.vit+' 방'+S.stat.def+' 민'+S.stat.agi+'</b></div><div class="chip">방어력<b>'+Math.round(P.def)+'</b></div><div class="chip">최대 체력<b>'+P.maxHp+'</b></div><div class="chip">다음 레벨<b>'+fmt(needExp(S.level)-S.exp)+'</b></div></div></div>');
   panelLive=true;$('#mQuit').onclick=quitGame;$('#mMove').onclick=()=>{save();openMove();};
   const gt=()=>document.querySelectorAll('#gfxTabs button').forEach(b=>{b.classList.toggle('on',b.dataset.g===GFX.q);b.onclick=()=>{GFX.q=b.dataset.g;try{localStorage.setItem('ignis.gfx',GFX.q);}catch(e){}applyGfx();gt();toast('그래픽 품질: '+b.textContent);};});gt();
+  $('#vZoom').oninput=e=>{cam.zoom=+e.target.value;viewSave();};$('#vBr').oninput=e=>{VIEW.br=+e.target.value;applyBright();viewSave();};
+  $('#vReset').onclick=e=>{e.preventDefault();cam.zoom=1.5;VIEW.br=1;applyBright();viewSave();$('#vZoom').value=1.5;$('#vBr').value=1;};
   const sd=()=>document.querySelectorAll('#sndTabs button').forEach(b=>{b.classList.toggle('on',(b.dataset.s==='1')===AU.on);b.onclick=()=>{auSetOn(b.dataset.s==='1');sd();};});sd();
   $('#mSave').onclick=()=>{save();toast('저장되었습니다');};$('#mMp').onclick=openMP;
   $('#mOut').onclick=async()=>{save();if(cloudOn()){await cloudPush();try{await cloudCall('/acct/logout',{tok:CLOUD.tok});}catch(e){}}location.reload();};
@@ -5460,12 +5471,12 @@ canvas.addEventListener('pointerdown',e=>{
   if(ent){P.target=ent;P.dest=null;if(!ent.isNpc){ringFx(ent.pos.x,ent.pos.z,1.5,0xff5a4a,.35);ent.tag.classList.add('show');ent.showT=6;}else ringFx(ent.pos.x,ent.pos.z,1.2,0xffd070,.4);}
   else{P.target=null;P.dest={x:hitP.x,z:hitP.z};clickFx(hitP.x,hitP.z);if(AUTO.on)AUTO.pause=2.5;}
 });
-canvas.addEventListener('wheel',e=>{cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.08,.55,1.6);},{passive:true});
+canvas.addEventListener('wheel',e=>{cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.08,VIEW.MIN,VIEW.MAX);viewSave();},{passive:true});
 const PINCH={d:0,z:1,dest:null,t:0};
 const tDist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 canvas.addEventListener('touchstart',e=>{if(e.targetTouches.length===2){PINCH.d=tDist(e.targetTouches);PINCH.z=cam.zoom;if(P&&performance.now()-PINCH.t<400){P.dest=PINCH.dest;}}else if(e.targetTouches.length===1){PINCH.t=performance.now();PINCH.dest=P?P.dest:null;}},{passive:true});
-canvas.addEventListener('touchmove',e=>{if(e.targetTouches.length===2&&PINCH.d>10){e.preventDefault();cam.zoom=clamp(PINCH.z*PINCH.d/Math.max(10,tDist(e.targetTouches)),.55,1.6);}},{passive:false});
-canvas.addEventListener('touchend',e=>{if(e.targetTouches.length<2)PINCH.d=0;},{passive:true});
+canvas.addEventListener('touchmove',e=>{if(e.targetTouches.length===2&&PINCH.d>10){e.preventDefault();cam.zoom=clamp(PINCH.z*PINCH.d/Math.max(10,tDist(e.targetTouches)),VIEW.MIN,VIEW.MAX);}},{passive:false});
+canvas.addEventListener('touchend',e=>{if(e.targetTouches.length<2){if(PINCH.d)viewSave();PINCH.d=0;}},{passive:true});
 $('#b-auto').innerHTML=ICON.auto+'<span class="al">AI</span>';$('#b-auto').onclick=()=>{if(!paused())setAuto(!(AUTO.on&&AUTO.mode==='ai'),false,'ai');};
 $('#b-hunt').innerHTML=ICON.sword+'<span class="al">자동</span>';$('#b-hunt').onclick=()=>{if(!paused())setAuto(!(AUTO.on&&AUTO.mode==='hunt'),false,'hunt');};
 /* action buttons fire on touch-down (a second finger while the other thumb is on the joystick); holding attack keeps attacking */
@@ -5514,7 +5525,9 @@ function loop(now){
     let ab=W.enemies.find(q=>q.airborne&&!q.dead)||W.enemies.find(q=>q.d.model==='ignis'&&!q.dead&&q.aggro&&d2(q.pos,P.pos)<34);let zf=ab?(ab.airborne?1.8:1.6):1;const lk=ab?new V(P.pos.x+(ab.pos.x-P.pos.x)*(ab.airborne?.6:.35),1+ab.mesh.position.y*.9+(ab.airborne?0:2),P.pos.z+(ab.pos.z-P.pos.z)*(ab.airborne?.6:.35)):new V(P.pos.x,1,P.pos.z);
     if(ab&&ab.type==='barakas'){if(ab.airborne){lk.set(P.pos.x,1,P.pos.z);zf=1.6;}else{lk.set(P.pos.x+(ab.pos.x-P.pos.x)*.3,2.5,P.pos.z+(ab.pos.z-P.pos.z)*.3);zf=2.1;}}
     if(W.zone==='sea'&&typeof SEA!=='undefined'&&SEA.k&&SEA.k.surf&&!SEA.k.dead){lk.set(P.pos.x*.6,7,P.pos.z+(SEA.k.pos.z-P.pos.z)*.55);zf=2;}  // frame the deck and the Siren rising off the bow  // Barakas in the air: the altars are the job, keep the camera on the player
-    const tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(cam.zoom*zf));const k=1-Math.exp(-dt*(ab||W.zone==='sea'?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
+    const zk=Math.min(cam.zoom*zf,Math.max(cam.zoom,2.6))/* boss framing pulls back, but not past 2.6x */,tgt=lk.clone().setY(P.pos.y).add(CAM_OFF.clone().multiplyScalar(zk));
+    {const f=scene.fog;if(f&&f.base){const ex=Math.max(0,zk-1)*CAM_OFF.length();f.near=f.base[0]+ex;f.far=f.base[1]+ex*1.4;}
+     const sh=sun.shadow.camera,ext=28*Math.max(1,Math.min(1.7,zk*.85));if(Math.abs(sh.right-ext)>1){sh.left=sh.bottom=-ext;sh.right=sh.top=ext;sh.updateProjectionMatrix();}}const k=1-Math.exp(-dt*(ab||W.zone==='sea'?3:7));cam.pos.lerp(tgt,k);cam.look.lerp(lk,k);}
   else if(W.zone==='showcase'){updShowcase(dt);}
   else if(W.zone==='title'){updTitle(dt);}
   else if(!P||W.zone==='prologue'&&!CS){const a=rt*.05;cam.pos.set(Math.sin(a)*30,14,40+Math.cos(a)*6);cam.look.set(0,24,-100);}
@@ -5921,7 +5934,7 @@ function openServers(){openPanel('서버 선택','<div class="sec">'+SERVERS.map
   document.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('ignis.srv',b.dataset.sv);}catch(err){}if(MP.client&&+b.dataset.sv!==MP.srv){netDisconnect(true);MP.full=false;netConnect();}srvLabel();closePanel();});}
 $('#tServer').onclick=e=>{e.stopPropagation();openServers();};
 setInterval(()=>{if(!gameOn)srvLabel();},3000);
-(function(){const cur='2026.10.07-3';if(!/^https?:/.test(location.protocol))return;
+(function(){const cur='2026.10.10-1';if(!/^https?:/.test(location.protocol))return;
   fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/ver (\d{4}\.\d\d\.\d\d-\d+)/);
     if(m&&m[1]!==cur&&!gameOn){let k='';try{k=sessionStorage.getItem('ignis.upd')||'';sessionStorage.setItem('ignis.upd',m[1]);}catch(err){}
       if(k!==m[1])location.replace(location.pathname+'?v='+m[1]);}}).catch(()=>{});})();  // stale cached page → load the new build once
